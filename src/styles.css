@@ -66,9 +66,9 @@
 :root {
   --radius: 0.75rem;
 
-  /* Neutral base */
-  --background: oklch(0.99 0.005 95);          /* off-white #FBFAF6 */
-  --foreground: oklch(0.18 0.04 268);          /* deep ink */
+  /* Royal blue base — #1B3FB8 */
+  --background: oklch(0.42 0.2 268);
+  --foreground: oklch(0.985 0.005 95);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.04 268);
   --popover: oklch(1 0 0);
@@ -77,17 +77,17 @@
   /* Brand — trust blue #1B3FB8 */
   --primary: oklch(0.42 0.2 268);
   --primary-foreground: oklch(0.985 0.005 95);
-  --primary-soft: oklch(0.95 0.03 268);
+  --primary-soft: oklch(0.48 0.18 268);
 
   /* Accent — action yellow #FFC93C */
   --accent: oklch(0.86 0.17 88);
   --accent-foreground: oklch(0.2 0.05 268);
   --accent-soft: oklch(0.97 0.06 92);
 
-  --secondary: oklch(0.96 0.01 268);
-  --secondary-foreground: oklch(0.25 0.05 268);
-  --muted: oklch(0.96 0.008 95);
-  --muted-foreground: oklch(0.48 0.03 268);
+  --secondary: oklch(0.36 0.18 268);
+  --secondary-foreground: oklch(0.985 0.005 95);
+  --muted: oklch(0.36 0.16 268);
+  --muted-foreground: oklch(0.85 0.04 268);
 
   --success: oklch(0.7 0.16 152);
   --success-foreground: oklch(0.15 0.05 152);
@@ -95,9 +95,9 @@
   --destructive: oklch(0.58 0.24 27);
   --destructive-foreground: oklch(0.985 0 0);
 
-  --border: oklch(0.9 0.015 268);
-  --input: oklch(0.92 0.015 268);
-  --ring: oklch(0.42 0.2 268);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.86 0.17 88);
 }
 
 .dark {
