@@ -632,7 +632,7 @@ function Precios() {
                 variant={p.featured ? "secondary" : "default"}
                 className="mt-7 w-full"
               >
-                <a href="#cta">{p.cta}</a>
+                <Link to="/crear">{p.cta}</Link>
               </Button>
             </div>
           ))}
@@ -674,9 +674,9 @@ function Marketplace() {
               ))}
             </ul>
             <Button asChild size="lg" variant="outline" className="mt-7">
-              <a href="#cta">
+              <Link to="/auth">
                 Quiero ser proveedor <ArrowRight className="ml-1" />
-              </a>
+              </Link>
             </Button>
           </div>
 
