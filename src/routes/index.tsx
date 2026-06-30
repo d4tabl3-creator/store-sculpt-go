@@ -474,7 +474,7 @@ function IAFantasma() {
 
 function Comparativa() {
   const rows = [
-    ["Flujo guiado tipo autoMac", true, false, false],
+    ["Flujo guiado ventanilla por ventanilla", true, false, false],
     ["Configuración en menos de 10 minutos", true, false, false],
     ["Sin conocimientos técnicos", true, false, false],
     ["Proveedores ya integrados", true, false, false],
