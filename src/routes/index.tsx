@@ -684,10 +684,10 @@ function Marketplace() {
             <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-tr from-accent/20 to-primary/20 blur-2xl" />
             <div className="grid grid-cols-2 gap-4">
               {[
-                { name: "Bolsas Mar Azul", city: "Vallarta", tag: "Artesanal" },
-                { name: "Café Sierra", city: "Oaxaca", tag: "Gourmet" },
-                { name: "Joyas Luna", city: "CDMX", tag: "Plata 925" },
-                { name: "Mezcal Don T.", city: "Oaxaca", tag: "Espadín" },
+                { name: "Bolsas tejidas", city: "Costa", tag: "Artesanal" },
+                { name: "Café de altura", city: "Sierra", tag: "Gourmet" },
+                { name: "Joyería de plata", city: "Centro", tag: "Plata 925" },
+                { name: "Destilado agave", city: "Sur", tag: "Selección" },
               ].map((p, i) => (
                 <div
                   key={p.name}
