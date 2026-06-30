@@ -336,7 +336,7 @@ function ParaQuien() {
   );
 }
 
-/* ---------- Momento McDonald's ---------- */
+/* ---------- Entrega instantánea ---------- */
 
 function MomentoMcDonalds() {
   const beats = [
@@ -366,14 +366,14 @@ function MomentoMcDonalds() {
       <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
         <div className="max-w-2xl">
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            El momento McDonald's
+            Entrega instantánea
           </div>
           <h2 className="mt-3 font-display text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">
             Pagas. Esperas 2 minutos. Recibes tu tienda.
           </h2>
           <p className="mt-4 text-base opacity-80">
-            Cuando das clic en <strong>¡Quiero mi tienda!</strong>, esto pasa en tiempo real — sin que muevas
-            un dedo:
+            No te entregamos piezas sueltas ni materia prima — te entregamos el negocio armado y listo
+            para vender. Cuando das clic en <strong>¡Quiero mi tienda!</strong>, esto pasa en tiempo real:
           </p>
         </div>
 
