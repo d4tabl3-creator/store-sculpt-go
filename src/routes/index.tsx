@@ -33,7 +33,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "DªTªBLe es la plataforma tipo autoMac para crear tu tienda online: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar.",
+          "DªTªBLe arma tu tienda online por ti en 4 pasos: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar.",
       },
       { property: "og:title", content: "DªTªBLe — Franchise-as-a-Service para tu tienda online" },
       {
@@ -111,7 +111,7 @@ function Hero() {
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
             No diseñas una tienda. Eliges un <strong className="text-foreground">Pack de Negocio</strong> ya
             validado — con proveedores, productos, pagos y envíos incluidos — y empiezas a vender desde el
-            minuto 1. Como un autoMac, pero de tiendas online.
+            minuto 1. Tú pides por ventanilla, nosotros te entregamos el negocio terminado.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
@@ -148,7 +148,7 @@ function HeroMock() {
     { icon: Boxes, label: "Rubro", value: "Ropa Deportiva" },
     { icon: Package, label: "Kit", value: "Yoga Básico" },
     { icon: Palette, label: "Fachada", value: "Skin · Aurora" },
-    { icon: CreditCard, label: "Pagos", value: "Stripe · DHL" },
+    { icon: CreditCard, label: "Pagos", value: "Pago + Envío" },
   ];
   return (
     <div className="relative">
@@ -226,8 +226,8 @@ const VENTANILLAS = [
     icon: CreditCard,
     title: "¿Cómo cobras y envías?",
     sub: "Pagos y logística",
-    desc: "Stripe o Mercado Pago con una sola pregunta. Envíos DHL y Correos de México con un check.",
-    chips: ["Stripe", "MercadoPago", "DHL", "Recoge en tienda"],
+    desc: "Pasarela de pago y envíos resueltos con una sola pregunta. Tú eliges, nosotros conectamos todo por debajo.",
+    chips: ["Tarjeta", "Transferencia", "Paquetería", "Recoge en tienda"],
   },
 ];
 
@@ -238,7 +238,7 @@ function ComoFunciona() {
         <SectionHeader
           eyebrow="Cómo funciona"
           title="4 ventanillas. 10 minutos. Tu tienda lista."
-          desc="Un flujo guiado tipo autoMac. Cero menús abrumadores, cero decisiones técnicas."
+          desc="Un flujo guiado, ventanilla por ventanilla. Cero menús abrumadores, cero decisiones técnicas."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {VENTANILLAS.map((v) => (
@@ -336,7 +336,7 @@ function ParaQuien() {
   );
 }
 
-/* ---------- Momento McDonald's ---------- */
+/* ---------- Entrega instantánea ---------- */
 
 function MomentoMcDonalds() {
   const beats = [
@@ -366,14 +366,14 @@ function MomentoMcDonalds() {
       <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
         <div className="max-w-2xl">
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            El momento McDonald's
+            Entrega instantánea
           </div>
           <h2 className="mt-3 font-display text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">
             Pagas. Esperas 2 minutos. Recibes tu tienda.
           </h2>
           <p className="mt-4 text-base opacity-80">
-            Cuando das clic en <strong>¡Quiero mi tienda!</strong>, esto pasa en tiempo real — sin que muevas
-            un dedo:
+            No te entregamos piezas sueltas ni materia prima — te entregamos el negocio armado y listo
+            para vender. Cuando das clic en <strong>¡Quiero mi tienda!</strong>, esto pasa en tiempo real:
           </p>
         </div>
 
@@ -474,7 +474,7 @@ function IAFantasma() {
 
 function Comparativa() {
   const rows = [
-    ["Flujo guiado tipo autoMac", true, false, false],
+    ["Flujo guiado ventanilla por ventanilla", true, false, false],
     ["Configuración en menos de 10 minutos", true, false, false],
     ["Sin conocimientos técnicos", true, false, false],
     ["Proveedores ya integrados", true, false, false],
@@ -497,7 +497,7 @@ function Comparativa() {
               <tr className="border-b border-border/60 text-left">
                 <th className="px-5 py-4 font-semibold text-foreground">Característica</th>
                 <th className="px-5 py-4 text-center font-display font-bold text-primary">DªTªBLe</th>
-                <th className="px-5 py-4 text-center font-medium text-muted-foreground">Shopify / Wix</th>
+                <th className="px-5 py-4 text-center font-medium text-muted-foreground">Constructores DIY</th>
                 <th className="px-5 py-4 text-center font-medium text-muted-foreground">Tienda tradicional</th>
               </tr>
             </thead>
@@ -544,8 +544,8 @@ function Precios() {
       features: [
         "Tienda con subdominio",
         "Hasta 50 productos",
-        "Stripe + MercadoPago",
-        "Envíos DHL estándar",
+        "Pasarela de pago integrada",
+        "Envíos con paquetería estándar",
         "Panel admin completo",
         "Chatbot IA básico",
       ],
@@ -657,15 +657,15 @@ function Marketplace() {
               ¿Tienes producto pero no canal? Súbelo a nuestro ecosistema.
             </h2>
             <p className="mt-4 text-base text-muted-foreground">
-              Si haces bolsas artesanales en Vallarta, café en Oaxaca o joyería en CDMX — y ya tienes
-              logística cubierta — sube tu producto a DªTªBLe. Otros usuarios lo van a montar en sus tiendas
-              y tú solo te encargas de producir.
+              Si produces algo con tus manos — bolsas, café, joyería, comida, ropa — y ya tienes
+              logística cubierta, sube tu catálogo a DªTªBLe. Otros usuarios lo van a montar en sus
+              tiendas y tú solo te encargas de producir.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-foreground">
               {[
                 "Sin abrir tu propia tienda",
                 "Split de pagos automático",
-                "Envíos integrados con DHL",
+                "Envíos integrados con paquetería",
                 "Tú produces. Otros venden.",
               ].map((it) => (
                 <li key={it} className="flex items-center gap-2">
@@ -684,10 +684,10 @@ function Marketplace() {
             <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-tr from-accent/20 to-primary/20 blur-2xl" />
             <div className="grid grid-cols-2 gap-4">
               {[
-                { name: "Bolsas Mar Azul", city: "Vallarta", tag: "Artesanal" },
-                { name: "Café Sierra", city: "Oaxaca", tag: "Gourmet" },
-                { name: "Joyas Luna", city: "CDMX", tag: "Plata 925" },
-                { name: "Mezcal Don T.", city: "Oaxaca", tag: "Espadín" },
+                { name: "Bolsas tejidas", city: "Costa", tag: "Artesanal" },
+                { name: "Café de altura", city: "Sierra", tag: "Gourmet" },
+                { name: "Joyería de plata", city: "Centro", tag: "Plata 925" },
+                { name: "Destilado agave", city: "Sur", tag: "Selección" },
               ].map((p, i) => (
                 <div
                   key={p.name}
@@ -724,7 +724,7 @@ const FAQS = [
   },
   {
     q: "¿Qué pasa con los productos? ¿Yo los tengo?",
-    a: "No. Trabajamos con proveedores de Print-on-Demand (Printify, Printful, Gelato) y productores locales. Cuando alguien compra, ellos producen y envían.",
+    a: "No es necesario. Trabajamos con proveedores bajo demanda y productores locales. Cuando alguien compra, ellos producen y envían directo al cliente.",
   },
   {
     q: "¿Cuánto se queda DªTªBLe de cada venta?",
@@ -849,7 +849,7 @@ function Footer() {
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-xs text-muted-foreground md:flex-row">
           <span>© {new Date().getFullYear()} DªTªBLe. Todos los derechos reservados.</span>
-          <span>Puerto Vallarta · CDMX · Oaxaca</span>
+          <span>Hecho en México</span>
         </div>
       </div>
     </footer>
