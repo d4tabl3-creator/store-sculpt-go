@@ -77,12 +77,12 @@ function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <a href="#cta">Entrar</a>
+            <Link to="/auth">Entrar</Link>
           </Button>
           <Button asChild size="sm" className="shine-on-hover">
-            <a href="#cta">
+            <Link to="/crear">
               Crear mi tienda <ArrowRight className="ml-1" />
-            </a>
+            </Link>
           </Button>
         </div>
       </div>
@@ -115,9 +115,9 @@ function Hero() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
-              <a href="#cta">
+              <Link to="/crear">
                 Crear mi tienda <ArrowRight className="ml-1" />
-              </a>
+              </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <a href="#como-funciona">Ver cómo funciona</a>
@@ -632,7 +632,7 @@ function Precios() {
                 variant={p.featured ? "secondary" : "default"}
                 className="mt-7 w-full"
               >
-                <a href="#cta">{p.cta}</a>
+                <Link to="/crear">{p.cta}</Link>
               </Button>
             </div>
           ))}
@@ -674,9 +674,9 @@ function Marketplace() {
               ))}
             </ul>
             <Button asChild size="lg" variant="outline" className="mt-7">
-              <a href="#cta">
+              <Link to="/auth">
                 Quiero ser proveedor <ArrowRight className="ml-1" />
-              </a>
+              </Link>
             </Button>
           </div>
 
