@@ -724,7 +724,7 @@ const FAQS = [
   },
   {
     q: "¿Qué pasa con los productos? ¿Yo los tengo?",
-    a: "No. Trabajamos con proveedores de Print-on-Demand (Printify, Printful, Gelato) y productores locales. Cuando alguien compra, ellos producen y envían.",
+    a: "No es necesario. Trabajamos con proveedores bajo demanda y productores locales. Cuando alguien compra, ellos producen y envían directo al cliente.",
   },
   {
     q: "¿Cuánto se queda DªTªBLe de cada venta?",
