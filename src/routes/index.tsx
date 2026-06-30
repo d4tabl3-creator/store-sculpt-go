@@ -657,15 +657,15 @@ function Marketplace() {
               ¿Tienes producto pero no canal? Súbelo a nuestro ecosistema.
             </h2>
             <p className="mt-4 text-base text-muted-foreground">
-              Si haces bolsas artesanales en Vallarta, café en Oaxaca o joyería en CDMX — y ya tienes
-              logística cubierta — sube tu producto a DªTªBLe. Otros usuarios lo van a montar en sus tiendas
-              y tú solo te encargas de producir.
+              Si produces algo con tus manos — bolsas, café, joyería, comida, ropa — y ya tienes
+              logística cubierta, sube tu catálogo a DªTªBLe. Otros usuarios lo van a montar en sus
+              tiendas y tú solo te encargas de producir.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-foreground">
               {[
                 "Sin abrir tu propia tienda",
                 "Split de pagos automático",
-                "Envíos integrados con DHL",
+                "Envíos integrados con paquetería",
                 "Tú produces. Otros venden.",
               ].map((it) => (
                 <li key={it} className="flex items-center gap-2">
