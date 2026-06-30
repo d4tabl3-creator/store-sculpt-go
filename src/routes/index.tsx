@@ -1,633 +1,467 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  BadgeCheck,
   Boxes,
+  Brain,
+  Check,
   CheckCircle2,
+  ChevronRight,
+  CreditCard,
   Layers,
+  LineChart,
+  MessageCircle,
+  Package,
   Palette,
   Rocket,
-  Search,
-  ShieldCheck,
+  Settings2,
+  ShoppingBag,
   Sparkles,
-  Star,
+  Store,
   Truck,
+  Wand2,
+  X,
   Zap,
 } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Tiendas — Marketplace de plantillas de tienda online" },
+      { title: "DªTªBLe — Tu tienda online lista en 10 minutos" },
       {
         name: "description",
         content:
-          "Elige una plantilla de tienda lista para vender. Proveedores, logística y bloques verificados — publica tu negocio en minutos.",
+          "DªTªBLe es la plataforma tipo autoMac para crear tu tienda online: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar.",
       },
-      { property: "og:title", content: "Tiendas — Plantillas de tienda listas para vender" },
+      { property: "og:title", content: "DªTªBLe — Franchise-as-a-Service para tu tienda online" },
       {
         property: "og:description",
         content:
-          "Plantillas con proveedores y envíos ya integrados. Edita, publica y empieza a vender.",
+          "Elige un Pack de Negocio ya validado y recibe una tienda operativa en menos de 10 minutos. Proveedores, pagos y envíos incluidos.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Index,
+  component: Landing,
 });
 
-type Category =
-  | "Todas"
-  | "Moda"
-  | "Comida"
-  | "Electrónica"
-  | "Servicios"
-  | "Digital";
+/* ---------- Brand mark ---------- */
 
-type Template = {
-  id: string;
-  name: string;
-  tagline: string;
-  category: Exclude<Category, "Todas">;
-  emoji: string;
-  gradient: string;
-  suppliers: string[];
-  shipping: string;
-  price: string;
-  popular?: boolean;
-  rating: number;
-  installs: string;
-};
-
-const CATEGORIES: Category[] = [
-  "Todas",
-  "Moda",
-  "Comida",
-  "Electrónica",
-  "Servicios",
-  "Digital",
-];
-
-const TEMPLATES: Template[] = [
-  {
-    id: "boutique-mx",
-    name: "Boutique Moda MX",
-    tagline: "Catálogo de ropa con tallas, colores y carrito ágil.",
-    category: "Moda",
-    emoji: "👗",
-    gradient: "from-[oklch(0.55_0.18_268)] to-[oklch(0.42_0.2_268)]",
-    suppliers: ["AliExpress", "Printful", "CJ Drop"],
-    shipping: "DHL · FedEx · 99Minutos",
-    price: "$0 / setup",
-    popular: true,
-    rating: 4.9,
-    installs: "2.4k",
-  },
-  {
-    id: "cocina-express",
-    name: "Cocina Express",
-    tagline: "Menú digital, pedidos a domicilio y reservas en línea.",
-    category: "Comida",
-    emoji: "🍜",
-    gradient: "from-[oklch(0.7_0.18_45)] to-[oklch(0.55_0.2_30)]",
-    suppliers: ["POS Square", "Toast", "Local"],
-    shipping: "Rappi · Uber Eats · DiDi Food",
-    price: "$0 / setup",
-    rating: 4.8,
-    installs: "1.8k",
-  },
-  {
-    id: "gadget-hub",
-    name: "Gadget Hub",
-    tagline: "Dropshipping de electrónica con specs comparables.",
-    category: "Electrónica",
-    emoji: "🎧",
-    gradient: "from-[oklch(0.45_0.18_240)] to-[oklch(0.3_0.12_260)]",
-    suppliers: ["Alibaba", "Spocket", "CJ Drop"],
-    shipping: "DHL Express · 4PX",
-    price: "$0 / setup",
-    popular: true,
-    rating: 4.7,
-    installs: "3.1k",
-  },
-  {
-    id: "studio-reservas",
-    name: "Studio Reservas",
-    tagline: "Citas, clases y pagos para profesionales y studios.",
-    category: "Servicios",
-    emoji: "💆",
-    gradient: "from-[oklch(0.7_0.13_330)] to-[oklch(0.5_0.15_310)]",
-    suppliers: ["Calendly", "Google Cal", "Stripe"],
-    shipping: "Servicio presencial / online",
-    price: "$0 / setup",
-    rating: 4.9,
-    installs: "1.2k",
-  },
-  {
-    id: "academy-digital",
-    name: "Academy Digital",
-    tagline: "Vende cursos, descargas y suscripciones premium.",
-    category: "Digital",
-    emoji: "🎓",
-    gradient: "from-[oklch(0.55_0.16_200)] to-[oklch(0.4_0.14_230)]",
-    suppliers: ["Vimeo", "Mux", "Lemon Squeezy"],
-    shipping: "Entrega instantánea",
-    price: "$0 / setup",
-    rating: 4.8,
-    installs: "960",
-  },
-  {
-    id: "artesano-co",
-    name: "Artesano & Co",
-    tagline: "Storefront editorial para piezas hechas a mano.",
-    category: "Moda",
-    emoji: "🧵",
-    gradient: "from-[oklch(0.6_0.14_50)] to-[oklch(0.4_0.1_40)]",
-    suppliers: ["Inventario propio", "Etsy sync"],
-    shipping: "Estafeta · FedEx · Local",
-    price: "$0 / setup",
-    rating: 4.9,
-    installs: "540",
-  },
-  {
-    id: "fit-meals",
-    name: "Fit Meals",
-    tagline: "Suscripción semanal de comida saludable.",
-    category: "Comida",
-    emoji: "🥗",
-    gradient: "from-[oklch(0.7_0.16_140)] to-[oklch(0.5_0.15_150)]",
-    suppliers: ["Cocina propia", "Stripe Billing"],
-    shipping: "Ruta propia · iVoy",
-    price: "$0 / setup",
-    rating: 4.7,
-    installs: "780",
-  },
-  {
-    id: "smart-home",
-    name: "Smart Home",
-    tagline: "Domótica e IoT con guías de instalación.",
-    category: "Electrónica",
-    emoji: "🏠",
-    gradient: "from-[oklch(0.5_0.15_220)] to-[oklch(0.35_0.13_250)]",
-    suppliers: ["Alibaba", "Tuya"],
-    shipping: "DHL · 99Minutos",
-    price: "$0 / setup",
-    rating: 4.6,
-    installs: "1.1k",
-  },
-  {
-    id: "agencia-pro",
-    name: "Agencia Pro",
-    tagline: "Servicios B2B con propuestas y facturación.",
-    category: "Servicios",
-    emoji: "🧑‍💼",
-    gradient: "from-[oklch(0.4_0.18_268)] to-[oklch(0.25_0.12_268)]",
-    suppliers: ["Stripe", "DocuSign", "HubSpot"],
-    shipping: "Servicio remoto",
-    price: "$0 / setup",
-    rating: 4.8,
-    installs: "430",
-  },
-];
-
-function Index() {
-  const [active, setActive] = useState<Category>("Todas");
-  const [query, setQuery] = useState("");
-
-  const filtered = useMemo(() => {
-    return TEMPLATES.filter((t) => {
-      const matchCat = active === "Todas" || t.category === active;
-      const q = query.trim().toLowerCase();
-      const matchQ =
-        !q ||
-        t.name.toLowerCase().includes(q) ||
-        t.tagline.toLowerCase().includes(q) ||
-        t.category.toLowerCase().includes(q);
-      return matchCat && matchQ;
-    });
-  }, [active, query]);
-
+function Logo({ className = "" }: { className?: string }) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header />
-      <Hero />
-      <TrustStrip />
-      <main id="catalogo" className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
-        <CatalogHeader
-          query={query}
-          setQuery={setQuery}
-          active={active}
-          setActive={setActive}
-          count={filtered.length}
-        />
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((t) => (
-            <TemplateCard key={t.id} t={t} />
-          ))}
-        </div>
-        {filtered.length === 0 && (
-          <div className="mt-16 rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-            <p className="text-muted-foreground">
-              No encontramos plantillas para esa búsqueda.
-            </p>
-          </div>
-        )}
-      </main>
-      <HowItWorks />
-      <Guarantee />
-      <Footer />
-    </div>
+    <span
+      className={`font-display text-xl font-extrabold tracking-tight ${className}`}
+      aria-label="DªTªBLe"
+    >
+      D<span className="text-primary">ª</span>T<span className="text-primary">ª</span>BLe
+    </span>
   );
 }
 
-/* ───────────── Header ───────────── */
+/* ---------- Nav ---------- */
 
-function Header() {
+function Nav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <a href="#" className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <Boxes className="h-4 w-4" />
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight">
-            Tiendas<span className="text-accent">.</span>
-          </span>
-        </a>
-        <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-          <a href="#catalogo" className="hover:text-foreground">Plantillas</a>
-          <a href="#como" className="hover:text-foreground">Cómo funciona</a>
-          <a href="#garantia" className="hover:text-foreground">Garantía</a>
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <Logo />
+        <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
+          <a href="#como-funciona" className="hover:text-foreground">Cómo funciona</a>
+          <a href="#para-quien" className="hover:text-foreground">Para quién</a>
+          <a href="#ia" className="hover:text-foreground">IA</a>
           <a href="#precios" className="hover:text-foreground">Precios</a>
+          <a href="#faq" className="hover:text-foreground">FAQ</a>
         </nav>
         <div className="flex items-center gap-2">
-          <button className="hidden text-sm font-medium text-muted-foreground hover:text-foreground sm:block">
-            Entrar
-          </button>
-          <a
-            href="#catalogo"
-            className="shine-on-hover inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-cta)] transition-transform hover:-translate-y-0.5"
-          >
-            Empezar gratis
-            <ArrowRight className="h-4 w-4" />
-          </a>
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+            <a href="#cta">Entrar</a>
+          </Button>
+          <Button asChild size="sm" className="shine-on-hover">
+            <a href="#cta">
+              Crear mi tienda <ArrowRight className="ml-1" />
+            </a>
+          </Button>
         </div>
       </div>
     </header>
   );
 }
 
-/* ───────────── Hero ───────────── */
+/* ---------- Hero ---------- */
 
 function Hero() {
   return (
     <section className="hero-surface relative overflow-hidden">
-      <div className="grid-noise absolute inset-0 opacity-60" aria-hidden />
-      <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-20 sm:px-6 lg:px-8 lg:pt-24 lg:pb-28">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-7">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary-soft px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-              <Sparkles className="h-3.5 w-3.5" />
-              Plantillas con proveedores ya conectados
+      <div className="grid-noise absolute inset-0 opacity-40" aria-hidden />
+      <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-16 pb-20 md:grid-cols-2 md:items-center md:pt-24 md:pb-28">
+        <div>
+          <Badge className="mb-5 bg-primary-soft text-primary border-0 font-medium">
+            <Sparkles className="mr-1 size-3" /> Franchise-as-a-Service
+          </Badge>
+          <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
+            Tu tienda online lista en{" "}
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              10 minutos
             </span>
-            <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-              La tienda <span className="relative inline-block">
-                <span className="relative z-10">de tiendas</span>
-                <span className="absolute bottom-1 left-0 right-0 -z-0 h-3 bg-accent/70" aria-hidden />
-              </span>{" "}
-              listas para vender.
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              Elige una plantilla por tipo de negocio. Los productos, pagos y
-              envíos vienen pre-conectados. Edita los bloques, publica tu marca
-              y empieza a vender — sin código, sin sorpresas.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a
-                href="#catalogo"
-                className="shine-on-hover inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-cta)] transition-transform hover:-translate-y-0.5"
-              >
-                Ver plantillas
-                <ArrowRight className="h-4 w-4" />
+            .
+          </h1>
+          <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+            No diseñas una tienda. Eliges un <strong className="text-foreground">Pack de Negocio</strong> ya
+            validado — con proveedores, productos, pagos y envíos incluidos — y empiezas a vender desde el
+            minuto 1. Como un autoMac, pero de tiendas online.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Button asChild size="lg" className="shine-on-hover shadow-cta">
+              <a href="#cta">
+                Crear mi tienda <ArrowRight className="ml-1" />
               </a>
-              <a
-                href="#como"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3.5 text-sm font-semibold text-foreground hover:border-primary/40"
-              >
-                Cómo funciona
-              </a>
-            </div>
-            <dl className="mt-10 grid max-w-lg grid-cols-3 gap-6 border-t border-border pt-6">
-              <Stat k="12k+" v="Tiendas activas" />
-              <Stat k="48" v="Proveedores" />
-              <Stat k="99.9%" v="Uptime" />
-            </dl>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a href="#como-funciona">Ver cómo funciona</a>
+            </Button>
           </div>
+          <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+            {[
+              "Sin saber programar",
+              "Sin buscar proveedores",
+              "Pagos y envíos incluidos",
+              "IA que vende por ti",
+            ].map((f) => (
+              <li key={f} className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-primary" /> {f}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-          <div className="lg:col-span-5">
-            <HeroPreview />
+        <HeroMock />
+      </div>
+    </section>
+  );
+}
+
+function HeroMock() {
+  const steps = [
+    { icon: Boxes, label: "Rubro", value: "Ropa Deportiva" },
+    { icon: Package, label: "Kit", value: "Yoga Básico" },
+    { icon: Palette, label: "Fachada", value: "Skin · Aurora" },
+    { icon: CreditCard, label: "Pagos", value: "Stripe · DHL" },
+  ];
+  return (
+    <div className="relative">
+      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/20 to-accent/20 blur-2xl" />
+      <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-pop">
+        <div className="flex items-center justify-between border-b border-border/60 pb-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="size-2.5 rounded-full bg-destructive/70" />
+            <span className="size-2.5 rounded-full bg-accent" />
+            <span className="size-2.5 rounded-full bg-success" />
+            <span className="ml-2 font-mono">tutienda.datable.com.mx</span>
           </div>
+          <Badge variant="secondary" className="text-[10px]">EN VIVO</Badge>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {steps.map((s, i) => (
+            <div
+              key={s.label}
+              className="rounded-xl border border-border/60 bg-background/60 p-4"
+            >
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <span className="grid size-5 place-items-center rounded-md bg-primary text-[10px] font-bold text-primary-foreground">
+                  {i + 1}
+                </span>
+                {s.label}
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <s.icon className="size-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">{s.value}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 flex items-center justify-between rounded-xl bg-primary p-4 text-primary-foreground">
+          <div>
+            <div className="text-[11px] uppercase tracking-wider opacity-80">Tu tienda</div>
+            <div className="font-display text-base font-bold">¡Lista en 1:42 min!</div>
+          </div>
+          <Rocket className="size-6" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Cómo funciona — 4 ventanillas ---------- */
+
+const VENTANILLAS = [
+  {
+    n: 1,
+    icon: Boxes,
+    title: "¿Qué vas a vender?",
+    sub: "El rubro",
+    desc: "Elige entre 10 macro-rubros. Nuestra IA cruza tendencias y márgenes promedio para sugerirte el camino.",
+    chips: ["Moda", "Belleza", "Comida", "Deportiva", "Hogar"],
+  },
+  {
+    n: 2,
+    icon: Package,
+    title: "Elige tu combo",
+    sub: "Kit de lanzamiento",
+    desc: "Productos pre-negociados con proveedores reales. Tú ajustas precio y subes una foto — la IA mejora el resto.",
+    chips: ["10 productos", "3 proveedores", "Margen sugerido"],
+  },
+  {
+    n: 3,
+    icon: Palette,
+    title: "¿Cómo te ves?",
+    sub: "Fachada y marca",
+    desc: "Sube tu logo: lo vectorizamos y generamos tu paleta. Eliges una de 3 pieles y ya tienes identidad.",
+    chips: ["3 templates", "Logo auto", "Paleta IA"],
+  },
+  {
+    n: 4,
+    icon: CreditCard,
+    title: "¿Cómo cobras y envías?",
+    sub: "Pagos y logística",
+    desc: "Stripe o Mercado Pago con una sola pregunta. Envíos DHL y Correos de México con un check.",
+    chips: ["Stripe", "MercadoPago", "DHL", "Recoge en tienda"],
+  },
+];
+
+function ComoFunciona() {
+  return (
+    <section id="como-funciona" className="border-t border-border/60 bg-card/40">
+      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
+        <SectionHeader
+          eyebrow="Cómo funciona"
+          title="4 ventanillas. 10 minutos. Tu tienda lista."
+          desc="Un flujo guiado tipo autoMac. Cero menús abrumadores, cero decisiones técnicas."
+        />
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {VENTANILLAS.map((v) => (
+            <div
+              key={v.n}
+              className="group relative rounded-2xl border border-border/60 bg-background p-6 transition-all hover:shadow-pop hover:-translate-y-1"
+            >
+              <div className="flex items-center justify-between">
+                <span className="grid size-9 place-items-center rounded-xl bg-primary font-display text-sm font-bold text-primary-foreground">
+                  {v.n}
+                </span>
+                <v.icon className="size-5 text-primary opacity-70 transition-opacity group-hover:opacity-100" />
+              </div>
+              <div className="mt-5">
+                <div className="text-xs font-medium uppercase tracking-wider text-primary">{v.sub}</div>
+                <h3 className="mt-1 font-display text-lg font-bold text-foreground">{v.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{v.desc}</p>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {v.chips.map((c) => (
+                  <span
+                    key={c}
+                    className="rounded-full bg-primary-soft px-2.5 py-0.5 text-[11px] font-medium text-primary"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function Stat({ k, v }: { k: string; v: string }) {
+/* ---------- Para quién ---------- */
+
+function ParaQuien() {
+  const groups = [
+    {
+      icon: Rocket,
+      title: "Emprendedores sin capital",
+      items: [
+        "Te estás quedando sin trabajo y necesitas un ingreso ya.",
+        "Siempre quisiste emprender pero no sabes por dónde empezar.",
+        "No tienes para pagar diseñadores ni programadores.",
+        "Quieres un ingreso extra desde casa.",
+      ],
+    },
+    {
+      icon: Store,
+      title: "Artesanos y productores",
+      items: [
+        "Haces bolsas, joyería, café, comida — pero no sabes nada digital.",
+        "Tienes producto y logística, pero no tienes canal online.",
+        "Quieres que otros vendan tu producto en sus tiendas.",
+        "Necesitas envíos resueltos sin contratar paqueterías.",
+      ],
+    },
+  ];
   return (
-    <div>
-      <dt className="font-display text-2xl font-bold text-foreground">{k}</dt>
-      <dd className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{v}</dd>
-    </div>
+    <section id="para-quien" className="border-t border-border/60">
+      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
+        <SectionHeader
+          eyebrow="Para quién es"
+          title="Para ti, que quieres vender — no estudiar tecnología."
+          desc="DªTªBLe es un ecosistema híbrido: una mitad para quien quiere una tienda, la otra para quien tiene producto."
+        />
+        <div className="mt-12 grid gap-6 md:grid-cols-2">
+          {groups.map((g) => (
+            <div
+              key={g.title}
+              className="rounded-2xl border border-border/60 bg-card p-7 shadow-soft"
+            >
+              <div className="flex items-center gap-3">
+                <span className="grid size-11 place-items-center rounded-xl bg-primary-soft">
+                  <g.icon className="size-5 text-primary" />
+                </span>
+                <h3 className="font-display text-xl font-bold text-foreground">{g.title}</h3>
+              </div>
+              <ul className="mt-5 space-y-3">
+                {g.items.map((it) => (
+                  <li key={it} className="flex gap-3 text-sm text-foreground">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span>{it}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
-function HeroPreview() {
+/* ---------- Momento McDonald's ---------- */
+
+function MomentoMcDonalds() {
+  const beats = [
+    {
+      icon: Layers,
+      title: "El Orquestador",
+      desc: "Se levanta una instancia aislada de tu tienda en nuestra nube.",
+    },
+    {
+      icon: Wand2,
+      title: "El Cargador IA",
+      desc: "Nuestros bots traen stock, imágenes y descripciones de tus proveedores.",
+    },
+    {
+      icon: Settings2,
+      title: "El Configurador",
+      desc: "Activamos tu pasarela de pago y conectamos las APIs de envíos.",
+    },
+    {
+      icon: Rocket,
+      title: "El Builder",
+      desc: "Compilamos el front-end con tu skin, tu logo y tu paleta.",
+    },
+  ];
   return (
-    <div className="relative">
-      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-primary/5 blur-2xl" aria-hidden />
-      <div className="relative rounded-3xl border border-border bg-card p-4 shadow-[var(--shadow-pop)]">
-        <div className="flex items-center gap-1.5 pb-3">
-          <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-accent" />
-          <span className="h-2.5 w-2.5 rounded-full bg-success/80" />
-          <span className="ml-2 truncate text-[11px] text-muted-foreground">
-            tutienda.tiendas.app
-          </span>
-        </div>
-        <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[oklch(0.32_0.18_268)] p-5 text-primary-foreground">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-primary-foreground/70">
-                Plantilla activa
-              </p>
-              <p className="mt-1 font-display text-xl font-bold">Boutique Moda MX</p>
-            </div>
-            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
-              Live
-            </span>
+    <section className="border-t border-border/60 bg-secondary text-secondary-foreground">
+      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
+        <div className="max-w-2xl">
+          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            El momento McDonald's
           </div>
-          <div className="mt-5 grid grid-cols-3 gap-2">
-            {["Hero", "Catálogo", "Carrito", "Checkout", "Envíos", "Pagos"].map((b) => (
-              <div
-                key={b}
-                className="rounded-lg bg-white/10 px-2 py-3 text-center text-[11px] font-medium backdrop-blur"
-              >
-                <CheckCircle2 className="mx-auto mb-1 h-3.5 w-3.5 text-accent" />
-                {b}
+          <h2 className="mt-3 font-display text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">
+            Pagas. Esperas 2 minutos. Recibes tu tienda.
+          </h2>
+          <p className="mt-4 text-base opacity-80">
+            Cuando das clic en <strong>¡Quiero mi tienda!</strong>, esto pasa en tiempo real — sin que muevas
+            un dedo:
+          </p>
+        </div>
+
+        <ol className="mt-12 grid gap-6 md:grid-cols-4">
+          {beats.map((b, i) => (
+            <li key={b.title} className="relative">
+              <div className="rounded-2xl bg-background/5 p-5 ring-1 ring-white/10">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-9 place-items-center rounded-lg bg-primary font-display text-sm font-bold text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  <b.icon className="size-5 text-accent" />
+                </div>
+                <h3 className="mt-4 font-display text-lg font-bold">{b.title}</h3>
+                <p className="mt-1.5 text-sm opacity-75">{b.desc}</p>
               </div>
+              {i < beats.length - 1 && (
+                <ChevronRight className="absolute top-1/2 -right-3 hidden size-5 -translate-y-1/2 text-accent md:block" />
+              )}
+            </li>
+          ))}
+        </ol>
+
+        <div className="mt-12 rounded-2xl border border-white/10 bg-background/5 p-6 md:flex md:items-center md:justify-between">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-accent">Recibes en tu correo</div>
+            <p className="mt-2 font-display text-lg font-bold">
+              tutienda.datable.com.mx + Panel de admin con 3 botones gigantes.
+            </p>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2 md:mt-0">
+            {["Vender", "Ver pedidos", "Editar"].map((b) => (
+              <span
+                key={b}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+              >
+                {b}
+              </span>
             ))}
           </div>
         </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <MiniCard icon={<Truck className="h-4 w-4" />} label="Envío" value="DHL · 99Minutos" />
-          <MiniCard icon={<Zap className="h-4 w-4" />} label="Proveedor" value="AliExpress + CJ" />
-        </div>
-      </div>
-
-      <div className="absolute -right-3 -top-3 hidden rotate-3 rounded-xl border border-border bg-accent px-3 py-2 text-xs font-bold text-accent-foreground shadow-[var(--shadow-cta)] sm:block">
-        ✓ Bloques verificados
-      </div>
-    </div>
-  );
-}
-
-function MiniCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-background p-3">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <span className="text-[10px] uppercase tracking-wider">{label}</span>
-      </div>
-      <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
-    </div>
-  );
-}
-
-/* ───────────── Trust strip ───────────── */
-
-function TrustStrip() {
-  const partners = [
-    "Stripe", "AliExpress", "DHL", "Rappi", "Printful", "FedEx", "Uber Eats", "Shopify Sync",
-  ];
-  return (
-    <section className="border-y border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">
-            Integraciones nativas
-          </span>
-          {partners.map((p) => (
-            <span
-              key={p}
-              className="font-display text-sm font-bold tracking-tight text-foreground/70"
-            >
-              {p}
-            </span>
-          ))}
-        </div>
       </div>
     </section>
   );
 }
 
-/* ───────────── Catalog ───────────── */
+/* ---------- IA Fantasma ---------- */
 
-function CatalogHeader({
-  query,
-  setQuery,
-  active,
-  setActive,
-  count,
-}: {
-  query: string;
-  setQuery: (v: string) => void;
-  active: Category;
-  setActive: (c: Category) => void;
-  count: number;
-}) {
-  return (
-    <div className="pt-20">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Catálogo
-          </p>
-          <h2 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Elige tu tipo de negocio
-          </h2>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            {count} plantillas listas con proveedores y envíos ya configurados.
-          </p>
-        </div>
-        <div className="relative w-full sm:w-72">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar plantillas…"
-            className="w-full rounded-full border border-border bg-card py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
-          />
-        </div>
-      </div>
-
-      <div className="mt-6 flex flex-wrap gap-2">
-        {CATEGORIES.map((c) => {
-          const isActive = c === active;
-          return (
-            <button
-              key={c}
-              onClick={() => setActive(c)}
-              className={
-                "rounded-full border px-4 py-2 text-sm font-medium transition-all " +
-                (isActive
-                  ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-soft)]"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground")
-              }
-            >
-              {c}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function TemplateCard({ t }: { t: Template }) {
-  return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)] transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-[var(--shadow-pop)]">
-      {/* Preview */}
-      <div className={`relative h-44 bg-gradient-to-br ${t.gradient} p-5`}>
-        <div className="flex items-start justify-between">
-          <span className="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur">
-            {t.category}
-          </span>
-          {t.popular && (
-            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
-              Popular
-            </span>
-          )}
-        </div>
-        <div className="absolute bottom-4 left-5 flex items-end gap-3">
-          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-white/15 text-3xl backdrop-blur">
-            {t.emoji}
-          </span>
-          <div className="pb-1 text-white">
-            <p className="font-display text-lg font-bold leading-tight">{t.name}</p>
-            <p className="text-xs text-white/80">{t.installs} instalaciones</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        <p className="text-sm text-muted-foreground">{t.tagline}</p>
-
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-semibold text-success">
-            <BadgeCheck className="h-3.5 w-3.5" />
-            Bloques verificados
-          </span>
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <Star className="h-3.5 w-3.5 fill-accent text-accent" />
-            {t.rating}
-          </span>
-        </div>
-
-        <ul className="space-y-1.5 text-xs text-muted-foreground">
-          <li className="flex items-start gap-2">
-            <Zap className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-            <span>
-              <span className="font-semibold text-foreground">Proveedores:</span>{" "}
-              {t.suppliers.join(" · ")}
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Truck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-            <span>
-              <span className="font-semibold text-foreground">Logística:</span>{" "}
-              {t.shipping}
-            </span>
-          </li>
-        </ul>
-
-        <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Desde
-            </p>
-            <p className="font-display text-base font-bold">{t.price}</p>
-          </div>
-          <button className="shine-on-hover inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5">
-            Usar plantilla
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-/* ───────────── How it works ───────────── */
-
-function HowItWorks() {
-  const steps = [
+function IAFantasma() {
+  const ias = [
     {
-      icon: <Layers className="h-5 w-5" />,
-      title: "Elige tu plantilla",
-      body:
-        "Filtra por tipo de negocio. Cada plantilla ya tiene proveedores, productos demo y envíos conectados.",
+      icon: LineChart,
+      title: "Stock predictivo",
+      desc: "Te avisa qué producto se va a acabar en 3 días y le pide más a tu proveedor por ti.",
     },
     {
-      icon: <Palette className="h-5 w-5" />,
-      title: "Personaliza los bloques",
-      body:
-        "Edita logo, colores, textos y catálogo desde un editor visual. Lo que ves es lo que se publica.",
+      icon: Zap,
+      title: "Precios dinámicos",
+      desc: "Vigila a la competencia y te sugiere bajar precio, subirlo o activar envío gratis.",
     },
     {
-      icon: <Rocket className="h-5 w-5" />,
-      title: "Publica y vende",
-      body:
-        "Conecta tu dominio o usa uno gratis. Pagos, inventario y envíos funcionan desde el día uno.",
+      icon: MessageCircle,
+      title: "Atención al cliente",
+      desc: "Chatbot que responde el 80% de las dudas: '¿dónde está mi pedido?', cambios, devoluciones.",
     },
   ];
   return (
-    <section id="como" className="border-t border-border bg-secondary/40">
-      <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Cómo funciona
-          </p>
-          <h2 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            De plantilla a tienda real en 3 pasos
-          </h2>
-        </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {steps.map((s, i) => (
+    <section id="ia" className="border-t border-border/60">
+      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
+        <SectionHeader
+          eyebrow="IA fantasma"
+          title="Tu gerente de tienda — sin nómina."
+          desc="DªTªBLe no es solo software. En segundo plano, una IA toma decisiones por ti las 24 horas."
+        />
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {ias.map((it) => (
             <div
-              key={s.title}
-              className="relative rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]"
+              key={it.title}
+              className="group rounded-2xl border border-border/60 bg-card p-7 transition-all hover:shadow-pop hover:-translate-y-1"
             >
               <div className="flex items-center justify-between">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground">
-                  {s.icon}
+                <span className="grid size-11 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent">
+                  <it.icon className="size-5 text-primary-foreground" />
                 </span>
-                <span className="font-display text-5xl font-extrabold text-primary/10">
-                  0{i + 1}
-                </span>
+                <Brain className="size-4 text-muted-foreground opacity-50 group-hover:opacity-100" />
               </div>
-              <h3 className="mt-5 font-display text-lg font-bold">{s.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+              <h3 className="mt-5 font-display text-lg font-bold text-foreground">{it.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{it.desc}</p>
             </div>
           ))}
         </div>
@@ -636,55 +470,170 @@ function HowItWorks() {
   );
 }
 
-/* ───────────── Guarantee ───────────── */
+/* ---------- Comparativa ---------- */
 
-function Guarantee() {
-  const blocks = [
-    "Catálogo de productos",
-    "Carrito y checkout",
-    "Pagos (Stripe / OXXO / SPEI)",
-    "Envíos y tracking",
-    "Cupones y descuentos",
-    "Email transaccional",
-    "Panel de pedidos",
-    "Analítica de ventas",
+function Comparativa() {
+  const rows = [
+    ["Flujo guiado tipo autoMac", true, false, false],
+    ["Configuración en menos de 10 minutos", true, false, false],
+    ["Sin conocimientos técnicos", true, false, false],
+    ["Proveedores ya integrados", true, false, false],
+    ["Logística ya negociada", true, false, false],
+    ["Pagos listos al instante", true, "partial", false],
+    ["Panel admin con 3 botones", true, false, false],
+    ["IA que decide por ti", true, false, false],
+  ] as const;
+  return (
+    <section className="border-t border-border/60 bg-card/40">
+      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
+        <SectionHeader
+          eyebrow="Comparativa"
+          title="DªTªBLe vs. todo lo demás."
+          desc="Otras herramientas te dan piezas. Nosotros te entregamos el negocio terminado."
+        />
+        <div className="mt-10 overflow-x-auto rounded-2xl border border-border/60 bg-card">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-border/60 text-left">
+                <th className="px-5 py-4 font-semibold text-foreground">Característica</th>
+                <th className="px-5 py-4 text-center font-display font-bold text-primary">DªTªBLe</th>
+                <th className="px-5 py-4 text-center font-medium text-muted-foreground">Shopify / Wix</th>
+                <th className="px-5 py-4 text-center font-medium text-muted-foreground">Tienda tradicional</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(([label, a, b, c]) => (
+                <tr key={label as string} className="border-b border-border/40 last:border-0">
+                  <td className="px-5 py-4 text-foreground">{label}</td>
+                  <Cell v={a} />
+                  <Cell v={b} />
+                  <Cell v={c} />
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Cell({ v }: { v: boolean | "partial" }) {
+  return (
+    <td className="px-5 py-4 text-center">
+      {v === true ? (
+        <Check className="mx-auto size-5 text-primary" />
+      ) : v === "partial" ? (
+        <span className="text-xs font-medium text-accent">Parcial</span>
+      ) : (
+        <X className="mx-auto size-4 text-muted-foreground opacity-50" />
+      )}
+    </td>
+  );
+}
+
+/* ---------- Precios ---------- */
+
+function Precios() {
+  const plans = [
+    {
+      name: "Básico",
+      price: "$299",
+      commission: "1.5%",
+      desc: "Para empezar a vender hoy.",
+      features: [
+        "Tienda con subdominio",
+        "Hasta 50 productos",
+        "Stripe + MercadoPago",
+        "Envíos DHL estándar",
+        "Panel admin completo",
+        "Chatbot IA básico",
+      ],
+      cta: "Empezar gratis 7 días",
+      featured: false,
+    },
+    {
+      name: "Pro",
+      price: "$499",
+      commission: "0.5%",
+      desc: "Para vender en serio.",
+      features: [
+        "Todo lo del Básico",
+        "Productos ilimitados",
+        "Stock predictivo",
+        "Precios dinámicos",
+        "Dominio propio",
+        "Soporte prioritario",
+      ],
+      cta: "Quiero Pro",
+      featured: true,
+    },
   ];
   return (
-    <section id="garantia" className="relative overflow-hidden bg-primary text-primary-foreground">
-      <div className="grid-noise absolute inset-0 opacity-30" aria-hidden />
-      <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-24 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
-        <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Garantía Tiendas
-          </span>
-          <h2 className="mt-5 font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-            Cada bloque <span className="text-accent">funciona</span> antes de que lo toques.
-          </h2>
-          <p className="mt-5 max-w-lg text-primary-foreground/80">
-            Probamos cada plantilla de punta a punta: del catálogo al pago, del envío
-            al correo de confirmación. Si un bloque falla, lo reemplazamos sin costo.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#catalogo"
-              className="shine-on-hover inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-accent-foreground shadow-[var(--shadow-cta)] transition-transform hover:-translate-y-0.5"
-            >
-              Elegir plantilla
-              <ArrowRight className="h-4 w-4" />
-            </a>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {blocks.map((b) => (
+    <section id="precios" className="border-t border-border/60">
+      <div className="mx-auto max-w-5xl px-4 py-20 md:py-28">
+        <SectionHeader
+          eyebrow="Precios"
+          title="Paga lo justo. Vende desde el día 1."
+          desc="Suscripción mensual + una comisión mínima sobre lo que vendes. Sin cobros ocultos."
+        />
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          {plans.map((p) => (
             <div
-              key={b}
-              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur"
+              key={p.name}
+              className={
+                "relative rounded-3xl border p-7 transition-all " +
+                (p.featured
+                  ? "border-primary bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-pop"
+                  : "border-border/60 bg-card")
+              }
             >
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
-                <CheckCircle2 className="h-4 w-4" />
-              </span>
-              <p className="text-sm font-medium">{b}</p>
+              {p.featured && (
+                <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent-foreground">
+                  Más elegido
+                </span>
+              )}
+              <div className="flex items-baseline justify-between">
+                <h3 className="font-display text-2xl font-bold">{p.name}</h3>
+                <span
+                  className={
+                    "text-xs font-medium " +
+                    (p.featured ? "opacity-80" : "text-muted-foreground")
+                  }
+                >
+                  {p.commission} por venta
+                </span>
+              </div>
+              <p className={"mt-1 text-sm " + (p.featured ? "opacity-80" : "text-muted-foreground")}>
+                {p.desc}
+              </p>
+              <div className="mt-5 flex items-baseline gap-1">
+                <span className="font-display text-5xl font-extrabold">{p.price}</span>
+                <span className={p.featured ? "opacity-80" : "text-muted-foreground"}>
+                  MXN / mes
+                </span>
+              </div>
+              <ul className="mt-6 space-y-2.5 text-sm">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check
+                      className={
+                        "mt-0.5 size-4 shrink-0 " +
+                        (p.featured ? "text-accent" : "text-primary")
+                      }
+                    />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                asChild
+                size="lg"
+                variant={p.featured ? "secondary" : "default"}
+                className="mt-7 w-full"
+              >
+                <a href="#cta">{p.cta}</a>
+              </Button>
             </div>
           ))}
         </div>
@@ -693,55 +642,282 @@ function Guarantee() {
   );
 }
 
-/* ───────────── Footer ───────────── */
+/* ---------- Marketplace de proveedores ---------- */
+
+function Marketplace() {
+  return (
+    <section className="border-t border-border/60 bg-card/40">
+      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
+        <div className="grid items-center gap-12 md:grid-cols-2">
+          <div>
+            <Badge className="bg-accent-soft text-accent-foreground border-0">
+              <Truck className="mr-1 size-3" /> Ecosistema híbrido
+            </Badge>
+            <h2 className="mt-4 font-display text-3xl font-extrabold leading-tight text-foreground sm:text-4xl">
+              ¿Tienes producto pero no canal? Súbelo a nuestro ecosistema.
+            </h2>
+            <p className="mt-4 text-base text-muted-foreground">
+              Si haces bolsas artesanales en Vallarta, café en Oaxaca o joyería en CDMX — y ya tienes
+              logística cubierta — sube tu producto a DªTªBLe. Otros usuarios lo van a montar en sus tiendas
+              y tú solo te encargas de producir.
+            </p>
+            <ul className="mt-6 space-y-3 text-sm text-foreground">
+              {[
+                "Sin abrir tu propia tienda",
+                "Split de pagos automático",
+                "Envíos integrados con DHL",
+                "Tú produces. Otros venden.",
+              ].map((it) => (
+                <li key={it} className="flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-primary" /> {it}
+                </li>
+              ))}
+            </ul>
+            <Button asChild size="lg" variant="outline" className="mt-7">
+              <a href="#cta">
+                Quiero ser proveedor <ArrowRight className="ml-1" />
+              </a>
+            </Button>
+          </div>
+
+          <div className="relative">
+            <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-tr from-accent/20 to-primary/20 blur-2xl" />
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { name: "Bolsas Mar Azul", city: "Vallarta", tag: "Artesanal" },
+                { name: "Café Sierra", city: "Oaxaca", tag: "Gourmet" },
+                { name: "Joyas Luna", city: "CDMX", tag: "Plata 925" },
+                { name: "Mezcal Don T.", city: "Oaxaca", tag: "Espadín" },
+              ].map((p, i) => (
+                <div
+                  key={p.name}
+                  className={
+                    "rounded-2xl border border-border/60 bg-card p-5 shadow-soft " +
+                    (i % 2 === 1 ? "translate-y-4" : "")
+                  }
+                >
+                  <div className="grid h-20 place-items-center rounded-lg bg-gradient-to-br from-primary-soft to-accent-soft">
+                    <ShoppingBag className="size-7 text-primary" />
+                  </div>
+                  <div className="mt-3 text-sm font-semibold text-foreground">{p.name}</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">{p.city} · {p.tag}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- FAQ ---------- */
+
+const FAQS = [
+  {
+    q: "¿En cuánto tiempo tengo mi tienda?",
+    a: "Menos de 10 minutos en completar el flujo de 4 ventanillas, y menos de 2 minutos para que la generemos. Te llega por correo cuando esté lista.",
+  },
+  {
+    q: "¿Necesito saber programar o diseñar?",
+    a: "No. Eliges entre opciones. Nosotros nos encargamos de proveedores, pagos, envíos, diseño y la inteligencia detrás.",
+  },
+  {
+    q: "¿Qué pasa con los productos? ¿Yo los tengo?",
+    a: "No. Trabajamos con proveedores de Print-on-Demand (Printify, Printful, Gelato) y productores locales. Cuando alguien compra, ellos producen y envían.",
+  },
+  {
+    q: "¿Cuánto se queda DªTªBLe de cada venta?",
+    a: "1.5% en el plan Básico, 0.5% en Pro. El resto del margen es tuyo. Sin letras chiquitas.",
+  },
+  {
+    q: "¿Puedo cancelar cuando quiera?",
+    a: "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver.",
+  },
+  {
+    q: "Soy artesano y solo quiero que vendan mi producto, ¿puedo?",
+    a: "Sí. Tenemos un área específica para productores que solo aportan producto, sin abrir tienda propia.",
+  },
+];
+
+function FAQ() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section id="faq" className="border-t border-border/60">
+      <div className="mx-auto max-w-3xl px-4 py-20 md:py-28">
+        <SectionHeader
+          eyebrow="Preguntas frecuentes"
+          title="Lo que todos preguntan."
+          desc=""
+        />
+        <div className="mt-10 divide-y divide-border/60 rounded-2xl border border-border/60 bg-card">
+          {FAQS.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <button
+                key={f.q}
+                onClick={() => setOpen(isOpen ? null : i)}
+                className="block w-full px-5 py-5 text-left transition-colors hover:bg-primary-soft/40"
+                aria-expanded={isOpen}
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <span className="font-display text-base font-semibold text-foreground">{f.q}</span>
+                  <ChevronRight
+                    className={
+                      "size-4 shrink-0 text-primary transition-transform " +
+                      (isOpen ? "rotate-90" : "")
+                    }
+                  />
+                </div>
+                {isOpen && (
+                  <p className="mt-3 text-sm text-muted-foreground">{f.a}</p>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- CTA final ---------- */
+
+function CTAFinal() {
+  return (
+    <section id="cta" className="relative overflow-hidden border-t border-border/60 bg-primary text-primary-foreground">
+      <div className="grid-noise absolute inset-0 opacity-20" aria-hidden />
+      <div className="relative mx-auto max-w-4xl px-4 py-20 text-center md:py-28">
+        <Sparkles className="mx-auto mb-5 size-7" />
+        <h2 className="font-display text-3xl font-extrabold leading-tight sm:text-5xl">
+          Tu tienda te está esperando.
+        </h2>
+        <p className="mt-4 text-base opacity-90 md:text-lg">
+          10 minutos. 4 ventanillas. Cero excusas para no empezar.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Button asChild size="lg" variant="secondary" className="shine-on-hover">
+            <Link to="/">
+              Crear mi tienda <ArrowRight className="ml-1" />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+          >
+            <a href="#precios">Ver precios</a>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Footer ---------- */
 
 function Footer() {
   return (
-    <footer id="precios" className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-12 md:grid-cols-4">
+    <footer className="border-t border-border/60 bg-card">
+      <div className="mx-auto max-w-6xl px-4 py-12">
+        <div className="grid gap-8 md:grid-cols-4">
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-                <Boxes className="h-4 w-4" />
-              </span>
-              <span className="font-display text-lg font-bold">
-                Tiendas<span className="text-accent">.</span>
-              </span>
-            </div>
-            <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-              El marketplace de plantillas de tienda con proveedores y envíos
-              ya conectados. Empieza gratis, paga cuando vendas.
+            <Logo />
+            <p className="mt-3 max-w-sm text-sm text-muted-foreground">
+              Franchise-as-a-Service. Tu tienda online lista en 10 minutos. Hecho con ♥ en México.
             </p>
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-foreground">
-              Producto
-            </p>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li><a href="#catalogo" className="hover:text-foreground">Plantillas</a></li>
-              <li><a href="#como" className="hover:text-foreground">Cómo funciona</a></li>
-              <li><a href="#garantia" className="hover:text-foreground">Garantía</a></li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-foreground">
-              Compañía
-            </p>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground">Sobre nosotros</a></li>
-              <li><a href="#" className="hover:text-foreground">Proveedores</a></li>
-              <li><a href="#" className="hover:text-foreground">Contacto</a></li>
-            </ul>
-          </div>
+          <FooterCol
+            title="Producto"
+            links={[
+              { label: "Cómo funciona", href: "#como-funciona" },
+              { label: "Precios", href: "#precios" },
+              { label: "IA", href: "#ia" },
+              { label: "Proveedores", href: "#para-quien" },
+            ]}
+          />
+          <FooterCol
+            title="Empresa"
+            links={[
+              { label: "FAQ", href: "#faq" },
+              { label: "Términos", href: "#" },
+              { label: "Privacidad", href: "#" },
+              { label: "Contacto", href: "#" },
+            ]}
+          />
         </div>
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} Tiendas. Todos los derechos reservados.</p>
-          <p className="flex items-center gap-1">
-            Hecho con <span className="text-accent">★</span> para emprendedores.
-          </p>
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-xs text-muted-foreground md:flex-row">
+          <span>© {new Date().getFullYear()} DªTªBLe. Todos los derechos reservados.</span>
+          <span>Puerto Vallarta · CDMX · Oaxaca</span>
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterCol({
+  title,
+  links,
+}: {
+  title: string;
+  links: { label: string; href: string }[];
+}) {
+  return (
+    <div>
+      <h4 className="font-display text-sm font-bold text-foreground">{title}</h4>
+      <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+        {links.map((l) => (
+          <li key={l.label}>
+            <a href={l.href} className="hover:text-foreground">{l.label}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ---------- Shared ---------- */
+
+function SectionHeader({
+  eyebrow,
+  title,
+  desc,
+}: {
+  eyebrow: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{eyebrow}</div>
+      <h2 className="mt-3 font-display text-3xl font-extrabold leading-tight text-foreground sm:text-4xl md:text-5xl">
+        {title}
+      </h2>
+      {desc && <p className="mt-4 text-base text-muted-foreground">{desc}</p>}
+    </div>
+  );
+}
+
+/* ---------- Page ---------- */
+
+function Landing() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Nav />
+      <main>
+        <Hero />
+        <ComoFunciona />
+        <ParaQuien />
+        <MomentoMcDonalds />
+        <IAFantasma />
+        <Comparativa />
+        <Precios />
+        <Marketplace />
+        <FAQ />
+        <CTAFinal />
+      </main>
+      <Footer />
+    </div>
   );
 }
