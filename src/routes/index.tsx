@@ -849,7 +849,7 @@ function Footer() {
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-xs text-muted-foreground md:flex-row">
           <span>© {new Date().getFullYear()} DªTªBLe. Todos los derechos reservados.</span>
-          <span>Puerto Vallarta · CDMX · Oaxaca</span>
+          <span>Hecho en México</span>
         </div>
       </div>
     </footer>
