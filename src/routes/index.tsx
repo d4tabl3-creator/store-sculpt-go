@@ -111,7 +111,7 @@ function Hero() {
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
             No diseñas una tienda. Eliges un <strong className="text-foreground">Pack de Negocio</strong> ya
             validado — con proveedores, productos, pagos y envíos incluidos — y empiezas a vender desde el
-            minuto 1. Como un autoMac, pero de tiendas online.
+            minuto 1. Tú pides por ventanilla, nosotros te entregamos el negocio terminado.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
