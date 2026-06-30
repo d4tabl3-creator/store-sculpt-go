@@ -148,7 +148,7 @@ function HeroMock() {
     { icon: Boxes, label: "Rubro", value: "Ropa Deportiva" },
     { icon: Package, label: "Kit", value: "Yoga Básico" },
     { icon: Palette, label: "Fachada", value: "Skin · Aurora" },
-    { icon: CreditCard, label: "Pagos", value: "Stripe · DHL" },
+    { icon: CreditCard, label: "Pagos", value: "Pago + Envío" },
   ];
   return (
     <div className="relative">
