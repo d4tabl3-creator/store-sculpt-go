@@ -226,8 +226,8 @@ const VENTANILLAS = [
     icon: CreditCard,
     title: "¿Cómo cobras y envías?",
     sub: "Pagos y logística",
-    desc: "Stripe o Mercado Pago con una sola pregunta. Envíos DHL y Correos de México con un check.",
-    chips: ["Stripe", "MercadoPago", "DHL", "Recoge en tienda"],
+    desc: "Pasarela de pago y envíos resueltos con una sola pregunta. Tú eliges, nosotros conectamos todo por debajo.",
+    chips: ["Tarjeta", "Transferencia", "Paquetería", "Recoge en tienda"],
   },
 ];
 
