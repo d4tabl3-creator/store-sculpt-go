@@ -544,8 +544,8 @@ function Precios() {
       features: [
         "Tienda con subdominio",
         "Hasta 50 productos",
-        "Stripe + MercadoPago",
-        "Envíos DHL estándar",
+        "Pasarela de pago integrada",
+        "Envíos con paquetería estándar",
         "Panel admin completo",
         "Chatbot IA básico",
       ],
