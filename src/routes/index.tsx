@@ -238,7 +238,7 @@ function ComoFunciona() {
         <SectionHeader
           eyebrow="Cómo funciona"
           title="4 ventanillas. 10 minutos. Tu tienda lista."
-          desc="Un flujo guiado tipo autoMac. Cero menús abrumadores, cero decisiones técnicas."
+          desc="Un flujo guiado, ventanilla por ventanilla. Cero menús abrumadores, cero decisiones técnicas."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {VENTANILLAS.map((v) => (
