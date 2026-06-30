@@ -33,7 +33,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "DªTªBLe es la plataforma tipo autoMac para crear tu tienda online: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar.",
+          "DªTªBLe arma tu tienda online por ti en 4 pasos: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar.",
       },
       { property: "og:title", content: "DªTªBLe — Franchise-as-a-Service para tu tienda online" },
       {
