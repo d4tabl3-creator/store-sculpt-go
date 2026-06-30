@@ -497,7 +497,7 @@ function Comparativa() {
               <tr className="border-b border-border/60 text-left">
                 <th className="px-5 py-4 font-semibold text-foreground">Característica</th>
                 <th className="px-5 py-4 text-center font-display font-bold text-primary">DªTªBLe</th>
-                <th className="px-5 py-4 text-center font-medium text-muted-foreground">Shopify / Wix</th>
+                <th className="px-5 py-4 text-center font-medium text-muted-foreground">Constructores DIY</th>
                 <th className="px-5 py-4 text-center font-medium text-muted-foreground">Tienda tradicional</th>
               </tr>
             </thead>
