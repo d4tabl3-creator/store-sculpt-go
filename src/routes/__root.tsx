@@ -77,16 +77,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Tiendas — Marketplace de plantillas de tienda online" },
+      { title: "DªTªBLe — Tu tienda online lista en 10 minutos" },
       {
         name: "description",
         content:
-          "Elige una plantilla de tienda lista para vender. Proveedores, logística y bloques verificados — publica tu negocio en minutos.",
+          "Franchise-as-a-Service. Elige rubro, kit de productos, fachada y pagos — recibe tu tienda operativa en menos de 10 minutos.",
       },
-      { property: "og:title", content: "Tiendas — Plantillas de tienda listas para vender" },
+      { property: "og:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
       {
         property: "og:description",
-        content: "Plantillas con proveedores y envíos ya integrados. Edita, publica y empieza a vender.",
+        content: "Proveedores, pagos y envíos incluidos. Sin código. Sin excusas.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
