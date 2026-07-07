@@ -89,6 +89,7 @@ function Storefront() {
 
   return (
     <div className="min-h-screen bg-background" style={accent as React.CSSProperties}>
+      <PaymentTestModeBanner />
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/t/$slug" params={{ slug: store.slug }} className="flex items-center gap-2">
