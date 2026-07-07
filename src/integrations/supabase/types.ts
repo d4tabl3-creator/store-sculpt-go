@@ -47,9 +47,11 @@ export type Database = {
           id: string
           items: Json
           notes: string | null
+          payment_status: string
           shipping_address: string | null
           status: string
           store_id: string
+          stripe_session_id: string | null
           total_cents: number
         }
         Insert: {
@@ -60,9 +62,11 @@ export type Database = {
           id?: string
           items?: Json
           notes?: string | null
+          payment_status?: string
           shipping_address?: string | null
           status?: string
           store_id: string
+          stripe_session_id?: string | null
           total_cents?: number
         }
         Update: {
@@ -73,9 +77,11 @@ export type Database = {
           id?: string
           items?: Json
           notes?: string | null
+          payment_status?: string
           shipping_address?: string | null
           status?: string
           store_id?: string
+          stripe_session_id?: string | null
           total_cents?: number
         }
         Relationships: [
