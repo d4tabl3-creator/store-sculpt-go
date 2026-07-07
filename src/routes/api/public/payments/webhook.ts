@@ -25,7 +25,6 @@ async function handleCheckoutCompleted(session: any) {
     .update({
       payment_status: "paid",
       status: "paid",
-      updated_at: new Date().toISOString(),
     })
     .eq("id", orderId);
 }
@@ -35,7 +34,7 @@ async function handleAsyncPaymentFailed(session: any) {
   if (!orderId) return;
   await getSupabase()
     .from("store_orders")
-    .update({ payment_status: "failed", updated_at: new Date().toISOString() })
+    .update({ payment_status: "failed" })
     .eq("id", orderId);
 }
 
