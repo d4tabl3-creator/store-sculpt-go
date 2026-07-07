@@ -228,7 +228,7 @@ function CheckoutForm({
   const [notes, setNotes] = useState("");
   const [shippingId, setShippingId] = useState(store.shipping_options[0]?.id || "");
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   const shipping = useMemo(
     () => store.shipping_options.find((o) => o.id === shippingId),
@@ -239,34 +239,56 @@ function CheckoutForm({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await supabase.from("store_orders").insert({
-      store_id: store.id,
-      customer_name: name,
-      customer_email: email,
-      customer_phone: phone || null,
-      shipping_address: `${address}${shipping ? ` · ${shipping.label}` : ""}`,
-      items: cart.map((c) => ({ name: c.product.name, qty: c.qty, price_cents: c.product.price_cents })),
-      total_cents: total,
-      notes: notes || null,
-      status: "pending",
-    });
+    const { data, error } = await supabase
+      .from("store_orders")
+      .insert({
+        store_id: store.id,
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone || null,
+        shipping_address: `${address}${shipping ? ` · ${shipping.label}` : ""}`,
+        items: cart.map((c) => ({
+          name: c.product.name,
+          qty: c.qty,
+          price_cents: c.product.price_cents,
+        })),
+        total_cents: total,
+        notes: notes || null,
+        status: "pending",
+        payment_status: "pending",
+      })
+      .select("id")
+      .single();
     setSubmitting(false);
-    if (error) {
-      toast.error("No se pudo enviar el pedido: " + error.message);
+    if (error || !data) {
+      toast.error("No se pudo crear el pedido: " + (error?.message || "error desconocido"));
       return;
     }
-    setSuccess(true);
-    setTimeout(onDone, 2500);
+    setOrderId(data.id);
   }
 
-  if (success) {
+  if (orderId) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center text-center">
-        <div className="grid size-16 place-items-center rounded-full bg-green-100">
-          <Check className="size-8 text-green-600" />
-        </div>
-        <h3 className="mt-4 font-display text-2xl font-bold">¡Pedido recibido!</h3>
-        <p className="mt-2 text-muted-foreground">Te contactaremos a {email} con los detalles.</p>
+      <div className="flex flex-1 flex-col overflow-y-auto py-4">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Total a pagar: <span className="font-bold text-foreground">${(total / 100).toFixed(2)} MXN</span>
+        </p>
+        <StoreEmbeddedCheckout
+          orderId={orderId}
+          storeName={store.name}
+          storeSlug={store.slug}
+          customerEmail={email}
+          items={cart.map((c) => ({
+            name: c.product.name,
+            qty: c.qty,
+            price_cents: c.product.price_cents,
+          }))}
+          shippingLabel={shipping?.label}
+          shippingCents={shipping?.price_cents}
+        />
+        <Button type="button" variant="ghost" className="mt-3" onClick={onCancel}>
+          Cancelar
+        </Button>
       </div>
     );
   }
@@ -303,10 +325,13 @@ function CheckoutForm({
         <Button type="button" variant="outline" onClick={onCancel}>Atrás</Button>
         <Button type="submit" disabled={submitting} style={{ background: store.primary_color }}>
           {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-          Confirmar pedido
+          Ir a pagar
         </Button>
       </div>
-      <p className="mt-2 text-center text-[10px] text-muted-foreground">El pago se coordina con la tienda al recibir el pedido.</p>
+      <p className="mt-2 text-center text-[10px] text-muted-foreground">Pago seguro procesado por Stripe.</p>
     </form>
   );
 }
+
+// keep onDone reference used elsewhere
+void 0;
