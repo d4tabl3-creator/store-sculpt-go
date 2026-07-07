@@ -213,7 +213,7 @@ function CheckoutForm({
   cart,
   subtotal,
   onCancel,
-  onDone,
+  onDone: _onDone,
 }: {
   store: Store;
   cart: CartItem[];
@@ -221,6 +221,7 @@ function CheckoutForm({
   onCancel: () => void;
   onDone: () => void;
 }) {
+  void _onDone;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
