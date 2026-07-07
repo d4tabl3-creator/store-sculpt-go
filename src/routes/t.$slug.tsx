@@ -333,6 +333,3 @@ function CheckoutForm({
     </form>
   );
 }
-
-// keep onDone reference used elsewhere
-void 0;
