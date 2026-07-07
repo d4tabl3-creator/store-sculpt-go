@@ -13,9 +13,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TSlugRouteImport } from './routes/t.$slug'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.crear'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -36,6 +38,11 @@ const TSlugRoute = TSlugRouteImport.update({
   path: '/t/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout/return',
+  path: '/checkout/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -51,22 +58,32 @@ const AuthenticatedTiendaIdRoute = AuthenticatedTiendaIdRouteImport.update({
   path: '/tienda/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/crear': typeof AuthenticatedCrearRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/crear': typeof AuthenticatedCrearRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -75,8 +92,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/crear': typeof AuthenticatedCrearRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -85,10 +104,20 @@ export interface FileRouteTypes {
     | '/auth'
     | '/crear'
     | '/dashboard'
+    | '/checkout/return'
     | '/t/$slug'
     | '/tienda/$id'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/crear' | '/dashboard' | '/t/$slug' | '/tienda/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/crear'
+    | '/dashboard'
+    | '/checkout/return'
+    | '/t/$slug'
+    | '/tienda/$id'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -96,15 +125,19 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/crear'
     | '/_authenticated/dashboard'
+    | '/checkout/return'
     | '/t/$slug'
     | '/_authenticated/tienda/$id'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
   TSlugRoute: typeof TSlugRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -137,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -157,6 +197,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tienda/$id'
       preLoaderRoute: typeof AuthenticatedTiendaIdRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -181,7 +228,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
   TSlugRoute: TSlugRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
