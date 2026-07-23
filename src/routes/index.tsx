@@ -832,7 +832,7 @@ function CTAFinal() {
           Tu tienda te está esperando.
         </h2>
         <p className="mt-4 text-base opacity-90 md:text-lg">
-          10 minutos. 4 ventanillas. Cero excusas para no empezar.
+          Vitrina hoy. Ventas reales en 24–48 h. Cero excusas para no empezar.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" variant="secondary" className="shine-on-hover">
