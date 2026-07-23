@@ -83,7 +83,7 @@ function WizardPage() {
           kit_id: kit.id,
           theme: s.themeId,
           primary_color: s.primaryColor,
-          payment_email: s.paymentEmail,
+          
           shipping_options: shipping,
           status: "published",
         })
