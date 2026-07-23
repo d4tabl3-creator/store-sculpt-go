@@ -46,14 +46,18 @@ type Order = {
 
 function StoreManage() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const [store, setStore] = useState<Store | null>(null);
   const [paymentEmail, setPaymentEmail] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [hasPlan, setHasPlan] = useState<boolean>(false);
 
   useEffect(() => {
     load();
+    getMyPlan().then((p) => setHasPlan(canPublish(p.plan)));
   }, [id]);
 
   async function load() {
@@ -84,6 +88,26 @@ function StoreManage() {
     if (error) toast.error(error.message);
     else toast.success("Cambios guardados");
   }
+  async function togglePublish() {
+    if (!store) return;
+    const nextStatus = store.status === "published" ? "draft" : "published";
+    if (nextStatus === "published" && !hasPlan) {
+      toast.error("Necesitas un plan activo para publicar tu tienda.");
+      navigate({ to: "/planes" });
+      return;
+    }
+    if (nextStatus === "published" && !paymentEmail) {
+      toast.error("Configura primero un email de notificaciones (pestaña Configuración).");
+      return;
+    }
+    setPublishing(true);
+    const { error } = await supabase.from("stores").update({ status: nextStatus }).eq("id", id);
+    setPublishing(false);
+    if (error) { toast.error(error.message); return; }
+    setStore({ ...store, status: nextStatus });
+    toast.success(nextStatus === "published" ? "¡Tienda publicada! Ya recibes pedidos." : "Tienda despublicada.");
+  }
+
 
 
   async function updateProduct(p: Product) {
