@@ -57,7 +57,7 @@ function WizardPage() {
           toast.error(
             plan.plan
               ? `Tu plan ${plan.plan.toUpperCase()} permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`
-              : `Ya tienes una tienda en borrador. Publícala o elige un plan para crear más.`,
+              : `Sin plan solo puedes tener 1 tienda. Activa Starter o Pro para crear más.`,
           );
           navigate({ to: plan.plan ? "/planes" : "/dashboard" });
           return;
