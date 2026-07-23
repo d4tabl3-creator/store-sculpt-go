@@ -54,11 +54,12 @@ function StoreManage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [hasPlan, setHasPlan] = useState<boolean>(false);
+  const [plan, setPlan] = useState<PlanId | null>(null);
+  const hasPlan = plan === "starter" || plan === "pro";
 
   useEffect(() => {
     load();
-    getMyPlan().then((p) => setHasPlan(canPublish(p.plan)));
+    getMyPlan().then((p) => setPlan(p.plan as PlanId | null));
   }, [id]);
 
   async function load() {
