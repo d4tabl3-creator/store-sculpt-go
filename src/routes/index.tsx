@@ -750,8 +750,12 @@ function Marketplace() {
 
 const FAQS = [
   {
-    q: "¿En cuánto tiempo tengo mi tienda?",
-    a: "Menos de 10 minutos en completar el flujo de 4 ventanillas, y menos de 2 minutos para que la generemos. Te llega por correo cuando esté lista.",
+    q: "¿En cuánto tiempo tengo mi tienda vendiendo?",
+    a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC.",
+  },
+  {
+    q: "¿Qué necesitas de mí para conectar al proveedor?",
+    a: "Correo electrónico para abrir tu cuenta con el proveedor bajo demanda (te guiamos paso a paso; si ya la tienes, mejor). CLABE para depositarte tus ventas. Opcional: RFC y régimen fiscal si quieres factura. Sin eso podemos dejar tu vitrina viva con tarjetas de regalo, pero no despachar producto físico.",
   },
   {
     q: "¿Necesito saber programar o diseñar?",
