@@ -184,7 +184,12 @@ function StoreManage() {
             </div>
           </div>
         )}
-        <h1 className="font-display text-3xl font-extrabold">{store.name}</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-3xl font-extrabold">{store.name}</h1>
+          <Badge variant={store.status === "published" ? "default" : "secondary"}>
+            {store.status === "published" ? "Publicada" : "Borrador"}
+          </Badge>
+        </div>
         <p className="text-muted-foreground">/t/{store.slug}</p>
 
         <Tabs defaultValue="orders" className="mt-6">
