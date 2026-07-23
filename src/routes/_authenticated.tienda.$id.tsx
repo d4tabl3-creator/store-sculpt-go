@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
-import { canPublish } from "@/lib/plans";
+import { commissionLabelFor } from "@/lib/plans";
+import type { PlanId } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/tienda/$id")({
   head: () => ({ meta: [{ title: "Editar tienda — DªTªBLe" }] }),
@@ -53,11 +54,12 @@ function StoreManage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [hasPlan, setHasPlan] = useState<boolean>(false);
+  const [plan, setPlan] = useState<PlanId | null>(null);
+  const hasPlan = plan === "starter" || plan === "pro";
 
   useEffect(() => {
     load();
-    getMyPlan().then((p) => setHasPlan(canPublish(p.plan)));
+    getMyPlan().then((p) => setPlan(p.plan as PlanId | null));
   }, [id]);
 
   async function load() {
@@ -91,14 +93,15 @@ function StoreManage() {
   async function togglePublish() {
     if (!store) return;
     const nextStatus = store.status === "published" ? "draft" : "published";
-    if (nextStatus === "published" && !hasPlan) {
-      toast.error("Necesitas un plan activo para publicar tu tienda.");
-      navigate({ to: "/planes" });
-      return;
-    }
     if (nextStatus === "published" && !paymentEmail) {
       toast.error("Configura primero un email de notificaciones (pestaña Configuración).");
       return;
+    }
+    if (nextStatus === "published" && !hasPlan) {
+      const ok = confirm(
+        "Vas a publicar sin plan mensual. Aplicará 20% de comisión por venta (en lugar de 10%).\n\n¿Continuar?",
+      );
+      if (!ok) return;
     }
     setPublishing(true);
     const { error } = await supabase.from("stores").update({ status: nextStatus }).eq("id", id);
@@ -165,23 +168,30 @@ function StoreManage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        {store.status !== "published" && (
+        {store.status !== "published" ? (
           <div className="mb-6 rounded-2xl border-2 border-dashed border-accent bg-accent-soft/40 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="font-display text-lg font-bold">Tu tienda está en borrador</div>
                 <p className="text-sm text-muted-foreground">
                   {hasPlan
-                    ? "Cuando tengas todo listo, presiona Publicar para recibir pedidos reales."
-                    : "Arma y edita todo lo que quieras gratis. Para publicar y cobrar, necesitas un plan activo (o un cupón de demo)."}
+                    ? "Cuando tengas todo listo, presiona Publicar para recibir pedidos reales (10% de comisión)."
+                    : "Puedes publicar gratis y empezar a cobrar con 20% de comisión, o activar un plan mensual y pagar solo 10%."}
                 </p>
               </div>
               {!hasPlan && (
-                <Button asChild size="sm">
-                  <Link to="/planes">Ver planes</Link>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/planes">Bajar a 10% con plan</Link>
                 </Button>
               )}
             </div>
+          </div>
+        ) : (
+          <div className="mb-6 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+            Comisión actual: <span className="font-semibold text-foreground">{commissionLabelFor(plan)}</span>
+            {!hasPlan && (
+              <>{" · "}<Link to="/planes" className="font-semibold text-primary hover:underline">Bajar a 10% con plan →</Link></>
+            )}
           </div>
         )}
         <div className="flex flex-wrap items-center gap-3">

@@ -50,18 +50,29 @@ export const PLANS: Array<{
   },
 ];
 
-export const PLATFORM_COMMISSION_BPS = 1000; // 10% — sincronizado con apply_paid_order default
-export const FREE_DRAFT_STORE_LIMIT = 1; // Sin plan puedes armar 1 tienda en borrador (no publicable)
+export const PLATFORM_COMMISSION_BPS = 1000; // 10% base (planes de pago)
+export const FREE_COMMISSION_BPS = 2000; // 20% para tiendas publicadas sin plan
+export const FREE_DRAFT_STORE_LIMIT = 1; // Sin plan puedes armar 1 tienda
 
 export function planLimit(plan: PlanId | null): number | null {
   if (plan === "pro") return null;
   if (plan === "starter") return 1;
-  // Sin plan: puedes crear 1 tienda pero solo en borrador
+  // Sin plan: puedes crear 1 tienda (publicable con comisión mayor)
   return FREE_DRAFT_STORE_LIMIT;
 }
 
-// ¿Este plan permite publicar tiendas al público?
-export function canPublish(plan: PlanId | null): boolean {
-  return plan === "starter" || plan === "pro";
+// Todos pueden publicar; la diferencia es el % de comisión.
+export function canPublish(_plan: PlanId | null): boolean {
+  return true;
 }
+
+export function commissionBpsFor(plan: PlanId | null): number {
+  if (plan === "starter" || plan === "pro") return PLATFORM_COMMISSION_BPS;
+  return FREE_COMMISSION_BPS;
+}
+
+export function commissionLabelFor(plan: PlanId | null): string {
+  return plan ? "10% por venta" : "20% por venta (sin plan)";
+}
+
 
