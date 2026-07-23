@@ -152,10 +152,12 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     /* Onyx satinado: sutil brillo tornasol */
+    /* Degradado verde → amarillo → naranja */
     background-image:
-      radial-gradient(ellipse 80% 60% at 20% 0%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 60%),
-      radial-gradient(ellipse 70% 50% at 90% 100%, color-mix(in oklab, var(--secondary) 14%, transparent), transparent 60%),
-      linear-gradient(180deg, oklch(0.14 0.008 90) 0%, oklch(0.11 0.008 90) 100%);
+      radial-gradient(ellipse 70% 55% at 15% 0%, color-mix(in oklab, var(--primary) 45%, transparent), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 95% 20%, color-mix(in oklab, var(--accent) 55%, transparent), transparent 60%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, color-mix(in oklab, var(--secondary) 40%, transparent), transparent 65%),
+      linear-gradient(160deg, oklch(0.34 0.1 140) 0%, oklch(0.26 0.09 130) 55%, oklch(0.2 0.07 128) 100%);
     background-attachment: fixed;
   }
   h1, h2, h3, h4 {
