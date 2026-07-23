@@ -72,7 +72,7 @@ function Admin() {
     </div>
   );
 
-  const pendingSum = payouts.filter((p) => p.payout_status === "pending" && selected.has(p.id)).reduce((s, p) => s + p.merchant_net_cents, 0);
+  const pendingSum = payouts.filter((p) => p.status === "pending" && selected.has(p.id)).reduce((s, p) => s + p.net_owed_cents, 0);
 
   return (
     <div className="min-h-screen bg-background">
