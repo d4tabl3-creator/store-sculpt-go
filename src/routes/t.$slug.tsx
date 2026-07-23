@@ -46,12 +46,53 @@ export const Route = createFileRoute("/t/$slug")({
       .order("sort_order");
     return { store: store as Store, products: (products as Product[]) || [] };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: loaderData ? `${loaderData.store.name} — Tienda online` : "Tienda" },
-      { name: "description", content: loaderData ? `${loaderData.store.name} — ${loaderData.store.niche}` : "" },
-    ],
-  }),
+  head: ({ params, loaderData }) => {
+    const url = `https://store-sculpt-go.lovable.app/t/${params.slug}`;
+    const title = loaderData ? `${loaderData.store.name} — Tienda online` : "Tienda";
+    const desc = loaderData
+      ? `${loaderData.store.name}: catálogo de ${loaderData.store.niche}. Compra directo con envío incluido.`
+      : "Tienda online.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: url },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: loaderData
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                name: loaderData.store.name,
+                url,
+                about: loaderData.store.niche,
+                hasPart: loaderData.products.slice(0, 20).map((p) => ({
+                  "@type": "Product",
+                  name: p.name,
+                  ...(p.description ? { description: p.description } : {}),
+                  ...(p.image_url ? { image: p.image_url } : {}),
+                  offers: {
+                    "@type": "Offer",
+                    priceCurrency: "MXN",
+                    price: (p.price_cents / 100).toFixed(2),
+                    availability: p.stock > 0
+                      ? "https://schema.org/InStock"
+                      : "https://schema.org/OutOfStock",
+                  },
+                })),
+              }),
+            },
+          ]
+        : [],
+    };
+  },
   component: Storefront,
   notFoundComponent: () => (
     <div className="grid min-h-screen place-items-center bg-background p-8 text-center">
