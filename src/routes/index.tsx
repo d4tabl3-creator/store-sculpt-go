@@ -632,7 +632,7 @@ function Precios() {
                 variant={p.featured ? "secondary" : "default"}
                 className="mt-7 w-full"
               >
-                <Link to="/crear">{p.cta}</Link>
+                <Link to="/planes">{p.cta}</Link>
               </Button>
             </div>
           ))}
