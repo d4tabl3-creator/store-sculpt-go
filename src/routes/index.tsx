@@ -574,13 +574,13 @@ function Precios() {
     {
       name: "Gratis",
       price: "$0",
-      commission: "—",
-      desc: "Arma tu tienda completa. Publica cuando quieras.",
+      commission: "20%",
+      desc: "Publica y cobra sin mensualidad. Nosotros cobramos 20% por venta.",
       features: [
-        "1 tienda en borrador",
-        "Elige rubro, kit y estilo",
-        "Edita productos, precios y envíos",
-        "Vista previa privada",
+        "1 tienda publicada",
+        "Checkout con Stripe activo",
+        "Panel de pedidos",
+        "Vista previa privada mientras armas",
         "Sin tarjeta para empezar",
       ],
       cta: "Empezar gratis",
@@ -591,15 +591,15 @@ function Precios() {
       name: "Starter",
       price: "$299",
       commission: "10%",
-      desc: "Publica y empieza a cobrar hoy.",
+      desc: "Baja la comisión a la mitad. Ideal si ya vendes.",
       features: [
         "1 tienda publicada",
+        "10% de comisión (en lugar de 20%)",
         "Checkout con Stripe activo",
-        "Panel de pedidos",
-        "Pago de comisiones automático",
+        "Panel de pedidos + pagos automáticos",
         "Cancela cuando quieras",
       ],
-      cta: "Publicar mi tienda",
+      cta: "Activar Starter",
       featured: false,
       free: false,
     },
@@ -607,7 +607,7 @@ function Precios() {
       name: "Pro",
       price: "$499",
       commission: "10%",
-      desc: "Para vender en serio, en varias tiendas.",
+      desc: "Varias tiendas + soporte prioritario.",
       features: [
         "Tiendas ilimitadas",
         "Todo lo de Starter",
@@ -624,9 +624,10 @@ function Precios() {
       <div className="mx-auto max-w-5xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow="Precios"
-          title="Gratis para armarla. Mensual para publicarla."
-          desc="Construye tu tienda sin pagar nada. El plan mensual se activa cuando estás listo para vender. 10% de comisión solo sobre lo que se vende, sin cobros ocultos."
+          title="Publica gratis. Paga menos comisión si suscribes."
+          desc="Sin mensualidad: 20% por venta. Con plan: 10% por venta. Tú eliges cuándo te conviene bajar la comisión."
         />
+
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {plans.map((p) => (
             <div
