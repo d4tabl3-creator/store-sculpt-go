@@ -29,10 +29,24 @@ async function handleStoreOrderPaid(session: any) {
     return;
   }
   const sb = getSupabase();
-  // apply_paid_order: marca paid + decrementa stock + registra comisión
+
+  // Determinar comisión según el plan del dueño de la tienda:
+  // sin plan = 20% (2000 bps), starter/pro = 10% (1000 bps).
+  let commissionBps = 2000;
+  const { data: orderRow } = await sb
+    .from("store_orders")
+    .select("store_id, stores(owner_id)")
+    .eq("id", orderId)
+    .maybeSingle();
+  const ownerId = (orderRow as any)?.stores?.owner_id as string | undefined;
+  if (ownerId) {
+    const { data: plan } = await sb.rpc("active_plan_for", { _user_id: ownerId });
+    if (plan === "starter" || plan === "pro") commissionBps = 1000;
+  }
+
   const { error } = await sb.rpc("apply_paid_order", {
     _order_id: orderId,
-    _commission_bps: 1000, // 10%
+    _commission_bps: commissionBps,
   });
   if (error) console.error("apply_paid_order error:", error);
 }
