@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 
 const HOME_URL = "https://store-sculpt-go.lovable.app/";
 const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
-const HOME_DESC = "Arma tu vitrina digital automatizada hoy en 10 minutos. Empieza a vender de verdad en 24 a 48 horas, cuando conectemos tu proveedor, tus pagos y tus datos fiscales.";
+const HOME_DESC = "Casi todo lo que recibes se desgasta, se vence o se olvida. Un activo digital productivo no. En DªTªBLe construimos el tuyo: una tienda que trabaja por ti y crece con tu esfuerzo, sin inventario ni programación.";
 
 const HOME_FAQS = [
   { q: "¿En cuánto tiempo tengo mi tienda vendiendo?", a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC." },
