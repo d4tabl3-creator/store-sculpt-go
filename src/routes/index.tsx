@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 
 const HOME_URL = "https://store-sculpt-go.lovable.app/";
 const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
-const HOME_DESC = "Arma tu vitrina hoy en 10 minutos. Empieza a vender de verdad en 24 a 48 horas, cuando conectemos tu proveedor, tus pagos y tus datos fiscales.";
+const HOME_DESC = "Arma tu vitrina digital automatizada hoy en 10 minutos. Empieza a vender de verdad en 24 a 48 horas, cuando conectemos tu proveedor, tus pagos y tus datos fiscales.";
 
 const HOME_FAQS = [
   { q: "¿En cuánto tiempo tengo mi tienda vendiendo?", a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC." },
@@ -42,13 +42,13 @@ const HOME_FAQS = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
+      { title: "DªTªBLe — Tu vitrina digital automatizada hoy, tu tienda vendiendo en 24–48 h" },
       { name: "description", content: HOME_DESC },
-      { property: "og:title", content: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
+      { property: "og:title", content: "DªTªBLe — Tu vitrina digital automatizada hoy, tu tienda vendiendo en 24–48 h" },
       { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: HOME_URL },
       { property: "og:image", content: HOME_OG_IMAGE },
-      { name: "twitter:title", content: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
+      { name: "twitter:title", content: "DªTªBLe — Tu vitrina digital automatizada hoy, tu tienda vendiendo en 24–48 h" },
       { name: "twitter:description", content: HOME_DESC },
       { name: "twitter:image", content: HOME_OG_IMAGE },
     ],
@@ -135,7 +135,7 @@ function Hero() {
             <Sparkles className="size-3.5" /> Franchise-as-a-Service
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Tu vitrina hoy.{" "}
+            Tu vitrina digital automatizada hoy.{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Vendiendo en 24–48 h
             </span>
@@ -271,7 +271,7 @@ function ComoFunciona() {
       <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow="Cómo funciona"
-          title="4 ventanillas. Vitrina hoy, ventas reales en 24–48 h."
+          title="4 ventanillas. Vitrina digital automatizada hoy, ventas reales en 24–48 h."
           desc="Un flujo guiado, ventanilla por ventanilla. Tú aportas datos básicos (correo, CLABE, cuenta con el proveedor); nosotros integramos todo."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -328,7 +328,7 @@ function ParaQuien() {
       title: "Artesanos y productores",
       items: [
         "Haces bolsas, joyería, café, comida — pero no sabes nada digital.",
-        "Tienes producto y logística, pero no tienes canal online.",
+        "Tienes producto y logística, pero no tienes canal digital.",
         "Quieres que otros vendan tu producto en sus tiendas.",
         "Necesitas envíos resueltos sin contratar paqueterías.",
       ],
@@ -751,7 +751,7 @@ function Marketplace() {
 const FAQS = [
   {
     q: "¿En cuánto tiempo tengo mi tienda vendiendo?",
-    a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC.",
+    a: "Tu vitrina digital automatizada — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC.",
   },
   {
     q: "¿Qué necesitas de mí para conectar al proveedor?",
@@ -832,7 +832,7 @@ function CTAFinal() {
           Tu tienda te está esperando.
         </h2>
         <p className="mt-4 text-base opacity-90 md:text-lg">
-          Vitrina hoy. Ventas reales en 24–48 h. Cero excusas para no empezar.
+          Vitrina digital automatizada hoy. Ventas reales en 24–48 h. Cero excusas para no empezar.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" variant="secondary" className="shine-on-hover">
@@ -864,7 +864,7 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Franchise-as-a-Service. Vitrina hoy, tienda vendiendo en 24–48 h. Hecho con ♥ en México.
+              Franchise-as-a-Service. Vitrina digital automatizada hoy, tienda vendiendo en 24–48 h. Hecho con ♥ en México.
             </p>
           </div>
           <FooterCol
