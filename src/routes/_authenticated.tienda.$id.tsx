@@ -20,7 +20,6 @@ type Store = {
   name: string;
   niche: string;
   primary_color: string;
-  payment_email: string | null;
 };
 type Product = {
   id: string;
@@ -45,6 +44,7 @@ type Order = {
 function StoreManage() {
   const { id } = Route.useParams();
   const [store, setStore] = useState<Store | null>(null);
+  const [paymentEmail, setPaymentEmail] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
@@ -56,6 +56,8 @@ function StoreManage() {
   async function load() {
     const { data: s } = await supabase.from("stores").select("*").eq("id", id).maybeSingle();
     setStore(s as Store);
+    const { data: ps } = await supabase.from("store_payment_settings").select("payment_email").eq("store_id", id).maybeSingle();
+    setPaymentEmail((ps?.payment_email as string | null) || "");
     const { data: p } = await supabase.from("store_products").select("*").eq("store_id", id).order("sort_order");
     setProducts((p as Product[]) || []);
     const { data: o } = await supabase.from("store_orders").select("*").eq("store_id", id).order("created_at", { ascending: false });
@@ -67,12 +69,19 @@ function StoreManage() {
     setSaving(true);
     const { error } = await supabase
       .from("stores")
-      .update({ name: store.name, primary_color: store.primary_color, payment_email: store.payment_email })
+      .update({ name: store.name, primary_color: store.primary_color })
       .eq("id", id);
+    if (!error) {
+      const { error: pe } = await supabase
+        .from("store_payment_settings")
+        .upsert({ store_id: id, payment_email: paymentEmail || null }, { onConflict: "store_id" });
+      if (pe) { setSaving(false); toast.error(pe.message); return; }
+    }
     setSaving(false);
     if (error) toast.error(error.message);
     else toast.success("Cambios guardados");
   }
+
 
   async function updateProduct(p: Product) {
     const { error } = await supabase
@@ -188,7 +197,7 @@ function StoreManage() {
             </div>
             <div>
               <Label>Email de notificaciones</Label>
-              <Input value={store.payment_email || ""} onChange={(e) => setStore({ ...store, payment_email: e.target.value })} />
+              <Input value={paymentEmail} onChange={(e) => setPaymentEmail(e.target.value)} />
             </div>
             <div>
               <Label>Color primario</Label>

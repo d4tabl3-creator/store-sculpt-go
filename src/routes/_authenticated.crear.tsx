@@ -83,7 +83,7 @@ function WizardPage() {
           kit_id: kit.id,
           theme: s.themeId,
           primary_color: s.primaryColor,
-          payment_email: s.paymentEmail,
+          
           shipping_options: shipping,
           status: "published",
         })
@@ -102,6 +102,10 @@ function WizardPage() {
       }));
       const { error: e2 } = await supabase.from("store_products").insert(products);
       if (e2) throw e2;
+
+      if (s.paymentEmail) {
+        await supabase.from("store_payment_settings").insert({ store_id: store.id, payment_email: s.paymentEmail });
+      }
 
       toast.success("¡Tu tienda está lista!");
       navigate({ to: "/dashboard" });
