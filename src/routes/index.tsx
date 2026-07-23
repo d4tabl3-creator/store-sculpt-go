@@ -34,7 +34,7 @@ const HOME_FAQS = [
   { q: "¿En cuánto tiempo tengo mi tienda vendiendo?", a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC." },
   { q: "¿Necesito saber programar o diseñar?", a: "No. Eliges entre opciones. Nosotros nos encargamos de proveedores, pagos, envíos, diseño y la inteligencia detrás." },
   { q: "¿Qué pasa con los productos? ¿Yo los tengo?", a: "No es necesario. Trabajamos con proveedores bajo demanda y productores locales. Cuando alguien compra, ellos producen y envían directo al cliente." },
-  { q: "¿Cuánto se queda DªTªBLe de cada venta?", a: "1.5% en el plan Básico, 0.5% en Pro. El resto del margen es tuyo. Sin letras chiquitas." },
+  { q: "¿Cuánto se queda DªTªBLe de cada venta?", a: "20% si publicas gratis, 10% si activas un plan mensual (Starter o Pro). El resto es tuyo. Sin letras chiquitas." },
   { q: "¿Puedo cancelar cuando quiera?", a: "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver." },
   { q: "Soy artesano y solo quiero que vendan mi producto, ¿puedo?", a: "Sí. Tenemos un área específica para productores que solo aportan producto, sin abrir tienda propia." },
 ];
