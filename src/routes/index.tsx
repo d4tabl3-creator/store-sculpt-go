@@ -751,7 +751,7 @@ function Marketplace() {
 const FAQS = [
   {
     q: "¿En cuánto tiempo tengo mi tienda vendiendo?",
-    a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC.",
+    a: "Tu vitrina digital automatizada — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC.",
   },
   {
     q: "¿Qué necesitas de mí para conectar al proveedor?",
@@ -832,7 +832,7 @@ function CTAFinal() {
           Tu tienda te está esperando.
         </h2>
         <p className="mt-4 text-base opacity-90 md:text-lg">
-          Vitrina hoy. Ventas reales en 24–48 h. Cero excusas para no empezar.
+          Vitrina digital automatizada hoy. Ventas reales en 24–48 h. Cero excusas para no empezar.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" variant="secondary" className="shine-on-hover">
@@ -864,7 +864,7 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Franchise-as-a-Service. Vitrina hoy, tienda vendiendo en 24–48 h. Hecho con ♥ en México.
+              Franchise-as-a-Service. Vitrina digital automatizada hoy, tienda vendiendo en 24–48 h. Hecho con ♥ en México.
             </p>
           </div>
           <FooterCol
