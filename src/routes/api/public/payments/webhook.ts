@@ -14,42 +14,99 @@ function getSupabase(): SupabaseClient<Database> {
   return _supabase;
 }
 
-async function handleCheckoutCompleted(session: any) {
-  const orderId = session.metadata?.orderId;
-  if (!orderId) {
-    console.error("checkout.session.completed sin orderId en metadata");
-    return;
-  }
-  await getSupabase()
-    .from("store_orders")
-    .update({
-      payment_status: "paid",
-      status: "paid",
-    })
-    .eq("id", orderId);
+/** Idempotencia: guardar event_id y saltar si ya lo procesamos. */
+async function alreadyProcessed(eventId: string): Promise<boolean> {
+  const sb = getSupabase();
+  const { error } = await sb.from("processed_stripe_events").insert({ event_id: eventId });
+  // Si insert falla por unique_violation, ya lo procesamos.
+  return !!error;
 }
 
-async function handleAsyncPaymentFailed(session: any) {
-  const orderId = session.metadata?.orderId;
+async function handleStoreOrderPaid(session: any) {
+  const orderId = session.metadata?.orderId as string | undefined;
+  if (!orderId) {
+    console.warn("checkout completed sin orderId");
+    return;
+  }
+  const sb = getSupabase();
+  // apply_paid_order: marca paid + decrementa stock + registra comisión
+  const { error } = await sb.rpc("apply_paid_order", {
+    p_order_id: orderId,
+    p_commission_bps: 1000, // 10% por defecto
+  });
+  if (error) console.error("apply_paid_order error:", error);
+}
+
+async function handleStoreOrderFailed(session: any) {
+  const orderId = session.metadata?.orderId as string | undefined;
   if (!orderId) return;
+  await getSupabase().from("store_orders").update({ payment_status: "failed" }).eq("id", orderId);
+}
+
+async function handleSubscriptionUpsert(subscription: any) {
+  const userId = subscription.metadata?.userId as string | undefined;
+  if (!userId) {
+    console.warn("subscription event sin userId");
+    return;
+  }
+  const item = subscription.items?.data?.[0];
+  const plan = subscription.metadata?.plan
+    || item?.price?.lookup_key?.replace("_monthly", "")
+    || null;
+  const periodEnd = item?.current_period_end ?? subscription.current_period_end;
+
   await getSupabase()
-    .from("store_orders")
-    .update({ payment_status: "failed" })
-    .eq("id", orderId);
+    .from("merchant_subscriptions")
+    .upsert(
+      {
+        user_id: userId,
+        source: "stripe",
+        plan: plan || "starter",
+        status: subscription.status,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: subscription.customer,
+        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+        cancel_at_period_end: !!subscription.cancel_at_period_end,
+      },
+      { onConflict: "stripe_subscription_id" },
+    );
+}
+
+async function handleSubscriptionDeleted(subscription: any) {
+  await getSupabase()
+    .from("merchant_subscriptions")
+    .update({ status: "canceled", cancel_at_period_end: true })
+    .eq("stripe_subscription_id", subscription.id);
 }
 
 async function handleWebhook(req: Request, env: StripeEnv) {
   const event = await verifyWebhook(req, env);
+  // Idempotencia por event.id
+  const anyEvent = event as unknown as { id?: string };
+  if (anyEvent.id && (await alreadyProcessed(anyEvent.id))) return;
+
   switch (event.type) {
     case "checkout.session.completed":
-    case "checkout.session.async_payment_succeeded":
-      await handleCheckoutCompleted(event.data.object);
+    case "checkout.session.async_payment_succeeded": {
+      const session: any = event.data.object;
+      const kind = session.metadata?.kind;
+      if (kind === "store_order") await handleStoreOrderPaid(session);
+      // Suscripciones se manejan por eventos customer.subscription.*
       break;
+    }
     case "checkout.session.async_payment_failed":
-      await handleAsyncPaymentFailed(event.data.object);
+      await handleStoreOrderFailed(event.data.object);
+      break;
+    case "customer.subscription.created":
+    case "customer.subscription.updated":
+      await handleSubscriptionUpsert(event.data.object);
+      break;
+    case "customer.subscription.deleted":
+      await handleSubscriptionDeleted(event.data.object);
       break;
     default:
-      console.log("Evento no manejado:", event.type);
+      // silenciosamente ignorado
+      break;
   }
 }
 
@@ -59,7 +116,6 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
       POST: async ({ request }) => {
         const rawEnv = new URL(request.url).searchParams.get("env");
         if (rawEnv !== "sandbox" && rawEnv !== "live") {
-          console.error("webhook: env inválido:", rawEnv);
           return Response.json({ received: true, ignored: "invalid env" });
         }
         try {
