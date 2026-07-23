@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Loader2, Rocket } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Loader2, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { NICHES, THEMES, slugify } from "@/lib/kits";
+import { getMyPlan } from "@/lib/plans.functions";
+import { planLimit } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/crear")({
   head: () => ({ meta: [{ title: "Crear tienda — DªTªBLe" }] }),
