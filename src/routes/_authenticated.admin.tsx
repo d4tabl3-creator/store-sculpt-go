@@ -72,7 +72,7 @@ function Admin() {
     </div>
   );
 
-  const pendingSum = payouts.filter((p) => p.payout_status === "pending" && selected.has(p.id)).reduce((s, p) => s + p.merchant_net_cents, 0);
+  const pendingSum = payouts.filter((p) => p.status === "pending" && selected.has(p.id)).reduce((s, p) => s + p.net_owed_cents, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,7 +150,7 @@ function Admin() {
                 </thead>
                 <tbody>
                   {payouts.map((p) => {
-                    const isPending = p.payout_status === "pending";
+                    const isPending = p.status === "pending";
                     return (
                       <tr key={p.id} className="border-t border-border">
                         <td className="py-2">
@@ -161,10 +161,10 @@ function Admin() {
                           }} />
                         </td>
                         <td>{new Date(p.created_at).toLocaleDateString()}</td>
-                        <td className="text-xs">{p.merchant?.full_name || p.merchant?.email || p.merchant_id.slice(0,8)}</td>
+                        <td className="text-xs">{p.merchant?.full_name || p.merchant?.email || (p.owner_id ? p.owner_id.slice(0,8) : "—")}</td>
                         <td className="font-mono text-xs">{p.merchant?.bank_name || "—"} · {p.merchant?.clabe || "SIN CLABE"}</td>
                         <td>${(p.gross_cents/100).toFixed(2)}</td>
-                        <td className="font-bold">${(p.merchant_net_cents/100).toFixed(2)}</td>
+                        <td className="font-bold">${(p.net_owed_cents/100).toFixed(2)}</td>
                         <td>{isPending ? <Badge variant="outline">pendiente</Badge> : <Badge>pagado</Badge>}</td>
                       </tr>
                     );
