@@ -42,13 +42,13 @@ const HOME_FAQS = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DªTªBLe — El único activo que te pueden regalar que no se desgasta" },
+      { title: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
       { name: "description", content: HOME_DESC },
-      { property: "og:title", content: "DªTªBLe — Un activo digital productivo que crece contigo" },
+      { property: "og:title", content: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
       { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: HOME_URL },
       { property: "og:image", content: HOME_OG_IMAGE },
-      { name: "twitter:title", content: "DªTªBLe — Un activo digital productivo que crece contigo" },
+      { name: "twitter:title", content: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
       { name: "twitter:description", content: HOME_DESC },
       { name: "twitter:image", content: HOME_OG_IMAGE },
     ],
