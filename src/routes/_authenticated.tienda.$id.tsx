@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
-import { canPublish } from "@/lib/plans";
+import { commissionLabelFor } from "@/lib/plans";
+import type { PlanId } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/tienda/$id")({
   head: () => ({ meta: [{ title: "Editar tienda — DªTªBLe" }] }),
