@@ -42,13 +42,13 @@ const HOME_FAQS = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { title: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
       { name: "description", content: HOME_DESC },
-      { property: "og:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { property: "og:title", content: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
       { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: HOME_URL },
       { property: "og:image", content: HOME_OG_IMAGE },
-      { name: "twitter:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { name: "twitter:title", content: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
       { name: "twitter:description", content: HOME_DESC },
       { name: "twitter:image", content: HOME_OG_IMAGE },
     ],
