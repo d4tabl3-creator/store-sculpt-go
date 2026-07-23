@@ -82,7 +82,12 @@ function Dashboard() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-display text-3xl font-extrabold">Mis tiendas</h1>
-            <p className="text-muted-foreground">Vende. Recibe pedidos. Edita lo que necesites.</p>
+            <p className="text-muted-foreground">
+              Vende. Recibe pedidos. Edita lo que necesites.{" "}
+              <Link to="/bienvenida" className="font-medium text-primary hover:underline">
+                Ver mapa de lanzamiento →
+              </Link>
+            </p>
           </div>
           <Button asChild className="shine-on-hover shadow-cta">
             <Link to="/crear">
