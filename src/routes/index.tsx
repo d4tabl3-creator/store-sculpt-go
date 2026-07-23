@@ -135,16 +135,17 @@ function Hero() {
             <Sparkles className="size-3.5" /> Franchise-as-a-Service
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Tu tienda online lista en{" "}
+            Tu vitrina hoy.{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              10 minutos
+              Vendiendo en 24–48 h
             </span>
             .
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            No diseñas una tienda. Eliges un <strong className="text-foreground">Pack de Negocio</strong> ya
-            validado — con proveedores, productos, pagos y envíos incluidos — y empiezas a vender desde el
-            minuto 1. Tú pides por ventanilla, nosotros te entregamos el negocio terminado.
+            En 10 minutos publicamos tu <strong className="text-foreground">vitrina</strong> con productos
+            demo o tarjetas de regalo digitales — se ve y funciona igual que la final. En las siguientes{" "}
+            <strong className="text-foreground">24 a 48 h hábiles</strong> enlazamos tu cuenta con el proveedor
+            bajo demanda, activamos tus pagos y verificamos tus datos para que empieces a vender producto real.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
@@ -158,10 +159,10 @@ function Hero() {
           </div>
           <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
             {[
-              "Sin saber programar",
-              "Sin buscar proveedores",
-              "Pagos y envíos incluidos",
-              "IA que vende por ti",
+              "Vitrina publicada el mismo día",
+              "Producto real en 24–48 h",
+              "Tú aportas CLABE y correo, nosotros el resto",
+              "Sin inventario ni programación",
             ].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" /> {f}
