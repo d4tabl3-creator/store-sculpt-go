@@ -50,13 +50,13 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${window.location.origin}/bienvenida`,
             data: { full_name: fullName },
           },
         });
         if (error) throw error;
         toast.success("Cuenta creada. Revisa tu correo si te lo pide.");
-        navigate({ to: "/dashboard" });
+        navigate({ to: "/bienvenida" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
