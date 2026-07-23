@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Loader2, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
-import { StoreEmbeddedCheckout } from "@/components/StoreEmbeddedCheckout";
+import { EmbeddedStripe } from "@/components/EmbeddedStripe";
+import { getStripeEnvironment } from "@/lib/stripe";
+import { startStoreCheckout } from "@/lib/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 type Store = {
@@ -229,7 +231,7 @@ function CheckoutForm({
   const [notes, setNotes] = useState("");
   const [shippingId, setShippingId] = useState(store.shipping_options[0]?.id || "");
   const [submitting, setSubmitting] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderInfo, setOrderInfo] = useState<{ orderId: string; clientSecret: string } | null>(null);
 
   const shipping = useMemo(
     () => store.shipping_options.find((o) => o.id === shippingId),
@@ -237,59 +239,37 @@ function CheckoutForm({
   );
   const total = subtotal + (shipping?.price_cents || 0);
 
+  const fetchClientSecret = useCallback(async () => {
+    if (!orderInfo) throw new Error("Sin sesión");
+    return orderInfo.clientSecret;
+  }, [orderInfo]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const { data, error } = await supabase
-      .from("store_orders")
-      .insert({
-        store_id: store.id,
-        customer_name: name,
-        customer_email: email,
-        customer_phone: phone || null,
-        shipping_address: `${address}${shipping ? ` · ${shipping.label}` : ""}`,
-        items: cart.map((c) => ({
-          name: c.product.name,
-          qty: c.qty,
-          price_cents: c.product.price_cents,
-        })),
-        total_cents: total,
-        notes: notes || null,
-        status: "pending",
-        payment_status: "pending",
-      })
-      .select("id")
-      .single();
+    const res = await startStoreCheckout({
+      data: {
+        storeId: store.id,
+        items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })),
+        shippingId: shippingId || undefined,
+        customer: { name, email, phone: phone || undefined, address, notes: notes || undefined },
+        returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}&slug=${store.slug}`,
+        environment: getStripeEnvironment(),
+      },
+    });
     setSubmitting(false);
-    if (error || !data) {
-      toast.error("No se pudo crear el pedido: " + (error?.message || "error desconocido"));
-      return;
-    }
-    setOrderId(data.id);
+    if ("error" in res) { toast.error(res.error); return; }
+    setOrderInfo({ orderId: res.orderId, clientSecret: res.clientSecret });
   }
 
-  if (orderId) {
+  if (orderInfo) {
     return (
       <div className="flex flex-1 flex-col overflow-y-auto py-4">
         <p className="mb-3 text-sm text-muted-foreground">
           Total a pagar: <span className="font-bold text-foreground">${(total / 100).toFixed(2)} MXN</span>
         </p>
-        <StoreEmbeddedCheckout
-          orderId={orderId}
-          storeName={store.name}
-          storeSlug={store.slug}
-          customerEmail={email}
-          items={cart.map((c) => ({
-            name: c.product.name,
-            qty: c.qty,
-            price_cents: c.product.price_cents,
-          }))}
-          shippingLabel={shipping?.label}
-          shippingCents={shipping?.price_cents}
-        />
-        <Button type="button" variant="ghost" className="mt-3" onClick={onCancel}>
-          Cancelar
-        </Button>
+        <EmbeddedStripe fetchClientSecret={fetchClientSecret} minHeight={500} />
+        <Button type="button" variant="ghost" className="mt-3" onClick={onCancel}>Cancelar</Button>
       </div>
     );
   }
