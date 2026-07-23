@@ -50,17 +50,16 @@ function WizardPage() {
       const u = (await supabase.auth.getUser()).data.user;
       if (!u) { navigate({ to: "/auth" }); return; }
       const plan = await getMyPlan();
-      if (!plan.plan) {
-        toast.error("Necesitas un plan activo para crear una tienda");
-        navigate({ to: "/planes" });
-        return;
-      }
       const limit = planLimit(plan.plan);
       if (limit !== null) {
         const { count } = await supabase.from("stores").select("id", { count: "exact", head: true }).eq("owner_id", u.id);
         if ((count || 0) >= limit) {
-          toast.error(`Tu plan ${plan.plan.toUpperCase()} permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`);
-          navigate({ to: "/planes" });
+          toast.error(
+            plan.plan
+              ? `Tu plan ${plan.plan.toUpperCase()} permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`
+              : `Ya tienes una tienda en borrador. Publícala o elige un plan para crear más.`,
+          );
+          navigate({ to: plan.plan ? "/planes" : "/dashboard" });
           return;
         }
       }
@@ -109,9 +108,9 @@ function WizardPage() {
           kit_id: kit.id,
           theme: s.themeId,
           primary_color: s.primaryColor,
-          
           shipping_options: shipping,
-          status: "published",
+          // Siempre nace en borrador. Publicar requiere plan activo.
+          status: "draft",
         })
         .select()
         .single();
@@ -133,8 +132,8 @@ function WizardPage() {
         await supabase.from("store_payment_settings").insert({ store_id: store.id, payment_email: s.paymentEmail });
       }
 
-      toast.success("¡Tu tienda está lista!");
-      navigate({ to: "/dashboard" });
+      toast.success("¡Tienda armada! Ahora edítala y publícala cuando estés listo.");
+      navigate({ to: "/tienda/$id", params: { id: store.id } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al crear tienda");
     } finally {
