@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Loader2, Rocket } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Loader2, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { NICHES, THEMES, slugify } from "@/lib/kits";
+import { getMyPlan } from "@/lib/plans.functions";
+import { planLimit } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/crear")({
   head: () => ({ meta: [{ title: "Crear tienda — DªTªBLe" }] }),
@@ -30,6 +32,7 @@ function WizardPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [gateChecked, setGateChecked] = useState(false);
   const [s, setS] = useState<State>({
     nicheId: "",
     kitId: "",
@@ -41,6 +44,29 @@ function WizardPage() {
     shippingExpress: false,
     shippingPickup: true,
   });
+
+  useEffect(() => {
+    (async () => {
+      const u = (await supabase.auth.getUser()).data.user;
+      if (!u) { navigate({ to: "/auth" }); return; }
+      const plan = await getMyPlan();
+      if (!plan.plan) {
+        toast.error("Necesitas un plan activo para crear una tienda");
+        navigate({ to: "/planes" });
+        return;
+      }
+      const limit = planLimit(plan.plan);
+      if (limit !== null) {
+        const { count } = await supabase.from("stores").select("id", { count: "exact", head: true }).eq("owner_id", u.id);
+        if ((count || 0) >= limit) {
+          toast.error(`Tu plan ${plan.plan.toUpperCase()} permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`);
+          navigate({ to: "/planes" });
+          return;
+        }
+      }
+      setGateChecked(true);
+    })();
+  }, [navigate]);
 
   const niche = NICHES.find((n) => n.id === s.nicheId) || null;
   const kit = niche?.kits.find((k) => k.id === s.kitId) || null;
@@ -115,6 +141,8 @@ function WizardPage() {
       setSaving(false);
     }
   }
+
+  if (!gateChecked) return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">Comprobando plan…</div>;
 
   return (
     <div className="min-h-screen bg-background">
