@@ -51,9 +51,17 @@ export const PLANS: Array<{
 ];
 
 export const PLATFORM_COMMISSION_BPS = 1000; // 10% — sincronizado con apply_paid_order default
+export const FREE_DRAFT_STORE_LIMIT = 1; // Sin plan puedes armar 1 tienda en borrador (no publicable)
 
 export function planLimit(plan: PlanId | null): number | null {
   if (plan === "pro") return null;
   if (plan === "starter") return 1;
-  return 0;
+  // Sin plan: puedes crear 1 tienda pero solo en borrador
+  return FREE_DRAFT_STORE_LIMIT;
 }
+
+// ¿Este plan permite publicar tiendas al público?
+export function canPublish(plan: PlanId | null): boolean {
+  return plan === "starter" || plan === "pro";
+}
+
