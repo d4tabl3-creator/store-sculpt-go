@@ -98,7 +98,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@type": "Organization",
           name: "DªTªBLe",
           url: "https://store-sculpt-go.lovable.app",
-          description: "Franchise-as-a-Service para crear tiendas online listas en 10 minutos.",
+          description: "Franchise-as-a-Service: vitrina publicada hoy, tienda vendiendo producto real en 24 a 48 horas.",
         }),
       },
     ],
