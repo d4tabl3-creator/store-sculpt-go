@@ -94,6 +94,35 @@ export type Database = {
           },
         ]
       }
+      store_payment_settings: {
+        Row: {
+          created_at: string
+          payment_email: string | null
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          payment_email?: string | null
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          payment_email?: string | null
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_payment_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_products: {
         Row: {
           created_at: string
@@ -150,7 +179,6 @@ export type Database = {
           name: string
           niche: string
           owner_id: string
-          payment_email: string | null
           primary_color: string
           shipping_options: Json
           slug: string
@@ -166,7 +194,6 @@ export type Database = {
           name: string
           niche: string
           owner_id: string
-          payment_email?: string | null
           primary_color?: string
           shipping_options?: Json
           slug: string
@@ -182,7 +209,6 @@ export type Database = {
           name?: string
           niche?: string
           owner_id?: string
-          payment_email?: string | null
           primary_color?: string
           shipping_options?: Json
           slug?: string
