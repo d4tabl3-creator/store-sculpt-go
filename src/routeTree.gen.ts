@@ -9,16 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PlanesRouteImport } from './routes/planes'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedCuentaRouteImport } from './routes/_authenticated.cuenta'
 import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.crear'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
+const PlanesRoute = PlanesRouteImport.update({
+  id: '/planes',
+  path: '/planes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -48,9 +56,19 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCuentaRoute = AuthenticatedCuentaRouteImport.update({
+  id: '/cuenta',
+  path: '/cuenta',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedCrearRoute = AuthenticatedCrearRouteImport.update({
   id: '/crear',
   path: '/crear',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTiendaIdRoute = AuthenticatedTiendaIdRouteImport.update({
@@ -68,7 +86,10 @@ const ApiPublicPaymentsWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/planes': typeof PlanesRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/crear': typeof AuthenticatedCrearRoute
+  '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
@@ -78,7 +99,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/planes': typeof PlanesRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/crear': typeof AuthenticatedCrearRoute
+  '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
@@ -90,7 +114,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/planes': typeof PlanesRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/crear': typeof AuthenticatedCrearRoute
+  '/_authenticated/cuenta': typeof AuthenticatedCuentaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
@@ -102,7 +129,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/planes'
+    | '/admin'
     | '/crear'
+    | '/cuenta'
     | '/dashboard'
     | '/checkout/return'
     | '/t/$slug'
@@ -112,7 +142,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/planes'
+    | '/admin'
     | '/crear'
+    | '/cuenta'
     | '/dashboard'
     | '/checkout/return'
     | '/t/$slug'
@@ -123,7 +156,10 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/planes'
+    | '/_authenticated/admin'
     | '/_authenticated/crear'
+    | '/_authenticated/cuenta'
     | '/_authenticated/dashboard'
     | '/checkout/return'
     | '/t/$slug'
@@ -135,6 +171,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PlanesRoute: typeof PlanesRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   TSlugRoute: typeof TSlugRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -142,6 +179,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/planes': {
+      id: '/planes'
+      path: '/planes'
+      fullPath: '/planes'
+      preLoaderRoute: typeof PlanesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -184,11 +228,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cuenta': {
+      id: '/_authenticated/cuenta'
+      path: '/cuenta'
+      fullPath: '/cuenta'
+      preLoaderRoute: typeof AuthenticatedCuentaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/crear': {
       id: '/_authenticated/crear'
       path: '/crear'
       fullPath: '/crear'
       preLoaderRoute: typeof AuthenticatedCrearRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tienda/$id': {
@@ -209,13 +267,17 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCrearRoute: typeof AuthenticatedCrearRoute
+  AuthenticatedCuentaRoute: typeof AuthenticatedCuentaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedTiendaIdRoute: typeof AuthenticatedTiendaIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCrearRoute: AuthenticatedCrearRoute,
+  AuthenticatedCuentaRoute: AuthenticatedCuentaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedTiendaIdRoute: AuthenticatedTiendaIdRoute,
 }
@@ -228,6 +290,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  PlanesRoute: PlanesRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   TSlugRoute: TSlugRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
