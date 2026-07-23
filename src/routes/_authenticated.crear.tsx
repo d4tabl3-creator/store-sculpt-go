@@ -103,6 +103,10 @@ function WizardPage() {
       const { error: e2 } = await supabase.from("store_products").insert(products);
       if (e2) throw e2;
 
+      if (s.paymentEmail) {
+        await supabase.from("store_payment_settings").insert({ store_id: store.id, payment_email: s.paymentEmail });
+      }
+
       toast.success("¡Tu tienda está lista!");
       navigate({ to: "/dashboard" });
     } catch (err) {
