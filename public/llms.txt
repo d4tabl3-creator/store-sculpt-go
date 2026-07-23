@@ -1,0 +1,10 @@
+# DªTªBLe
+
+> Franchise-as-a-Service: crea una tienda online lista para vender en menos de 10 minutos. Eliges rubro, kit de productos, fachada y pagos — nosotros orquestamos proveedores, pagos y envíos.
+
+DªTªBLe está pensado para emprendedores sin capital y artesanos/productores locales que quieren vender online sin programar ni negociar con proveedores. El flujo de "4 ventanillas" arma la tienda, conecta pagos con Stripe y despliega el storefront público bajo `/t/{slug}`.
+
+## Pages
+
+- [Inicio](/): Qué es DªTªBLe, cómo funcionan las 4 ventanillas, audiencias y garantías.
+- [Planes y precios](/planes): Comparativa de plan Starter y Pro con precios en MXN y política de comisiones.

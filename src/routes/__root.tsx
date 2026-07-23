@@ -77,25 +77,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DªTªBLe — Tu tienda online lista en 10 minutos" },
-      {
-        name: "description",
-        content:
-          "Franchise-as-a-Service. Elige rubro, kit de productos, fachada y pagos — recibe tu tienda operativa en menos de 10 minutos.",
-      },
-      { property: "og:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
-      {
-        property: "og:description",
-        content: "Proveedores, pagos y envíos incluidos. Sin código. Sin excusas.",
-      },
+      { property: "og:site_name", content: "DªTªBLe" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
-      { name: "description", content: "DªTªBLe arma tu tienda online por ti en 4 pasos: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar." },
-      { property: "og:description", content: "DªTªBLe arma tu tienda online por ti en 4 pasos: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar." },
-      { name: "twitter:description", content: "DªTªBLe arma tu tienda online por ti en 4 pasos: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -104,6 +88,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=Bricolage+Grotesque:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "DªTªBLe",
+          url: "https://store-sculpt-go.lovable.app",
+          description: "Franchise-as-a-Service para crear tiendas online listas en 10 minutos.",
+        }),
       },
     ],
   }),

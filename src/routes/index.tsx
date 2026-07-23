@@ -26,23 +26,56 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+const HOME_URL = "https://store-sculpt-go.lovable.app/";
+const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
+const HOME_DESC = "Elige rubro, kit de productos, fachada y pagos. Recibe tu tienda operativa en menos de 10 minutos.";
+
+const HOME_FAQS = [
+  { q: "¿En cuánto tiempo tengo mi tienda?", a: "Menos de 10 minutos en completar el flujo de 4 ventanillas, y menos de 2 minutos para que la generemos. Te llega por correo cuando esté lista." },
+  { q: "¿Necesito saber programar o diseñar?", a: "No. Eliges entre opciones. Nosotros nos encargamos de proveedores, pagos, envíos, diseño y la inteligencia detrás." },
+  { q: "¿Qué pasa con los productos? ¿Yo los tengo?", a: "No es necesario. Trabajamos con proveedores bajo demanda y productores locales. Cuando alguien compra, ellos producen y envían directo al cliente." },
+  { q: "¿Cuánto se queda DªTªBLe de cada venta?", a: "1.5% en el plan Básico, 0.5% en Pro. El resto del margen es tuyo. Sin letras chiquitas." },
+  { q: "¿Puedo cancelar cuando quiera?", a: "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver." },
+  { q: "Soy artesano y solo quiero que vendan mi producto, ¿puedo?", a: "Sí. Tenemos un área específica para productores que solo aportan producto, sin abrir tienda propia." },
+];
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { name: "description", content: HOME_DESC },
+      { property: "og:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { property: "og:description", content: HOME_DESC },
+      { property: "og:url", content: HOME_URL },
+      { property: "og:image", content: HOME_OG_IMAGE },
+      { name: "twitter:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { name: "twitter:description", content: HOME_DESC },
+      { name: "twitter:image", content: HOME_OG_IMAGE },
+    ],
+    links: [{ rel: "canonical", href: HOME_URL }],
+    scripts: [
       {
-        name: "description",
-        content:
-          "DªTªBLe arma tu tienda online por ti en 4 pasos: elige rubro, kit de productos, fachada y pagos. Sin código, sin proveedores que buscar, sin logística que negociar.",
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "DªTªBLe",
+          url: HOME_URL,
+          description: HOME_DESC,
+        }),
       },
-      { property: "og:title", content: "DªTªBLe — Franchise-as-a-Service para tu tienda online" },
       {
-        property: "og:description",
-        content:
-          "Elige un Pack de Negocio ya validado y recibe una tienda operativa en menos de 10 minutos. Proveedores, pagos y envíos incluidos.",
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: HOME_FAQS.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }),
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Landing,

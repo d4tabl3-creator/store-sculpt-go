@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /cuenta
+Disallow: /admin
+Disallow: /crear
+Disallow: /tienda/
+Disallow: /checkout/
+Disallow: /auth
+Disallow: /api/
+
+Sitemap: https://store-sculpt-go.lovable.app/sitemap.xml

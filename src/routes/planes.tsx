@@ -14,12 +14,22 @@ import { PLANS, type PlanId } from "@/lib/plans";
 import { createPlanCheckout, getMyPlan, redeemDemoCoupon } from "@/lib/plans.functions";
 
 export const Route = createFileRoute("/planes")({
-  head: () => ({
-    meta: [
-      { title: "Planes y precios — DªTªBLe" },
-      { name: "description", content: "Elige tu plan Starter o Pro y activa tu tienda hoy. Con cupón de demo puedes probar gratis." },
-    ],
-  }),
+  head: () => {
+    const url = "https://store-sculpt-go.lovable.app/planes";
+    const desc = "Elige tu plan Starter o Pro y activa tu tienda hoy. Con cupón de demo puedes probar gratis.";
+    return {
+      meta: [
+        { title: "Planes y precios — DªTªBLe" },
+        { name: "description", content: desc },
+        { property: "og:title", content: "Planes y precios — DªTªBLe" },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: url },
+        { name: "twitter:title", content: "Planes y precios — DªTªBLe" },
+        { name: "twitter:description", content: desc },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: PlansPage,
 });
 
