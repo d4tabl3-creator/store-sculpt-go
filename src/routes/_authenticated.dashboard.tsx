@@ -13,6 +13,7 @@ type StoreRow = {
   name: string;
   niche: string;
   primary_color: string;
+  status: string;
   created_at: string;
   order_count: number;
 };
@@ -36,7 +37,7 @@ function Dashboard() {
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) return;
     const [{ data: storesData }, planRes, { data: adminRes }] = await Promise.all([
-      supabase.from("stores").select("id, slug, name, niche, primary_color, created_at").eq("owner_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("stores").select("id, slug, name, niche, primary_color, status, created_at").eq("owner_id", user.id).order("created_at", { ascending: false }),
       getMyPlan(),
       supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
     ]);
@@ -113,7 +114,12 @@ function Dashboard() {
               <div key={st.id} className="rounded-2xl border border-border bg-card p-5 shadow-pop">
                 <div className="flex items-center justify-between">
                   <div className="size-10 rounded-lg" style={{ background: st.primary_color }} />
-                  <Badge variant="secondary">{st.niche}</Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant={st.status === "published" ? "default" : "secondary"}>
+                      {st.status === "published" ? "Publicada" : "Borrador"}
+                    </Badge>
+                    <Badge variant="outline">{st.niche}</Badge>
+                  </div>
                 </div>
                 <h3 className="mt-3 font-display text-lg font-bold">{st.name}</h3>
                 <div className="mt-1 font-mono text-xs text-muted-foreground">/t/{st.slug}</div>
@@ -124,20 +130,23 @@ function Dashboard() {
                     <span className="text-muted-foreground">pedidos</span>
                   </div>
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/t/$slug" params={{ slug: st.slug }} target="_blank">
-                      <ExternalLink className="size-3.5" />
-                    </Link>
-                  </Button>
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/tienda/$id" params={{ id: st.id }}>
-                      <Edit3 className="size-3.5" />
-                    </Link>
-                  </Button>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {st.status === "published" ? (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/t/$slug" params={{ slug: st.slug }} target="_blank">
+                        <ExternalLink className="mr-1 size-3.5" /> Ver
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/tienda/$id" params={{ id: st.id }}>
+                        <Edit3 className="mr-1 size-3.5" /> Publicar
+                      </Link>
+                    </Button>
+                  )}
                   <Button asChild size="sm">
                     <Link to="/tienda/$id" params={{ id: st.id }}>
-                      <TrendingUp className="size-3.5" />
+                      <Edit3 className="mr-1 size-3.5" /> Editar
                     </Link>
                   </Button>
                 </div>

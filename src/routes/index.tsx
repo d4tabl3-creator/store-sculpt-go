@@ -572,36 +572,51 @@ function Cell({ v }: { v: boolean | "partial" }) {
 function Precios() {
   const plans = [
     {
-      name: "Básico",
-      price: "$299",
-      commission: "1.5%",
-      desc: "Para empezar a vender hoy.",
+      name: "Gratis",
+      price: "$0",
+      commission: "—",
+      desc: "Arma tu tienda completa. Publica cuando quieras.",
       features: [
-        "Tienda con subdominio",
-        "Hasta 50 productos",
-        "Pasarela de pago integrada",
-        "Envíos con paquetería estándar",
-        "Panel admin completo",
-        "Chatbot IA básico",
+        "1 tienda en borrador",
+        "Elige rubro, kit y estilo",
+        "Edita productos, precios y envíos",
+        "Vista previa privada",
+        "Sin tarjeta para empezar",
       ],
-      cta: "Empezar gratis 7 días",
+      cta: "Empezar gratis",
       featured: false,
+      free: true,
+    },
+    {
+      name: "Starter",
+      price: "$299",
+      commission: "10%",
+      desc: "Publica y empieza a cobrar hoy.",
+      features: [
+        "1 tienda publicada",
+        "Checkout con Stripe activo",
+        "Panel de pedidos",
+        "Pago de comisiones automático",
+        "Cancela cuando quieras",
+      ],
+      cta: "Publicar mi tienda",
+      featured: false,
+      free: false,
     },
     {
       name: "Pro",
       price: "$499",
-      commission: "0.5%",
-      desc: "Para vender en serio.",
+      commission: "10%",
+      desc: "Para vender en serio, en varias tiendas.",
       features: [
-        "Todo lo del Básico",
-        "Productos ilimitados",
-        "Stock predictivo",
-        "Precios dinámicos",
-        "Dominio propio",
+        "Tiendas ilimitadas",
+        "Todo lo de Starter",
+        "Dominio propio (próximamente)",
         "Soporte prioritario",
       ],
       cta: "Quiero Pro",
       featured: true,
+      free: false,
     },
   ];
   return (
@@ -609,10 +624,10 @@ function Precios() {
       <div className="mx-auto max-w-5xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow="Precios"
-          title="Paga lo justo. Vende desde el día 1."
-          desc="Suscripción mensual + una comisión mínima sobre lo que vendes. Sin cobros ocultos."
+          title="Gratis para armarla. Mensual para publicarla."
+          desc="Construye tu tienda sin pagar nada. El plan mensual se activa cuando estás listo para vender. 10% de comisión solo sobre lo que se vende, sin cobros ocultos."
         />
-        <div className="mt-12 grid gap-5 md:grid-cols-2">
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
           {plans.map((p) => (
             <div
               key={p.name}
