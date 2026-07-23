@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ExternalLink, Mail, Phone, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Mail, Phone, Rocket, Trash2, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyPlan } from "@/lib/plans.functions";
+import { canPublish } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/tienda/$id")({
   head: () => ({ meta: [{ title: "Editar tienda — DªTªBLe" }] }),
@@ -20,6 +22,7 @@ type Store = {
   name: string;
   niche: string;
   primary_color: string;
+  status: string;
 };
 type Product = {
   id: string;
