@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ExternalLink, Mail, Phone, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Mail, Phone, Rocket, Trash2, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyPlan } from "@/lib/plans.functions";
+import { canPublish } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/tienda/$id")({
   head: () => ({ meta: [{ title: "Editar tienda — DªTªBLe" }] }),
@@ -20,6 +22,7 @@ type Store = {
   name: string;
   niche: string;
   primary_color: string;
+  status: string;
 };
 type Product = {
   id: string;
@@ -43,14 +46,18 @@ type Order = {
 
 function StoreManage() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const [store, setStore] = useState<Store | null>(null);
   const [paymentEmail, setPaymentEmail] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [hasPlan, setHasPlan] = useState<boolean>(false);
 
   useEffect(() => {
     load();
+    getMyPlan().then((p) => setHasPlan(canPublish(p.plan)));
   }, [id]);
 
   async function load() {
@@ -81,6 +88,26 @@ function StoreManage() {
     if (error) toast.error(error.message);
     else toast.success("Cambios guardados");
   }
+  async function togglePublish() {
+    if (!store) return;
+    const nextStatus = store.status === "published" ? "draft" : "published";
+    if (nextStatus === "published" && !hasPlan) {
+      toast.error("Necesitas un plan activo para publicar tu tienda.");
+      navigate({ to: "/planes" });
+      return;
+    }
+    if (nextStatus === "published" && !paymentEmail) {
+      toast.error("Configura primero un email de notificaciones (pestaña Configuración).");
+      return;
+    }
+    setPublishing(true);
+    const { error } = await supabase.from("stores").update({ status: nextStatus }).eq("id", id);
+    setPublishing(false);
+    if (error) { toast.error(error.message); return; }
+    setStore({ ...store, status: nextStatus });
+    toast.success(nextStatus === "published" ? "¡Tienda publicada! Ya recibes pedidos." : "Tienda despublicada.");
+  }
+
 
 
   async function updateProduct(p: Product) {
@@ -112,16 +139,57 @@ function StoreManage() {
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="size-4" /> Mis tiendas
           </Link>
-          <Button asChild size="sm" variant="outline">
-            <Link to="/t/$slug" params={{ slug: store.slug }} target="_blank">
-              Ver tienda <ExternalLink className="ml-1 size-3.5" />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {store.status === "published" ? (
+              <Button asChild size="sm" variant="outline">
+                <Link to="/t/$slug" params={{ slug: store.slug }} target="_blank">
+                  Ver tienda <ExternalLink className="ml-1 size-3.5" />
+                </Link>
+              </Button>
+            ) : null}
+            <Button
+              size="sm"
+              variant={store.status === "published" ? "outline" : "default"}
+              onClick={togglePublish}
+              disabled={publishing}
+              className={store.status === "published" ? "" : "shine-on-hover shadow-cta"}
+            >
+              {store.status === "published" ? (
+                <><EyeOff className="mr-1 size-3.5" /> Despublicar</>
+              ) : (
+                <><Rocket className="mr-1 size-3.5" /> Publicar</>
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <h1 className="font-display text-3xl font-extrabold">{store.name}</h1>
+        {store.status !== "published" && (
+          <div className="mb-6 rounded-2xl border-2 border-dashed border-accent bg-accent-soft/40 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="font-display text-lg font-bold">Tu tienda está en borrador</div>
+                <p className="text-sm text-muted-foreground">
+                  {hasPlan
+                    ? "Cuando tengas todo listo, presiona Publicar para recibir pedidos reales."
+                    : "Arma y edita todo lo que quieras gratis. Para publicar y cobrar, necesitas un plan activo (o un cupón de demo)."}
+                </p>
+              </div>
+              {!hasPlan && (
+                <Button asChild size="sm">
+                  <Link to="/planes">Ver planes</Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-3xl font-extrabold">{store.name}</h1>
+          <Badge variant={store.status === "published" ? "default" : "secondary"}>
+            {store.status === "published" ? "Publicada" : "Borrador"}
+          </Badge>
+        </div>
         <p className="text-muted-foreground">/t/{store.slug}</p>
 
         <Tabs defaultValue="orders" className="mt-6">
