@@ -28,10 +28,10 @@ import { Badge } from "@/components/ui/badge";
 
 const HOME_URL = "https://store-sculpt-go.lovable.app/";
 const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
-const HOME_DESC = "Elige rubro, kit de productos, fachada y pagos. Recibe tu tienda operativa en menos de 10 minutos.";
+const HOME_DESC = "Arma tu vitrina hoy en 10 minutos. Empieza a vender de verdad en 24 a 48 horas, cuando conectemos tu proveedor, tus pagos y tus datos fiscales.";
 
 const HOME_FAQS = [
-  { q: "¿En cuánto tiempo tengo mi tienda?", a: "Menos de 10 minutos en completar el flujo de 4 ventanillas, y menos de 2 minutos para que la generemos. Te llega por correo cuando esté lista." },
+  { q: "¿En cuánto tiempo tengo mi tienda vendiendo?", a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC." },
   { q: "¿Necesito saber programar o diseñar?", a: "No. Eliges entre opciones. Nosotros nos encargamos de proveedores, pagos, envíos, diseño y la inteligencia detrás." },
   { q: "¿Qué pasa con los productos? ¿Yo los tengo?", a: "No es necesario. Trabajamos con proveedores bajo demanda y productores locales. Cuando alguien compra, ellos producen y envían directo al cliente." },
   { q: "¿Cuánto se queda DªTªBLe de cada venta?", a: "1.5% en el plan Básico, 0.5% en Pro. El resto del margen es tuyo. Sin letras chiquitas." },
@@ -42,13 +42,13 @@ const HOME_FAQS = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { title: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
       { name: "description", content: HOME_DESC },
-      { property: "og:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { property: "og:title", content: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
       { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: HOME_URL },
       { property: "og:image", content: HOME_OG_IMAGE },
-      { name: "twitter:title", content: "DªTªBLe — Tu tienda online lista en 10 minutos" },
+      { name: "twitter:title", content: "DªTªBLe — Tu vitrina hoy, tu tienda vendiendo en 24–48 h" },
       { name: "twitter:description", content: HOME_DESC },
       { name: "twitter:image", content: HOME_OG_IMAGE },
     ],
@@ -135,16 +135,17 @@ function Hero() {
             <Sparkles className="size-3.5" /> Franchise-as-a-Service
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Tu tienda online lista en{" "}
+            Tu vitrina hoy.{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              10 minutos
+              Vendiendo en 24–48 h
             </span>
             .
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            No diseñas una tienda. Eliges un <strong className="text-foreground">Pack de Negocio</strong> ya
-            validado — con proveedores, productos, pagos y envíos incluidos — y empiezas a vender desde el
-            minuto 1. Tú pides por ventanilla, nosotros te entregamos el negocio terminado.
+            En 10 minutos publicamos tu <strong className="text-foreground">vitrina</strong> con productos
+            demo o tarjetas de regalo digitales — se ve y funciona igual que la final. En las siguientes{" "}
+            <strong className="text-foreground">24 a 48 h hábiles</strong> enlazamos tu cuenta con el proveedor
+            bajo demanda, activamos tus pagos y verificamos tus datos para que empieces a vender producto real.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
@@ -158,10 +159,10 @@ function Hero() {
           </div>
           <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
             {[
-              "Sin saber programar",
-              "Sin buscar proveedores",
-              "Pagos y envíos incluidos",
-              "IA que vende por ti",
+              "Vitrina publicada el mismo día",
+              "Producto real en 24–48 h",
+              "Tú aportas CLABE y correo, nosotros el resto",
+              "Sin inventario ni programación",
             ].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" /> {f}
@@ -270,8 +271,8 @@ function ComoFunciona() {
       <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow="Cómo funciona"
-          title="4 ventanillas. 10 minutos. Tu tienda lista."
-          desc="Un flujo guiado, ventanilla por ventanilla. Cero menús abrumadores, cero decisiones técnicas."
+          title="4 ventanillas. Vitrina hoy, ventas reales en 24–48 h."
+          desc="Un flujo guiado, ventanilla por ventanilla. Tú aportas datos básicos (correo, CLABE, cuenta con el proveedor); nosotros integramos todo."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {VENTANILLAS.map((v) => (
@@ -399,14 +400,15 @@ function MomentoMcDonalds() {
       <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
         <div className="max-w-2xl">
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            Entrega instantánea
+            Entrega en dos tiempos
           </div>
           <h2 className="mt-3 font-display text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">
-            Pagas. Esperas 2 minutos. Recibes tu tienda.
+            Hoy: tu vitrina. En 24–48 h: vendes de verdad.
           </h2>
           <p className="mt-4 text-base opacity-80">
-            No te entregamos piezas sueltas ni materia prima — te entregamos el negocio armado y listo
-            para vender. Cuando das clic en <strong>¡Quiero mi tienda!</strong>, esto pasa en tiempo real:
+            No te vendemos humo de "listo en 2 minutos". Publicamos tu vitrina el mismo día con productos
+            demo o tarjetas de regalo digitales. Después, con los datos que tú aportas, enlazamos tu cuenta
+            de proveedor, activamos tus pagos y dejamos el catálogo real vendiendo en 24 a 48 horas hábiles.
           </p>
         </div>
 
@@ -508,7 +510,7 @@ function IAFantasma() {
 function Comparativa() {
   const rows = [
     ["Flujo guiado ventanilla por ventanilla", true, false, false],
-    ["Configuración en menos de 10 minutos", true, false, false],
+    ["Vitrina publicada el mismo día", true, false, false],
     ["Sin conocimientos técnicos", true, false, false],
     ["Proveedores ya integrados", true, false, false],
     ["Logística ya negociada", true, false, false],
@@ -748,8 +750,12 @@ function Marketplace() {
 
 const FAQS = [
   {
-    q: "¿En cuánto tiempo tengo mi tienda?",
-    a: "Menos de 10 minutos en completar el flujo de 4 ventanillas, y menos de 2 minutos para que la generemos. Te llega por correo cuando esté lista.",
+    q: "¿En cuánto tiempo tengo mi tienda vendiendo?",
+    a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC.",
+  },
+  {
+    q: "¿Qué necesitas de mí para conectar al proveedor?",
+    a: "Correo electrónico para abrir tu cuenta con el proveedor bajo demanda (te guiamos paso a paso; si ya la tienes, mejor). CLABE para depositarte tus ventas. Opcional: RFC y régimen fiscal si quieres factura. Sin eso podemos dejar tu vitrina viva con tarjetas de regalo, pero no despachar producto físico.",
   },
   {
     q: "¿Necesito saber programar o diseñar?",
@@ -826,7 +832,7 @@ function CTAFinal() {
           Tu tienda te está esperando.
         </h2>
         <p className="mt-4 text-base opacity-90 md:text-lg">
-          10 minutos. 4 ventanillas. Cero excusas para no empezar.
+          Vitrina hoy. Ventas reales en 24–48 h. Cero excusas para no empezar.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" variant="secondary" className="shine-on-hover">
@@ -858,7 +864,7 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Franchise-as-a-Service. Tu tienda online lista en 10 minutos. Hecho con ♥ en México.
+              Franchise-as-a-Service. Vitrina hoy, tienda vendiendo en 24–48 h. Hecho con ♥ en México.
             </p>
           </div>
           <FooterCol
