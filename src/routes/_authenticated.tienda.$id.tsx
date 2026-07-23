@@ -197,7 +197,7 @@ function StoreManage() {
             </div>
             <div>
               <Label>Email de notificaciones</Label>
-              <Input value={store.payment_email || ""} onChange={(e) => setStore({ ...store, payment_email: e.target.value })} />
+              <Input value={paymentEmail} onChange={(e) => setPaymentEmail(e.target.value)} />
             </div>
             <div>
               <Label>Color primario</Label>
