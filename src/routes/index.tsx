@@ -783,7 +783,7 @@ const FAQS = [
   },
   {
     q: "¿Cuánto se queda DªTªBLe de cada venta?",
-    a: "1.5% en el plan Básico, 0.5% en Pro. El resto del margen es tuyo. Sin letras chiquitas.",
+    a: "20% si publicas gratis, 10% si activas un plan mensual. El resto del margen es tuyo. Sin letras chiquitas.",
   },
   {
     q: "¿Puedo cancelar cuando quiera?",
