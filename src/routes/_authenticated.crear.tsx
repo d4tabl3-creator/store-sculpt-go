@@ -142,6 +142,8 @@ function WizardPage() {
     }
   }
 
+  if (!gateChecked) return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">Comprobando plan…</div>;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/60 bg-card">
