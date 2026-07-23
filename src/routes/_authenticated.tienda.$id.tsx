@@ -93,14 +93,15 @@ function StoreManage() {
   async function togglePublish() {
     if (!store) return;
     const nextStatus = store.status === "published" ? "draft" : "published";
-    if (nextStatus === "published" && !hasPlan) {
-      toast.error("Necesitas un plan activo para publicar tu tienda.");
-      navigate({ to: "/planes" });
-      return;
-    }
     if (nextStatus === "published" && !paymentEmail) {
       toast.error("Configura primero un email de notificaciones (pestaña Configuración).");
       return;
+    }
+    if (nextStatus === "published" && !hasPlan) {
+      const ok = confirm(
+        "Vas a publicar sin plan mensual. Aplicará 20% de comisión por venta (en lugar de 10%).\n\n¿Continuar?",
+      );
+      if (!ok) return;
     }
     setPublishing(true);
     const { error } = await supabase.from("stores").update({ status: nextStatus }).eq("id", id);
