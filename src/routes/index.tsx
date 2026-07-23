@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 
 const HOME_URL = "https://store-sculpt-go.lovable.app/";
 const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
-const HOME_DESC = "Casi todo lo que recibes se desgasta, se vence o se olvida. Un activo digital productivo no. En DªTªBLe construimos el tuyo: una tienda que trabaja por ti y crece con tu esfuerzo, sin inventario ni programación.";
+const HOME_DESC = "Construimos para ti activos digitales diseñados para generar ingresos: tienda automatizada, proveedor conectado y pagos activos. Sin renta, sin inventario, sin código.";
 
 const HOME_FAQS = [
   { q: "¿En cuánto tiempo tengo mi tienda vendiendo?", a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC." },
@@ -42,13 +42,13 @@ const HOME_FAQS = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DªTªBLe — El único activo que te pueden regalar que no se desgasta" },
+      { title: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
       { name: "description", content: HOME_DESC },
-      { property: "og:title", content: "DªTªBLe — Un activo digital productivo que crece contigo" },
+      { property: "og:title", content: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
       { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: HOME_URL },
       { property: "og:image", content: HOME_OG_IMAGE },
-      { name: "twitter:title", content: "DªTªBLe — Un activo digital productivo que crece contigo" },
+      { name: "twitter:title", content: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
       { name: "twitter:description", content: HOME_DESC },
       { name: "twitter:image", content: HOME_OG_IMAGE },
     ],
@@ -135,17 +135,17 @@ function Hero() {
             <Sparkles className="size-3.5" /> Activo digital productivo
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Lo único que te pueden regalar que{" "}
+            Construimos para ti{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              no se desgasta
-            </span>
-            .
+              activos digitales
+            </span>{" "}
+            diseñados para generar ingresos.
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            Casi todo lo que recibes se acaba, se vence o se olvida en un cajón. Un{" "}
-            <strong className="text-foreground">activo digital productivo</strong> no: crece con el esfuerzo que le
-            pongas y sigue trabajando cuando tú no estás. Aquí construimos el tuyo — una tienda pensada para
-            producir, no para adornar tu perfil.
+            Sin renta, sin inventario, sin comprar mercancía por adelantado. Un{" "}
+            <strong className="text-foreground">activo digital productivo</strong> escala a la velocidad del internet:
+            crece con tu esfuerzo y sigue trabajando cuando tú no estás. Tú traes la marca; nosotros ponemos
+            proveedor, pagos e infraestructura.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
@@ -159,10 +159,10 @@ function Hero() {
           </div>
           <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
             {[
-              "No se desgasta: crece con el uso",
-              "No depende de tu tiempo para producir",
-              "Sin inventario ni programación",
-              "Tú pones el empeño; nosotros la infraestructura",
+              "0 renta · 0 inventario · 0 código",
+              "Diseñado para generar ingresos, no likes",
+              "Crecimiento exponencial, no lineal",
+              "Tú pones la marca; nosotros la maquinaria",
             ].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" /> {f}
