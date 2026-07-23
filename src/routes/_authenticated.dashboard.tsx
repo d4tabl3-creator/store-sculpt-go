@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Edit3, ExternalLink, LogOut, Plus, ShoppingBag, Store, TrendingUp } from "lucide-react";
+import { CreditCard, Edit3, ExternalLink, LogOut, Plus, Settings, ShieldCheck, ShoppingBag, Store, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyPlan } from "@/lib/plans.functions";
 
 type StoreRow = {
   id: string;
@@ -25,27 +26,25 @@ function Dashboard() {
   const navigate = useNavigate();
   const [stores, setStores] = useState<StoreRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [plan, setPlan] = useState<Awaited<ReturnType<typeof getMyPlan>> | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   async function load() {
     setLoading(true);
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) return;
-    const { data: storesData } = await supabase
-      .from("stores")
-      .select("id, slug, name, niche, primary_color, created_at")
-      .eq("owner_id", user.id)
-      .order("created_at", { ascending: false });
-
+    const [{ data: storesData }, planRes, { data: adminRes }] = await Promise.all([
+      supabase.from("stores").select("id, slug, name, niche, primary_color, created_at").eq("owner_id", user.id).order("created_at", { ascending: false }),
+      getMyPlan(),
+      supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+    ]);
+    setPlan(planRes);
+    setIsAdmin(!!adminRes);
     const enriched = await Promise.all(
       (storesData || []).map(async (st) => {
-        const { count } = await supabase
-          .from("store_orders")
-          .select("id", { count: "exact", head: true })
-          .eq("store_id", st.id);
+        const { count } = await supabase.from("store_orders").select("id", { count: "exact", head: true }).eq("store_id", st.id);
         return { ...st, order_count: count || 0 };
       }),
     );
@@ -66,9 +65,16 @@ function Dashboard() {
           <Link to="/" className="font-display text-xl font-extrabold">
             D<span className="text-primary">ª</span>T<span className="text-primary">ª</span>BLe
           </Link>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="mr-1 size-4" /> Salir
-          </Button>
+          <div className="flex items-center gap-1">
+            {plan?.plan ? (
+              <Badge variant="secondary" className="mr-2 uppercase">{plan.plan}</Badge>
+            ) : (
+              <Button size="sm" variant="outline" asChild><Link to="/planes"><CreditCard className="mr-1 size-3.5" />Elegir plan</Link></Button>
+            )}
+            <Button variant="ghost" size="sm" asChild><Link to="/cuenta"><Settings className="mr-1 size-4" />Cuenta</Link></Button>
+            {isAdmin && <Button variant="ghost" size="sm" asChild><Link to="/admin"><ShieldCheck className="mr-1 size-4" />Admin</Link></Button>}
+            <Button variant="ghost" size="sm" onClick={handleSignOut}><LogOut className="mr-1 size-4" />Salir</Button>
+          </div>
         </div>
       </header>
 
