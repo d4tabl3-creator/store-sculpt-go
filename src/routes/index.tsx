@@ -132,37 +132,37 @@ function Hero() {
       <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-16 pb-20 md:grid-cols-2 md:items-center md:pt-24 md:pb-28">
         <div>
           <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border-2 border-primary bg-black px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary shadow-[3px_3px_0_0_rgba(0,0,0,0.9)]">
-            <Sparkles className="size-3.5" /> Franchise-as-a-Service
+            <Sparkles className="size-3.5" /> Activo digital productivo
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Tu vitrina digital automatizada hoy.{" "}
+            Lo único que te pueden regalar que{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Vendiendo en 24–48 h
+              no se desgasta
             </span>
             .
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            En 10 minutos publicamos tu <strong className="text-foreground">vitrina</strong> con productos
-            demo o tarjetas de regalo digitales — se ve y funciona igual que la final. En las siguientes{" "}
-            <strong className="text-foreground">24 a 48 h hábiles</strong> enlazamos tu cuenta con el proveedor
-            bajo demanda, activamos tus pagos y verificamos tus datos para que empieces a vender producto real.
+            Casi todo lo que recibes se acaba, se vence o se olvida en un cajón. Un{" "}
+            <strong className="text-foreground">activo digital productivo</strong> no: crece con el esfuerzo que le
+            pongas y sigue trabajando cuando tú no estás. Aquí construimos el tuyo — una tienda pensada para
+            producir, no para adornar tu perfil.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
               <Link to="/crear">
-                Crear mi tienda <ArrowRight className="ml-1" />
+                Quiero el mío <ArrowRight className="ml-1" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="#como-funciona">Ver cómo funciona</a>
+              <a href="#como-funciona">Ver cómo lo armamos</a>
             </Button>
           </div>
           <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
             {[
-              "Vitrina publicada el mismo día",
-              "Producto real en 24–48 h",
-              "Tú aportas CLABE y correo, nosotros el resto",
+              "No se desgasta: crece con el uso",
+              "No depende de tu tiempo para producir",
               "Sin inventario ni programación",
+              "Tú pones el empeño; nosotros la infraestructura",
             ].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" /> {f}
