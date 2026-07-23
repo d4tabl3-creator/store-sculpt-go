@@ -42,13 +42,13 @@ const HOME_FAQS = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DªTªBLe — Tu vitrina digital automatizada hoy, tu tienda vendiendo en 24–48 h" },
+      { title: "DªTªBLe — El único activo que te pueden regalar que no se desgasta" },
       { name: "description", content: HOME_DESC },
-      { property: "og:title", content: "DªTªBLe — Tu vitrina digital automatizada hoy, tu tienda vendiendo en 24–48 h" },
+      { property: "og:title", content: "DªTªBLe — Un activo digital productivo que crece contigo" },
       { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: HOME_URL },
       { property: "og:image", content: HOME_OG_IMAGE },
-      { name: "twitter:title", content: "DªTªBLe — Tu vitrina digital automatizada hoy, tu tienda vendiendo en 24–48 h" },
+      { name: "twitter:title", content: "DªTªBLe — Un activo digital productivo que crece contigo" },
       { name: "twitter:description", content: HOME_DESC },
       { name: "twitter:image", content: HOME_OG_IMAGE },
     ],
