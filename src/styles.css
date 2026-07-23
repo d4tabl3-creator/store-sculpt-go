@@ -45,8 +45,8 @@
   --color-ring-offset-background: var(--background);
 
   --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-display: "Bagel Fat One", "Chewy", "Bricolage Grotesque", system-ui, sans-serif;
-  --font-bubble: "Chewy", "Bagel Fat One", cursive;
+  --font-display: "Bungee", "Rubik Mono One", system-ui, sans-serif;
+  --font-bubble: "Bungee", "Rubik Mono One", system-ui, sans-serif;
   --font-serif: "Fraunces", Georgia, serif;
 
   --shadow-soft: 0 1px 2px rgba(0,0,0,0.5),
