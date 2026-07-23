@@ -864,7 +864,7 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Franchise-as-a-Service. Tu tienda online lista en 10 minutos. Hecho con ♥ en México.
+              Franchise-as-a-Service. Vitrina hoy, tienda vendiendo en 24–48 h. Hecho con ♥ en México.
             </p>
           </div>
           <FooterCol
