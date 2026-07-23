@@ -139,15 +139,51 @@ function StoreManage() {
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="size-4" /> Mis tiendas
           </Link>
-          <Button asChild size="sm" variant="outline">
-            <Link to="/t/$slug" params={{ slug: store.slug }} target="_blank">
-              Ver tienda <ExternalLink className="ml-1 size-3.5" />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {store.status === "published" ? (
+              <Button asChild size="sm" variant="outline">
+                <Link to="/t/$slug" params={{ slug: store.slug }} target="_blank">
+                  Ver tienda <ExternalLink className="ml-1 size-3.5" />
+                </Link>
+              </Button>
+            ) : null}
+            <Button
+              size="sm"
+              variant={store.status === "published" ? "outline" : "default"}
+              onClick={togglePublish}
+              disabled={publishing}
+              className={store.status === "published" ? "" : "shine-on-hover shadow-cta"}
+            >
+              {store.status === "published" ? (
+                <><EyeOff className="mr-1 size-3.5" /> Despublicar</>
+              ) : (
+                <><Rocket className="mr-1 size-3.5" /> Publicar</>
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8">
+        {store.status !== "published" && (
+          <div className="mb-6 rounded-2xl border-2 border-dashed border-accent bg-accent-soft/40 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="font-display text-lg font-bold">Tu tienda está en borrador</div>
+                <p className="text-sm text-muted-foreground">
+                  {hasPlan
+                    ? "Cuando tengas todo listo, presiona Publicar para recibir pedidos reales."
+                    : "Arma y edita todo lo que quieras gratis. Para publicar y cobrar, necesitas un plan activo (o un cupón de demo)."}
+                </p>
+              </div>
+              {!hasPlan && (
+                <Button asChild size="sm">
+                  <Link to="/planes">Ver planes</Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
         <h1 className="font-display text-3xl font-extrabold">{store.name}</h1>
         <p className="text-muted-foreground">/t/{store.slug}</p>
 
