@@ -32,6 +32,7 @@ function WizardPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [gateChecked, setGateChecked] = useState(false);
   const [s, setS] = useState<State>({
     nicheId: "",
     kitId: "",
@@ -43,6 +44,29 @@ function WizardPage() {
     shippingExpress: false,
     shippingPickup: true,
   });
+
+  useEffect(() => {
+    (async () => {
+      const u = (await supabase.auth.getUser()).data.user;
+      if (!u) { navigate({ to: "/auth" }); return; }
+      const plan = await getMyPlan();
+      if (!plan.plan) {
+        toast.error("Necesitas un plan activo para crear una tienda");
+        navigate({ to: "/planes" });
+        return;
+      }
+      const limit = planLimit(plan.plan);
+      if (limit !== null) {
+        const { count } = await supabase.from("stores").select("id", { count: "exact", head: true }).eq("owner_id", u.id);
+        if ((count || 0) >= limit) {
+          toast.error(`Tu plan ${plan.plan.toUpperCase()} permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`);
+          navigate({ to: "/planes" });
+          return;
+        }
+      }
+      setGateChecked(true);
+    })();
+  }, [navigate]);
 
   const niche = NICHES.find((n) => n.id === s.nicheId) || null;
   const kit = niche?.kits.find((k) => k.id === s.kitId) || null;
