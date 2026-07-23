@@ -510,7 +510,7 @@ function IAFantasma() {
 function Comparativa() {
   const rows = [
     ["Flujo guiado ventanilla por ventanilla", true, false, false],
-    ["Configuración en menos de 10 minutos", true, false, false],
+    ["Vitrina publicada el mismo día", true, false, false],
     ["Sin conocimientos técnicos", true, false, false],
     ["Proveedores ya integrados", true, false, false],
     ["Logística ya negociada", true, false, false],
