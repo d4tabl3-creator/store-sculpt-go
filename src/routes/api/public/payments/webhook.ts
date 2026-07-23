@@ -17,7 +17,7 @@ function getSupabase(): SupabaseClient<Database> {
 /** Idempotencia: guardar event_id y saltar si ya lo procesamos. */
 async function alreadyProcessed(eventId: string): Promise<boolean> {
   const sb = getSupabase();
-  const { error } = await sb.from("processed_stripe_events").insert({ event_id: eventId });
+  const { error } = await sb.from("processed_stripe_events").insert({ id: eventId });
   // Si insert falla por unique_violation, ya lo procesamos.
   return !!error;
 }
@@ -31,8 +31,8 @@ async function handleStoreOrderPaid(session: any) {
   const sb = getSupabase();
   // apply_paid_order: marca paid + decrementa stock + registra comisión
   const { error } = await sb.rpc("apply_paid_order", {
-    p_order_id: orderId,
-    p_commission_bps: 1000, // 10% por defecto
+    _order_id: orderId,
+    _commission_bps: 1000, // 10%
   });
   if (error) console.error("apply_paid_order error:", error);
 }
