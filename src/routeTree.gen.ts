@@ -22,6 +22,7 @@ import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.
 import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authenticated.bienvenida'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
+import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authenticated.preparando.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicCommerceWorkerRouteImport } from './routes/api/public/commerce/worker'
 import { Route as ApiPublicCommerceWebhookProviderRouteImport } from './routes/api/public/commerce/webhook.$provider'
@@ -90,6 +91,12 @@ const AuthenticatedTiendaIdRoute = AuthenticatedTiendaIdRouteImport.update({
   path: '/tienda/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPreparandoIdRoute =
+  AuthenticatedPreparandoIdRouteImport.update({
+    id: '/preparando/$id',
+    path: '/preparando/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
+  '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -137,6 +145,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
+  '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -156,6 +165,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
+  '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/checkout/return'
     | '/t/$slug'
+    | '/preparando/$id'
     | '/tienda/$id'
     | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/checkout/return'
     | '/t/$slug'
+    | '/preparando/$id'
     | '/tienda/$id'
     | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
@@ -210,6 +222,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/checkout/return'
     | '/t/$slug'
+    | '/_authenticated/preparando/$id'
     | '/_authenticated/tienda/$id'
     | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
@@ -322,6 +335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTiendaIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/preparando/$id': {
+      id: '/_authenticated/preparando/$id'
+      path: '/preparando/$id'
+      fullPath: '/preparando/$id'
+      preLoaderRoute: typeof AuthenticatedPreparandoIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -352,6 +372,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCrearRoute: typeof AuthenticatedCrearRoute
   AuthenticatedCuentaRoute: typeof AuthenticatedCuentaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPreparandoIdRoute: typeof AuthenticatedPreparandoIdRoute
   AuthenticatedTiendaIdRoute: typeof AuthenticatedTiendaIdRoute
 }
 
@@ -361,6 +382,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCrearRoute: AuthenticatedCrearRoute,
   AuthenticatedCuentaRoute: AuthenticatedCuentaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPreparandoIdRoute: AuthenticatedPreparandoIdRoute,
   AuthenticatedTiendaIdRoute: AuthenticatedTiendaIdRoute,
 }
 
