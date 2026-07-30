@@ -22,7 +22,10 @@ import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.
 import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authenticated.bienvenida'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
+import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authenticated.preparando.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicCommerceWorkerRouteImport } from './routes/api/public/commerce/worker'
+import { Route as ApiPublicCommerceWebhookProviderRouteImport } from './routes/api/public/commerce/webhook.$provider'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -88,10 +91,27 @@ const AuthenticatedTiendaIdRoute = AuthenticatedTiendaIdRouteImport.update({
   path: '/tienda/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPreparandoIdRoute =
+  AuthenticatedPreparandoIdRouteImport.update({
+    id: '/preparando/$id',
+    path: '/preparando/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
     path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCommerceWorkerRoute = ApiPublicCommerceWorkerRouteImport.update({
+  id: '/api/public/commerce/worker',
+  path: '/api/public/commerce/worker',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCommerceWebhookProviderRoute =
+  ApiPublicCommerceWebhookProviderRouteImport.update({
+    id: '/api/public/commerce/webhook/$provider',
+    path: '/api/public/commerce/webhook/$provider',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -107,8 +127,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
+  '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -122,8 +145,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
+  '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -139,8 +165,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
+  '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -156,8 +185,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/checkout/return'
     | '/t/$slug'
+    | '/preparando/$id'
     | '/tienda/$id'
+    | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
+    | '/api/public/commerce/webhook/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -171,8 +203,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/checkout/return'
     | '/t/$slug'
+    | '/preparando/$id'
     | '/tienda/$id'
+    | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
+    | '/api/public/commerce/webhook/$provider'
   id:
     | '__root__'
     | '/'
@@ -187,8 +222,11 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/checkout/return'
     | '/t/$slug'
+    | '/_authenticated/preparando/$id'
     | '/_authenticated/tienda/$id'
+    | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
+    | '/api/public/commerce/webhook/$provider'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -199,7 +237,9 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   TSlugRoute: typeof TSlugRoute
+  ApiPublicCommerceWorkerRoute: typeof ApiPublicCommerceWorkerRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicCommerceWebhookProviderRoute: typeof ApiPublicCommerceWebhookProviderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -295,11 +335,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTiendaIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/preparando/$id': {
+      id: '/_authenticated/preparando/$id'
+      path: '/preparando/$id'
+      fullPath: '/preparando/$id'
+      preLoaderRoute: typeof AuthenticatedPreparandoIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
       fullPath: '/api/public/payments/webhook'
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/commerce/worker': {
+      id: '/api/public/commerce/worker'
+      path: '/api/public/commerce/worker'
+      fullPath: '/api/public/commerce/worker'
+      preLoaderRoute: typeof ApiPublicCommerceWorkerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/commerce/webhook/$provider': {
+      id: '/api/public/commerce/webhook/$provider'
+      path: '/api/public/commerce/webhook/$provider'
+      fullPath: '/api/public/commerce/webhook/$provider'
+      preLoaderRoute: typeof ApiPublicCommerceWebhookProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -311,6 +372,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCrearRoute: typeof AuthenticatedCrearRoute
   AuthenticatedCuentaRoute: typeof AuthenticatedCuentaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPreparandoIdRoute: typeof AuthenticatedPreparandoIdRoute
   AuthenticatedTiendaIdRoute: typeof AuthenticatedTiendaIdRoute
 }
 
@@ -320,6 +382,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCrearRoute: AuthenticatedCrearRoute,
   AuthenticatedCuentaRoute: AuthenticatedCuentaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPreparandoIdRoute: AuthenticatedPreparandoIdRoute,
   AuthenticatedTiendaIdRoute: AuthenticatedTiendaIdRoute,
 }
 
@@ -335,18 +398,10 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   TSlugRoute: TSlugRoute,
+  ApiPublicCommerceWorkerRoute: ApiPublicCommerceWorkerRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicCommerceWebhookProviderRoute: ApiPublicCommerceWebhookProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

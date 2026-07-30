@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { NICHES, THEMES, slugify } from "@/lib/kits";
 import { getMyPlan } from "@/lib/plans.functions";
 import { planLimit } from "@/lib/plans";
+import { startProvisioning } from "@/lib/commerce.functions";
+
 
 export const Route = createFileRoute("/_authenticated/crear")({
   head: () => ({ meta: [{ title: "Crear tienda — DªTªBLe" }] }),
@@ -132,8 +134,11 @@ function WizardPage() {
         await supabase.from("store_payment_settings").insert({ store_id: store.id, payment_email: s.paymentEmail });
       }
 
-      toast.success("¡Tienda armada! Ahora edítala y publícala cuando estés listo.");
-      navigate({ to: "/tienda/$id", params: { id: store.id } });
+      // El Orquestador de Comercio provisiona la tienda independiente del
+      // cliente y sincroniza catálogo/inventario en segundo plano.
+      await startProvisioning({ data: { storeId: store.id } });
+      navigate({ to: "/preparando/$id", params: { id: store.id } });
+
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al crear tienda");
     } finally {

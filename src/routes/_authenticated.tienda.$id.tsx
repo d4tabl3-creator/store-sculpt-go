@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
+import { syncProduct, getCommerceHealth } from "@/lib/commerce.functions";
 import { commissionLabelFor } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
 
@@ -55,11 +56,15 @@ function StoreManage() {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [plan, setPlan] = useState<PlanId | null>(null);
+  const [health, setHealth] = useState<{ status: string | null; pendingJobs: number; erroredProducts: number } | null>(null);
   const hasPlan = plan === "starter" || plan === "pro";
 
   useEffect(() => {
     load();
     getMyPlan().then((p) => setPlan(p.plan as PlanId | null));
+    getCommerceHealth({ data: { storeId: id } })
+      .then((h) => setHealth(h as never))
+      .catch(() => setHealth(null));
   }, [id]);
 
   async function load() {
@@ -118,8 +123,10 @@ function StoreManage() {
       .from("store_products")
       .update({ name: p.name, price_cents: p.price_cents, stock: p.stock })
       .eq("id", p.id);
-    if (error) toast.error(error.message);
-    else toast.success("Producto actualizado");
+    if (error) { toast.error(error.message); return; }
+    toast.success("Producto actualizado");
+    // Propagar el cambio al conector de infraestructura en segundo plano.
+    syncProduct({ data: { storeId: id, productId: p.id } }).catch(() => {});
   }
 
   async function deleteProduct(pid: string) {
@@ -201,6 +208,24 @@ function StoreManage() {
           </Badge>
         </div>
         <p className="text-muted-foreground">/t/{store.slug}</p>
+        {health && (
+          <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs">
+            <span
+              className={`size-2 rounded-full ${
+                health.erroredProducts > 0
+                  ? "bg-destructive"
+                  : health.pendingJobs > 0
+                    ? "bg-accent"
+                    : "bg-primary"
+              }`}
+            />
+            {health.erroredProducts > 0
+              ? `${health.erroredProducts} producto(s) con error de sincronización`
+              : health.pendingJobs > 0
+                ? `Sincronizando ${health.pendingJobs} cambio(s)…`
+                : "Bloques verificados y sincronizados"}
+          </div>
+        )}
 
         <Tabs defaultValue="orders" className="mt-6">
           <TabsList>

@@ -14,6 +14,385 @@ export type Database = {
   }
   public: {
     Tables: {
+      commerce_event_log: {
+        Row: {
+          created_at: string
+          detail: Json
+          direction: string
+          event: string
+          id: string
+          level: string
+          provider: string | null
+          store_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: Json
+          direction?: string
+          event: string
+          id?: string
+          level?: string
+          provider?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: Json
+          direction?: string
+          event?: string
+          id?: string
+          level?: string
+          provider?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commerce_event_log_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commerce_order_bindings: {
+        Row: {
+          created_at: string
+          external_order_id: string | null
+          fulfillment_status: string
+          id: string
+          last_synced_at: string | null
+          order_id: string
+          provider: string
+          store_id: string
+          sync_error: string | null
+          sync_status: string
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_order_id?: string | null
+          fulfillment_status?: string
+          id?: string
+          last_synced_at?: string | null
+          order_id: string
+          provider: string
+          store_id: string
+          sync_error?: string | null
+          sync_status?: string
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_order_id?: string | null
+          fulfillment_status?: string
+          id?: string
+          last_synced_at?: string | null
+          order_id?: string
+          provider?: string
+          store_id?: string
+          sync_error?: string | null
+          sync_status?: string
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commerce_order_bindings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "store_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_order_bindings_provider_fkey"
+            columns: ["provider"]
+            isOneToOne: false
+            referencedRelation: "commerce_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_order_bindings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commerce_product_bindings: {
+        Row: {
+          created_at: string
+          external_inventory_item_id: string | null
+          external_product_id: string | null
+          external_variant_id: string | null
+          id: string
+          last_synced_at: string | null
+          product_id: string
+          provider: string
+          store_id: string
+          sync_error: string | null
+          sync_hash: string | null
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_inventory_item_id?: string | null
+          external_product_id?: string | null
+          external_variant_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          product_id: string
+          provider: string
+          store_id: string
+          sync_error?: string | null
+          sync_hash?: string | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_inventory_item_id?: string | null
+          external_product_id?: string | null
+          external_variant_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          product_id?: string
+          provider?: string
+          store_id?: string
+          sync_error?: string | null
+          sync_hash?: string | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commerce_product_bindings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "store_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_product_bindings_provider_fkey"
+            columns: ["provider"]
+            isOneToOne: false
+            referencedRelation: "commerce_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_product_bindings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commerce_providers: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          label: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id: string
+          label: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string
+        }
+        Relationships: []
+      }
+      commerce_store_bindings: {
+        Row: {
+          attempts: number
+          created_at: string
+          external_domain: string | null
+          external_store_id: string | null
+          id: string
+          last_synced_at: string | null
+          owner_id: string
+          provider: string
+          provisioning_error: string | null
+          provisioning_progress: number
+          provisioning_status: string
+          provisioning_step: string
+          ready_at: string | null
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          external_domain?: string | null
+          external_store_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          owner_id: string
+          provider?: string
+          provisioning_error?: string | null
+          provisioning_progress?: number
+          provisioning_status?: string
+          provisioning_step?: string
+          ready_at?: string | null
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          external_domain?: string | null
+          external_store_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          owner_id?: string
+          provider?: string
+          provisioning_error?: string | null
+          provisioning_progress?: number
+          provisioning_status?: string
+          provisioning_step?: string
+          ready_at?: string | null
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commerce_store_bindings_provider_fkey"
+            columns: ["provider"]
+            isOneToOne: false
+            referencedRelation: "commerce_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_store_bindings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commerce_store_credentials: {
+        Row: {
+          admin_token: string | null
+          api_version: string | null
+          created_at: string
+          extra: Json
+          provider: string
+          store_id: string
+          updated_at: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          admin_token?: string | null
+          api_version?: string | null
+          created_at?: string
+          extra?: Json
+          provider: string
+          store_id: string
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          admin_token?: string | null
+          api_version?: string | null
+          created_at?: string
+          extra?: Json
+          provider?: string
+          store_id?: string
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commerce_store_credentials_provider_fkey"
+            columns: ["provider"]
+            isOneToOne: false
+            referencedRelation: "commerce_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_store_credentials_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commerce_sync_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          id: string
+          kind: string
+          last_error: string | null
+          max_attempts: number
+          payload: Json
+          provider: string
+          run_after: string
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          kind: string
+          last_error?: string | null
+          max_attempts?: number
+          payload?: Json
+          provider: string
+          run_after?: string
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          last_error?: string | null
+          max_attempts?: number
+          payload?: Json
+          provider?: string
+          run_after?: string
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commerce_sync_jobs_provider_fkey"
+            columns: ["provider"]
+            isOneToOne: false
+            referencedRelation: "commerce_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_sync_jobs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_ledger: {
         Row: {
           commission_cents: number
