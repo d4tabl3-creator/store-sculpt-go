@@ -49,6 +49,25 @@ async function handleStoreOrderPaid(session: any) {
     _commission_bps: commissionBps,
   });
   if (error) console.error("apply_paid_order error:", error);
+
+  // Orquestador: enviar el pedido al conector de infraestructura (fulfillment).
+  try {
+    const storeId = (orderRow as any)?.store_id as string | undefined;
+    if (storeId) {
+      const { enqueue, processJobs } = await import("@/lib/commerce/orchestrator.server");
+      const { data: binding } = await sb
+        .from("commerce_store_bindings")
+        .select("provider")
+        .eq("store_id", storeId)
+        .maybeSingle();
+      if (binding) {
+        await enqueue(storeId, binding.provider as never, "push_order", { orderId });
+        await processJobs(3);
+      }
+    }
+  } catch (e) {
+    console.error("orchestrator push_order error:", e);
+  }
 }
 
 async function handleStoreOrderFailed(session: any) {

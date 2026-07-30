@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
+import { syncProduct, getCommerceHealth } from "@/lib/commerce.functions";
 import { commissionLabelFor } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
 
@@ -118,8 +119,10 @@ function StoreManage() {
       .from("store_products")
       .update({ name: p.name, price_cents: p.price_cents, stock: p.stock })
       .eq("id", p.id);
-    if (error) toast.error(error.message);
-    else toast.success("Producto actualizado");
+    if (error) { toast.error(error.message); return; }
+    toast.success("Producto actualizado");
+    // Propagar el cambio al conector de infraestructura en segundo plano.
+    syncProduct({ data: { storeId: id, productId: p.id } }).catch(() => {});
   }
 
   async function deleteProduct(pid: string) {
