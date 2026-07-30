@@ -23,6 +23,7 @@ import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicCommerceWorkerRouteImport } from './routes/api/public/commerce/worker'
 import { Route as ApiPublicCommerceWebhookProviderRouteImport } from './routes/api/public/commerce/webhook.$provider'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -95,6 +96,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCommerceWorkerRoute = ApiPublicCommerceWorkerRouteImport.update({
+  id: '/api/public/commerce/worker',
+  path: '/api/public/commerce/worker',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCommerceWebhookProviderRoute =
   ApiPublicCommerceWebhookProviderRouteImport.update({
     id: '/api/public/commerce/webhook/$provider',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/checkout/return': typeof CheckoutReturnRoute
   '/t/$slug': typeof TSlugRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/t/$slug'
     | '/tienda/$id'
+    | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
     | '/api/public/commerce/webhook/$provider'
   fileRoutesByTo: FileRoutesByTo
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/t/$slug'
     | '/tienda/$id'
+    | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
     | '/api/public/commerce/webhook/$provider'
   id:
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/checkout/return'
     | '/t/$slug'
     | '/_authenticated/tienda/$id'
+    | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
     | '/api/public/commerce/webhook/$provider'
   fileRoutesById: FileRoutesById
@@ -212,6 +224,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   TSlugRoute: typeof TSlugRoute
+  ApiPublicCommerceWorkerRoute: typeof ApiPublicCommerceWorkerRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicCommerceWebhookProviderRoute: typeof ApiPublicCommerceWebhookProviderRoute
 }
@@ -316,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/commerce/worker': {
+      id: '/api/public/commerce/worker'
+      path: '/api/public/commerce/worker'
+      fullPath: '/api/public/commerce/worker'
+      preLoaderRoute: typeof ApiPublicCommerceWorkerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/commerce/webhook/$provider': {
       id: '/api/public/commerce/webhook/$provider'
       path: '/api/public/commerce/webhook/$provider'
@@ -356,6 +376,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   TSlugRoute: TSlugRoute,
+  ApiPublicCommerceWorkerRoute: ApiPublicCommerceWorkerRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicCommerceWebhookProviderRoute: ApiPublicCommerceWebhookProviderRoute,
 }
