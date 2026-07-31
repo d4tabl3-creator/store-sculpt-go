@@ -261,7 +261,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
   const provider = getProvider(binding.provider);
   const { data: row } = await supabaseAdmin
     .from("store_products")
-    .select("id, store_id, name, description, price_cents, image_url, stock")
+    .select("id, store_id, name, description, price_cents, image_url, stock, source_provider, source_product_id, source_variant_id")
     .eq("id", productId)
     .maybeSingle();
   if (!row) return;
@@ -286,6 +286,9 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
     externalProductId: (existing?.external_product_id as string | null) ?? null,
     externalVariantId: (existing?.external_variant_id as string | null) ?? null,
     externalInventoryItemId: (existing?.external_inventory_item_id as string | null) ?? null,
+    sourceProvider: (row.source_provider as string | null) ?? null,
+    sourceProductId: (row.source_product_id as string | null) ?? null,
+    sourceVariantId: (row.source_variant_id as string | null) ?? null,
   };
 
   try {

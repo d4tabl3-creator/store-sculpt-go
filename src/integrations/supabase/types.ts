@@ -708,6 +708,9 @@ export type Database = {
           name: string
           price_cents: number
           sort_order: number
+          source_product_id: string | null
+          source_provider: string | null
+          source_variant_id: string | null
           stock: number
           store_id: string
           updated_at: string
@@ -720,6 +723,9 @@ export type Database = {
           name: string
           price_cents?: number
           sort_order?: number
+          source_product_id?: string | null
+          source_provider?: string | null
+          source_variant_id?: string | null
           stock?: number
           store_id: string
           updated_at?: string
@@ -732,6 +738,9 @@ export type Database = {
           name?: string
           price_cents?: number
           sort_order?: number
+          source_product_id?: string | null
+          source_provider?: string | null
+          source_variant_id?: string | null
           stock?: number
           store_id?: string
           updated_at?: string
@@ -750,7 +759,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          kit_id: string
+          kit_id: string | null
           logo_url: string | null
           name: string
           niche: string
@@ -765,7 +774,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          kit_id: string
+          kit_id?: string | null
           logo_url?: string | null
           name: string
           niche: string
@@ -780,7 +789,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          kit_id?: string
+          kit_id?: string | null
           logo_url?: string | null
           name?: string
           niche?: string

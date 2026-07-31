@@ -46,44 +46,49 @@ async function printful<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 
+/**
+ * El proveedor no permite crear cuentas por API: DªTªBLe opera como
+ * comerciante de registro y aísla cada tienda por producto/pedido dentro
+ * de su espacio de fulfillment. Elegimos el espacio configurado o el primero
+ * disponible de la cuenta.
+ */
 async function findStore(ctx: ProviderStoreContext): Promise<{ id: number; name: string }> {
-  const stores = await printful<{ id: number; name: string }[]>("/store");
-  const existing = stores.find((s) => s.name.toLowerCase().includes(ctx.slug.toLowerCase()));
-  if (existing) return existing;
-  const created = await printful<{ id: number; name: string }>("/store", {
-    method: "POST",
-    body: JSON.stringify({ name: ctx.storeName }),
-  });
-  return created;
+  const stores = await printful<Array<{ id: number; name: string; type: string }>>("/stores");
+  if (!Array.isArray(stores) || !stores.length) {
+    throw new OrchestratorError("No hay espacio de fulfillment disponible", "printful", false);
+  }
+  const configured = process.env.PRINTFUL_STORE_ID;
+  const byEnv = configured ? stores.find((s) => String(s.id) === String(configured)) : null;
+  const byName = stores.find((s) => s.name.toLowerCase().includes(ctx.slug.toLowerCase()));
+  const preferred = stores.find((s) => !/personal orders/i.test(s.name));
+  return byEnv || byName || preferred || stores[0];
 }
 
+
+/**
+ * Búsqueda de respaldo en el catálogo real cuando el producto no trae
+ * variante de origen (tiendas creadas antes del catálogo abierto).
+ */
 async function findCatalogVariantByKeyword(name: string): Promise<{ product_id: number; variant_id: number; name: string } | null> {
   try {
+    const { listCatalog, getCatalogVariants } = await import("@/lib/catalog.server");
+    const items = await listCatalog();
     const normalized = name.toLowerCase();
-    const all = await printful<{ products: Array<{ id: number; type: string; name: string; brand: string; variants: number; availability_regions: string[] }> }>("/catalog/products/all");
-    const keywords = [
-      { test: /hoodie/i, type: "Hoodies" },
-      { test: /sudadera/i, type: "Hoodies" },
-      { test: /t[- ]?shirt|tee|player/i, type: "T-shirts" },
-      { test: /cap|gorra|trucker|snapback/i, type: "Caps" },
-      { test: /mug|taza/i, type: "Mugs" },
-      { test: /tote|bag|bolsa/i, type: "Bags" },
+    const keywords: Array<{ test: RegExp; hint: RegExp }> = [
+      { test: /hoodie|sudadera/i, hint: /hoodie/i },
+      { test: /t[- ]?shirt|tee|playera/i, hint: /t-shirt|tee/i },
+      { test: /cap|gorra|trucker|snapback/i, hint: /cap|hat/i },
+      { test: /mug|taza/i, hint: /mug/i },
+      { test: /tote|bag|bolsa|mochila/i, hint: /tote|bag/i },
+      { test: /poster|cuadro|lienzo|canvas/i, hint: /poster|canvas/i },
     ];
-    const match = keywords.find((k) => k.test.test(normalized));
-    const type = match?.type || "T-shirts";
-    const candidates = all.products
-      .filter((p) => p.type === type && p.availability_regions.includes("MX"))
+    const hint = keywords.find((k) => k.test.test(normalized))?.hint ?? /t-shirt|tee/i;
+    const candidates = items
+      .filter((p) => hint.test(`${p.title} ${p.typeName ?? ""}`))
       .slice(0, 5);
-    if (!candidates.length) {
-      const fallback = all.products
-        .filter((p) => p.type === type)
-        .slice(0, 5);
-      if (!fallback.length) return null;
-      candidates.push(...fallback);
-    }
     for (const candidate of candidates) {
-      const detail = await printful<{ product: { variants: Array<{ id: number; name: string; color: string; size: string }> } }>(`/catalog/products/${candidate.id}`);
-      const variant = detail.product.variants.find((v) => v.color && v.size) || detail.product.variants[0];
+      const { variants } = await getCatalogVariants(candidate.id);
+      const variant = variants.find((v) => v.inStock) || variants[0];
       if (variant) return { product_id: candidate.id, variant_id: variant.id, name: variant.name };
     }
     return null;
@@ -94,10 +99,11 @@ async function findCatalogVariantByKeyword(name: string): Promise<{ product_id: 
 }
 
 async function getDefaultVariant(): Promise<{ product_id: number; variant_id: number; name: string }> {
-  const fallback = await findCatalogVariantByKeyword("Unisex Heavy Cotton Tee");
+  const fallback = await findCatalogVariantByKeyword("Unisex Staple T-Shirt");
   if (fallback) return fallback;
   throw new OrchestratorError("No se encontró un producto base en Printful", "printful", true);
 }
+
 
 async function createSyncProduct(
   storeId: number,
@@ -114,8 +120,19 @@ async function createSyncProduct(
         variant_id: variantId,
         retail_price: (product.priceCents / 100).toFixed(2),
         sku: `datable-${product.productId.slice(0, 8)}`,
+        // El proveedor exige al menos un archivo de impresión por variante.
+        files: [
+          {
+            type: "default",
+            url:
+              product.imageUrl ||
+              "https://files.cdn.printful.com/o/upload/product-catalog-img/04/04f318b62ba2242360baeb2fcc89fe2c_l",
+          },
+        ],
+
       },
     ],
+
   };
   const created = await printful<{ id: number; external_id: string; sync_variants: Array<{ id: number; external_id: string }> }>(`/store/products?store_id=${storeId}`, {
     method: "POST",
@@ -175,9 +192,16 @@ export const printfulProvider: CommerceProvider = {
       };
     }
 
-    const catalog = await findCatalogVariantByKeyword(product.name);
-    const variant = catalog || (await getDefaultVariant());
-    const created = await createSyncProduct(storeId, product, variant.variant_id);
+    // Si el producto vino del catálogo abierto, ya conocemos la variante real.
+    const chosen = Number(product.sourceVariantId);
+    let variantId: number;
+    if (product.sourceProvider === "printful" && Number.isFinite(chosen) && chosen > 0) {
+      variantId = chosen;
+    } else {
+      const catalog = await findCatalogVariantByKeyword(product.name);
+      variantId = (catalog || (await getDefaultVariant())).variant_id;
+    }
+    const created = await createSyncProduct(storeId, product, variantId);
     return {
       externalProductId: created.external_product_id,
       externalVariantId: created.external_variant_id,
