@@ -121,7 +121,15 @@ async function createSyncProduct(
         retail_price: (product.priceCents / 100).toFixed(2),
         sku: `datable-${product.productId.slice(0, 8)}`,
         // El proveedor exige al menos un archivo de impresión por variante.
-        files: [{ type: "default", url: product.imageUrl || `${publicBase()}/placeholder.svg` }],
+        files: [
+          {
+            type: "default",
+            url:
+              product.imageUrl ||
+              "https://files.cdn.printful.com/o/upload/product-catalog-img/04/04f318b62ba2242360baeb2fcc89fe2c_l",
+          },
+        ],
+
       },
     ],
 
