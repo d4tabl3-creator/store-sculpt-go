@@ -175,9 +175,16 @@ export const printfulProvider: CommerceProvider = {
       };
     }
 
-    const catalog = await findCatalogVariantByKeyword(product.name);
-    const variant = catalog || (await getDefaultVariant());
-    const created = await createSyncProduct(storeId, product, variant.variant_id);
+    // Si el producto vino del catálogo abierto, ya conocemos la variante real.
+    const chosen = Number(product.sourceVariantId);
+    let variantId: number;
+    if (product.sourceProvider === "printful" && Number.isFinite(chosen) && chosen > 0) {
+      variantId = chosen;
+    } else {
+      const catalog = await findCatalogVariantByKeyword(product.name);
+      variantId = (catalog || (await getDefaultVariant())).variant_id;
+    }
+    const created = await createSyncProduct(storeId, product, variantId);
     return {
       externalProductId: created.external_product_id,
       externalVariantId: created.external_variant_id,
