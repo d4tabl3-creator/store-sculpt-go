@@ -120,8 +120,11 @@ async function createSyncProduct(
         variant_id: variantId,
         retail_price: (product.priceCents / 100).toFixed(2),
         sku: `datable-${product.productId.slice(0, 8)}`,
+        // El proveedor exige al menos un archivo de impresión por variante.
+        files: [{ type: "default", url: product.imageUrl || `${publicBase()}/placeholder.svg` }],
       },
     ],
+
   };
   const created = await printful<{ id: number; external_id: string; sync_variants: Array<{ id: number; external_id: string }> }>(`/store/products?store_id=${storeId}`, {
     method: "POST",
