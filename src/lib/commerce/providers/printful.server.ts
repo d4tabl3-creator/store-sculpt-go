@@ -46,16 +46,24 @@ async function printful<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 
+/**
+ * El proveedor no permite crear cuentas por API: DªTªBLe opera como
+ * comerciante de registro y aísla cada tienda por producto/pedido dentro
+ * de su espacio de fulfillment. Elegimos el espacio configurado o el primero
+ * disponible de la cuenta.
+ */
 async function findStore(ctx: ProviderStoreContext): Promise<{ id: number; name: string }> {
-  const stores = await printful<{ id: number; name: string }[]>("/store");
-  const existing = stores.find((s) => s.name.toLowerCase().includes(ctx.slug.toLowerCase()));
-  if (existing) return existing;
-  const created = await printful<{ id: number; name: string }>("/store", {
-    method: "POST",
-    body: JSON.stringify({ name: ctx.storeName }),
-  });
-  return created;
+  const stores = await printful<Array<{ id: number; name: string; type: string }>>("/stores");
+  if (!Array.isArray(stores) || !stores.length) {
+    throw new OrchestratorError("No hay espacio de fulfillment disponible", "printful", false);
+  }
+  const configured = process.env.PRINTFUL_STORE_ID;
+  const byEnv = configured ? stores.find((s) => String(s.id) === String(configured)) : null;
+  const byName = stores.find((s) => s.name.toLowerCase().includes(ctx.slug.toLowerCase()));
+  const preferred = stores.find((s) => !/personal orders/i.test(s.name));
+  return byEnv || byName || preferred || stores[0];
 }
+
 
 async function findCatalogVariantByKeyword(name: string): Promise<{ product_id: number; variant_id: number; name: string } | null> {
   try {
