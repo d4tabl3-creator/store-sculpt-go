@@ -82,6 +82,10 @@ export type ProviderProduct = {
   externalProductId?: string | null;
   externalVariantId?: string | null;
   externalInventoryItemId?: string | null;
+  /** Origen real en el catálogo del proveedor (si el producto vino de ahí). */
+  sourceProvider?: string | null;
+  sourceProductId?: string | null;
+  sourceVariantId?: string | null;
 };
 
 export type ProviderProductResult = {
