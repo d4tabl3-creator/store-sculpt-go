@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { ProviderId } from "@/lib/commerce/types";
 
 /**
  * Webhooks entrantes del conector de infraestructura.
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/api/public/commerce/webhook/$provider")({
         const rawBody = await request.text();
         try {
           const { handleInboundWebhook } = await import("@/lib/commerce/orchestrator.server");
-          const res = await handleInboundWebhook(providerId as never, rawBody, request.headers);
+          const res = await handleInboundWebhook(providerId as ProviderId, rawBody, request.headers);
           if (!res.ok) return new Response(res.reason ?? "rejected", { status: 401 });
           return Response.json({ received: true });
         } catch (err) {
