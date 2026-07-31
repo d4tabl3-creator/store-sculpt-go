@@ -1,0 +1,11 @@
+DELETE FROM public.commission_ledger;
+DELETE FROM public.commerce_order_bindings;
+DELETE FROM public.commerce_event_log;
+DELETE FROM public.commerce_product_bindings;
+DELETE FROM public.commerce_store_bindings;
+DELETE FROM public.commerce_store_credentials;
+DELETE FROM public.commerce_sync_jobs;
+DELETE FROM public.store_payment_settings;
+DELETE FROM public.store_orders;
+DELETE FROM public.store_products;
+DELETE FROM public.stores;
