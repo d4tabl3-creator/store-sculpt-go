@@ -65,33 +65,30 @@ async function findStore(ctx: ProviderStoreContext): Promise<{ id: number; name:
 }
 
 
+/**
+ * Búsqueda de respaldo en el catálogo real cuando el producto no trae
+ * variante de origen (tiendas creadas antes del catálogo abierto).
+ */
 async function findCatalogVariantByKeyword(name: string): Promise<{ product_id: number; variant_id: number; name: string } | null> {
   try {
+    const { listCatalog, getCatalogVariants } = await import("@/lib/catalog.server");
+    const items = await listCatalog();
     const normalized = name.toLowerCase();
-    const all = await printful<{ products: Array<{ id: number; type: string; name: string; brand: string; variants: number; availability_regions: string[] }> }>("/catalog/products/all");
-    const keywords = [
-      { test: /hoodie/i, type: "Hoodies" },
-      { test: /sudadera/i, type: "Hoodies" },
-      { test: /t[- ]?shirt|tee|player/i, type: "T-shirts" },
-      { test: /cap|gorra|trucker|snapback/i, type: "Caps" },
-      { test: /mug|taza/i, type: "Mugs" },
-      { test: /tote|bag|bolsa/i, type: "Bags" },
+    const keywords: Array<{ test: RegExp; hint: RegExp }> = [
+      { test: /hoodie|sudadera/i, hint: /hoodie/i },
+      { test: /t[- ]?shirt|tee|playera/i, hint: /t-shirt|tee/i },
+      { test: /cap|gorra|trucker|snapback/i, hint: /cap|hat/i },
+      { test: /mug|taza/i, hint: /mug/i },
+      { test: /tote|bag|bolsa|mochila/i, hint: /tote|bag/i },
+      { test: /poster|cuadro|lienzo|canvas/i, hint: /poster|canvas/i },
     ];
-    const match = keywords.find((k) => k.test.test(normalized));
-    const type = match?.type || "T-shirts";
-    const candidates = all.products
-      .filter((p) => p.type === type && p.availability_regions.includes("MX"))
+    const hint = keywords.find((k) => k.test.test(normalized))?.hint ?? /t-shirt|tee/i;
+    const candidates = items
+      .filter((p) => hint.test(`${p.title} ${p.typeName ?? ""}`))
       .slice(0, 5);
-    if (!candidates.length) {
-      const fallback = all.products
-        .filter((p) => p.type === type)
-        .slice(0, 5);
-      if (!fallback.length) return null;
-      candidates.push(...fallback);
-    }
     for (const candidate of candidates) {
-      const detail = await printful<{ product: { variants: Array<{ id: number; name: string; color: string; size: string }> } }>(`/catalog/products/${candidate.id}`);
-      const variant = detail.product.variants.find((v) => v.color && v.size) || detail.product.variants[0];
+      const { variants } = await getCatalogVariants(candidate.id);
+      const variant = variants.find((v) => v.inStock) || variants[0];
       if (variant) return { product_id: candidate.id, variant_id: variant.id, name: variant.name };
     }
     return null;
@@ -102,10 +99,11 @@ async function findCatalogVariantByKeyword(name: string): Promise<{ product_id: 
 }
 
 async function getDefaultVariant(): Promise<{ product_id: number; variant_id: number; name: string }> {
-  const fallback = await findCatalogVariantByKeyword("Unisex Heavy Cotton Tee");
+  const fallback = await findCatalogVariantByKeyword("Unisex Staple T-Shirt");
   if (fallback) return fallback;
   throw new OrchestratorError("No se encontró un producto base en Printful", "printful", true);
 }
+
 
 async function createSyncProduct(
   storeId: number,
