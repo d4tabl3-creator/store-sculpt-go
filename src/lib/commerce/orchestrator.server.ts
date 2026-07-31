@@ -487,16 +487,39 @@ export async function handleInboundWebhook(
   headers: Headers,
 ): Promise<{ ok: boolean; reason?: string }> {
   const provider = getProvider(providerId);
+
+  // Shopify identifica la tienda por dominio en header.
   const domain = headers.get("x-shopify-shop-domain");
 
-  const { data: bindingRow } = domain
-    ? await supabaseAdmin
-        .from("commerce_store_bindings")
-        .select("store_id")
-        .eq("provider", providerId)
-        .eq("external_domain", domain)
-        .maybeSingle()
-    : { data: null };
+  // Printful envía store_id en el payload; hacemos un parse seguro para buscar.
+  let printfulStoreId: string | null = null;
+  if (providerId === "printful") {
+    try {
+      const payload = JSON.parse(rawBody) as { store_id?: number };
+      if (payload.store_id) printfulStoreId = String(payload.store_id);
+    } catch {
+      printfulStoreId = null;
+    }
+  }
+
+  let bindingQuery;
+  if (domain) {
+    bindingQuery = supabaseAdmin
+      .from("commerce_store_bindings")
+      .select("store_id")
+      .eq("provider", providerId)
+      .eq("external_domain", domain);
+  } else if (printfulStoreId) {
+    bindingQuery = supabaseAdmin
+      .from("commerce_store_bindings")
+      .select("store_id")
+      .eq("provider", providerId)
+      .eq("external_store_id", printfulStoreId);
+  } else {
+    bindingQuery = null;
+  }
+
+  const { data: bindingRow } = bindingQuery ? await bindingQuery.maybeSingle() : { data: null };
   if (!bindingRow) return { ok: false, reason: "unknown store" };
 
   const binding = await loadBinding(bindingRow.store_id as string);
@@ -512,10 +535,11 @@ export async function handleInboundWebhook(
     detail: parsed.payload as never,
   });
 
-  if (parsed.topic.toLowerCase().includes("fulfill")) {
-    const p = parsed.payload as { id?: string | number; note?: string; tracking_number?: string; tracking_url?: string };
+  if (parsed.topic.toLowerCase().includes("fulfill") || parsed.topic.toLowerCase().includes("package_shipped")) {
+    const p = parsed.payload as { id?: string | number; note?: string; tracking_number?: string; tracking_url?: string; order?: { id?: string | number } };
     const match = /DªTªBLe order ([0-9a-f-]{36})/i.exec(p.note ?? "");
-    if (match) {
+    const orderId = match?.[1] || (p.order?.id ? String(p.order.id) : null);
+    if (orderId) {
       await supabaseAdmin
         .from("commerce_order_bindings")
         .update({
@@ -524,9 +548,9 @@ export async function handleInboundWebhook(
           tracking_url: p.tracking_url ?? null,
           last_synced_at: new Date().toISOString(),
         })
-        .eq("order_id", match[1])
+        .eq("order_id", orderId)
         .eq("provider", providerId);
-      await supabaseAdmin.from("store_orders").update({ status: "shipped" }).eq("id", match[1]);
+      await supabaseAdmin.from("store_orders").update({ status: "shipped" }).eq("id", orderId);
     }
   }
 

@@ -1,10 +1,12 @@
 import type { CommerceProvider, ProviderId } from "../types";
 import { internalProvider } from "./internal.server";
 import { shopifyProvider } from "./shopify.server";
+import { printfulProvider } from "./printful.server";
 
 const REGISTRY: Partial<Record<ProviderId, CommerceProvider>> = {
   internal: internalProvider,
   shopify: shopifyProvider,
+  printful: printfulProvider,
 };
 
 /** Devuelve el conector pedido o el motor nativo si no existe. */
@@ -19,8 +21,8 @@ export function getProvider(id: ProviderId | string | null | undefined): Commerc
  */
 export function pickProvider(preferred?: ProviderId): CommerceProvider {
   const candidates: ProviderId[] = preferred
-    ? [preferred, "shopify", "internal"]
-    : ["shopify", "internal"];
+    ? [preferred, "printful", "shopify", "internal"]
+    : ["printful", "shopify", "internal"];
   for (const id of candidates) {
     const p = REGISTRY[id];
     if (p && p.isConfigured()) return p;
