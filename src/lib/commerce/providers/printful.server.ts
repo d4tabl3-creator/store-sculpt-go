@@ -12,6 +12,8 @@ import { OrchestratorError } from "../types";
 
 const BASE_URL = "https://api.printful.com";
 
+type PrintfulResponse<T> = { result?: T; error?: { message: string } };
+
 function apiToken() {
   return process.env.PRINTFUL_API_TOKEN;
 }
@@ -30,9 +32,9 @@ async function printful<T>(path: string, init: RequestInit = {}): Promise<T> {
     },
   });
   const text = await res.text();
-  let json: { result?: T; error?: { message: string } } | null = null;
+  let json: PrintfulResponse<T> | null = null;
   try {
-    json = JSON.parse(text) as typeof json;
+    json = JSON.parse(text) as PrintfulResponse<T>;
   } catch {
     json = null;
   }
@@ -42,6 +44,7 @@ async function printful<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   return (json?.result ?? json) as T;
 }
+
 
 async function findStore(ctx: ProviderStoreContext): Promise<{ id: number; name: string }> {
   const stores = await printful<{ id: number; name: string }[]>("/store");

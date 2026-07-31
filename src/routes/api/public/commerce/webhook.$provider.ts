@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/public/commerce/webhook/$provider")({
     handlers: {
       POST: async ({ request, params }) => {
         const providerId = params.provider;
-        if (!["shopify", "woocommerce", "mercadolibre"].includes(providerId)) {
+        if (!["shopify", "woocommerce", "mercadolibre", "printful"].includes(providerId)) {
           return new Response("Unknown provider", { status: 404 });
         }
         const rawBody = await request.text();

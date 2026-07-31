@@ -6,7 +6,7 @@
  * qué proveedor está detrás.
  */
 
-export type ProviderId = "internal" | "shopify" | "woocommerce" | "mercadolibre";
+export type ProviderId = "internal" | "shopify" | "printful" | "woocommerce" | "mercadolibre";
 
 export type ProvisioningStatus =
   | "queued"
