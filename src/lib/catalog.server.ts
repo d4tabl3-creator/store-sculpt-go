@@ -50,11 +50,20 @@ async function api<T>(path: string): Promise<T> {
   return (json.result ?? (json as unknown)) as T;
 }
 
+/**
+ * Precio de venta sugerido, con margen escalonado: mayor margen en productos
+ * baratos y margen menor en los caros, para que el precio final sea vendible
+ * en México (una gorra no debe costar $1,400).
+ */
 export function suggestedPriceCents(costUsd: number): number {
-  const mxn = costUsd * USD_MXN * MARKUP;
-  // Redondeo comercial a decenas terminadas en 9.
-  return Math.max(9900, Math.round(mxn / 10) * 1000 - 100);
+  const costMxn = costUsd * USD_MXN;
+  const markup = costMxn <= 150 ? 1.9 : costMxn <= 350 ? 1.65 : costMxn <= 700 ? 1.45 : 1.3;
+  const mxn = costMxn * markup;
+  // Redondeo comercial a decenas terminadas en 9 (p. ej. 349, 599).
+  const rounded = Math.round(mxn / 10) * 10 - 1;
+  return Math.max(14900, Math.round(rounded * 100));
 }
+
 
 export async function listCatalog(): Promise<CatalogItem[]> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache.items;
