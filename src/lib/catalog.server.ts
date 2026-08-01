@@ -4,9 +4,9 @@
  */
 
 const BASE_URL = "https://api.printful.com";
-/** Tipo de cambio conservador y margen sugerido para precio de venta. */
-const USD_MXN = 19;
-const MARKUP = 2.2;
+/** Tipo de cambio conservador para convertir el costo del proveedor. */
+const USD_MXN = 18;
+
 
 export type CatalogItem = {
   id: number;
