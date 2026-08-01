@@ -6,7 +6,10 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
+  Coffee,
   CreditCard,
+  Frame,
+
   Layers,
   LineChart,
   MessageCircle,
