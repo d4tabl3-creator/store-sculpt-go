@@ -103,6 +103,7 @@ function Nav() {
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
           <a href="#como-funciona" className="hover:text-foreground">Cómo funciona</a>
+          <Link to="/demo" className="hover:text-foreground">Ver demo</Link>
           <a href="#para-quien" className="hover:text-foreground">Para quién</a>
           <a href="#ia" className="hover:text-foreground">IA</a>
           <a href="#precios" className="hover:text-foreground">Precios</a>
@@ -954,6 +955,54 @@ function SectionHeader({
   );
 }
 
+/* ---------- Demo en vivo ---------- */
+
+const DEMO_TEMPLATES = [
+  { name: "Ropa y streetwear", desc: "Playeras, hoodies y gorras con tallas y colores.", cat: "playeras", emoji: "👕" },
+  { name: "Arte y pósters", desc: "Láminas, canvas y cuadros listos para enmarcar.", cat: "arte", emoji: "🖼️" },
+  { name: "Regalos y tazas", desc: "Tazas, botellas y detalles personalizados.", cat: "tazas", emoji: "☕" },
+  { name: "Hogar y accesorios", desc: "Cojines, tote bags, fundas y más.", cat: "accesorios", emoji: "🎒" },
+];
+
+function DemoVitrina() {
+  return (
+    <section id="demo" className="border-t border-border/60">
+      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
+        <SectionHeader
+          eyebrow="Pruébala antes de crearla"
+          title="Entra a una tienda de ejemplo y úsala como si fuera tuya"
+          desc="Navega categorías, elige talla y color, agrega al carrito y llega al pago. Es exactamente lo que se le entrega a tu cliente."
+        />
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {DEMO_TEMPLATES.map((t) => (
+            <Link
+              key={t.cat}
+              to="/demo"
+              search={{ cat: t.cat }}
+              className="group rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-1 hover:border-primary"
+            >
+              <div className="text-3xl">{t.emoji}</div>
+              <h3 className="mt-3 font-display text-lg">{t.name}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                Abrir demo <ChevronRight className="size-4 transition group-hover:translate-x-1" />
+              </span>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-10 text-center">
+          <Button asChild size="lg" className="shine-on-hover">
+            <Link to="/demo">Entrar a la tienda demo <ArrowRight className="ml-1" /></Link>
+          </Button>
+          <p className="mt-3 text-xs text-muted-foreground">
+            La demo llega hasta el paso de pago: ahí te mostramos qué pasa después en una tienda real.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ---------- Page ---------- */
 
 function Landing() {
@@ -963,6 +1012,7 @@ function Landing() {
       <main>
         <Hero />
         <ComoFunciona />
+        <DemoVitrina />
         <ParaQuien />
         <MomentoMcDonalds />
         <IAFantasma />
