@@ -17,7 +17,10 @@ import {
   Palette,
   Rocket,
   Settings2,
+  Shirt,
   ShoppingBag,
+  Sofa,
+
   Sparkles,
   Store,
   Truck,
