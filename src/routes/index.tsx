@@ -162,8 +162,9 @@ function Hero() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="#como-funciona">Ver cómo lo armamos</a>
+              <a href="#plantillas">Probar una plantilla</a>
             </Button>
+
           </div>
           <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
             {[
