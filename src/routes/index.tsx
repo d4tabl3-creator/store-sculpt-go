@@ -955,23 +955,23 @@ function SectionHeader({
   );
 }
 
-/* ---------- Demo en vivo ---------- */
+/* ---------- Plantillas (demo en vivo) ---------- */
 
 const DEMO_TEMPLATES = [
-  { name: "Ropa y streetwear", desc: "Playeras, hoodies y gorras con tallas y colores.", cat: "playeras", emoji: "👕" },
-  { name: "Arte y pósters", desc: "Láminas, canvas y cuadros listos para enmarcar.", cat: "arte", emoji: "🖼️" },
-  { name: "Regalos y tazas", desc: "Tazas, botellas y detalles personalizados.", cat: "tazas", emoji: "☕" },
-  { name: "Hogar y accesorios", desc: "Cojines, tote bags, fundas y más.", cat: "accesorios", emoji: "🎒" },
+  { name: "Ropa y streetwear", desc: "Playeras, hoodies y gorras con tallas y colores reales.", cat: "playeras", Icon: Shirt },
+  { name: "Arte y pósters", desc: "Láminas, canvas y cuadros listos para enmarcar.", cat: "arte", Icon: Frame },
+  { name: "Regalos y tazas", desc: "Tazas, botellas y detalles personalizados.", cat: "tazas", Icon: Coffee },
+  { name: "Hogar y accesorios", desc: "Cojines, tote bags, fundas y más.", cat: "accesorios", Icon: Sofa },
 ];
 
 function DemoVitrina() {
   return (
-    <section id="demo" className="border-t border-border/60">
+    <section id="plantillas" className="border-t border-border/60 bg-card/40">
       <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
         <SectionHeader
-          eyebrow="Pruébala antes de crearla"
-          title="Entra a una tienda de ejemplo y úsala como si fuera tuya"
-          desc="Navega categorías, elige talla y color, agrega al carrito y llega al pago. Es exactamente lo que se le entrega a tu cliente."
+          eyebrow="Plantillas · pruébalas ahora"
+          title="Entra a una plantilla y úsala como si ya fuera tuya"
+          desc="Esto es exactamente lo que se te entrega: catálogo real, categorías, tallas y colores, carrito y pago. Navega, agrega productos y llega hasta el checkout. Ahí termina la demo y empieza tu tienda real."
         />
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {DEMO_TEMPLATES.map((t) => (
@@ -979,13 +979,16 @@ function DemoVitrina() {
               key={t.cat}
               to="/demo"
               search={{ cat: t.cat }}
-              className="group rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-1 hover:border-primary"
+              className="group relative rounded-2xl border border-border bg-background p-6 transition hover:-translate-y-1 hover:border-primary hover:shadow-pop"
             >
-              <div className="text-3xl">{t.emoji}</div>
-              <h3 className="mt-3 font-display text-lg">{t.name}</h3>
+              <span className="absolute right-4 top-4 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                Demo
+              </span>
+              <t.Icon className="size-8 text-primary" />
+              <h3 className="mt-4 font-display text-lg">{t.name}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>
               <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                Abrir demo <ChevronRight className="size-4 transition group-hover:translate-x-1" />
+                Probar plantilla <ChevronRight className="size-4 transition group-hover:translate-x-1" />
               </span>
             </Link>
           ))}
@@ -1011,8 +1014,9 @@ function Landing() {
       <Nav />
       <main>
         <Hero />
-        <ComoFunciona />
         <DemoVitrina />
+        <ComoFunciona />
+
         <ParaQuien />
         <MomentoMcDonalds />
         <IAFantasma />
