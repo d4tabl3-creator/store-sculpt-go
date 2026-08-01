@@ -61,7 +61,7 @@ export function suggestedPriceCents(costUsd: number): number {
   const mxn = costMxn * markup;
   // Redondeo comercial a decenas terminadas en 9 (p. ej. 349, 599).
   const rounded = Math.round(mxn / 10) * 10 - 1;
-  return Math.max(14900, Math.round(rounded * 100));
+  return Math.max(9900, Math.round(rounded * 100));
 }
 
 
