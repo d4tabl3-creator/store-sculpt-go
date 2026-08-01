@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Loader2, Truck, ShieldCheck, Sparkles } from "lucide-react";
+import { Truck, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DEMO_CATEGORIES, formatMxn, type DemoProduct } from "@/lib/demo-catalog";
@@ -138,4 +138,3 @@ function DemoIndex() {
   );
 }
 
-export { Loader2 };
