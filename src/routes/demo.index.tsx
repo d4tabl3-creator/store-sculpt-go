@@ -44,20 +44,21 @@ function DemoIndex() {
 
   return (
     <>
-      <section className="border-b border-border/60 bg-card/40">
-        <div className="mx-auto max-w-6xl px-4 py-14 text-center">
-          <h1 className="font-display text-4xl sm:text-5xl">Tienda demo</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Navega, elige talla y color, agrega al carrito y llega al pago. Todo lo que ves aquí es
-            exactamente lo que recibe tu cliente cuando abres tu tienda.
+      <section className="border-b border-border">
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center">
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Nueva temporada</p>
+          <h1 className="mt-4 font-display text-4xl sm:text-6xl">Hecho para ti, enviado a tu puerta</h1>
+          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+            Piezas producidas bajo pedido. Elige tu talla y color; nosotros lo fabricamos y lo enviamos.
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Truck className="size-4 text-primary" /> Envío directo del proveedor</span>
-            <span className="flex items-center gap-1"><ShieldCheck className="size-4 text-primary" /> Pago seguro con tarjeta</span>
-            <span className="flex items-center gap-1"><Sparkles className="size-4 text-primary" /> Sin inventario</span>
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Truck className="size-4" /> Envío a todo México</span>
+            <span className="flex items-center gap-1"><ShieldCheck className="size-4" /> Pago seguro</span>
+            <span className="flex items-center gap-1"><Sparkles className="size-4" /> Producción bajo pedido</span>
           </div>
         </div>
       </section>
+
 
       <main className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-8 flex flex-wrap gap-2">
