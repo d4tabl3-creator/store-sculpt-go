@@ -127,13 +127,14 @@ function DemoIndex() {
           <p className="py-16 text-center text-muted-foreground">No hay productos en esta categoría.</p>
         )}
 
-        <div className="mt-16 rounded-3xl border border-border bg-card/60 p-8 text-center">
-          <h2 className="font-display text-2xl">¿Te gusta cómo se ve?</h2>
+        <div className="mt-16 rounded-2xl border border-border p-8 text-center">
+          <h2 className="font-display text-2xl">Suscríbete y recibe 10% en tu primera compra</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            Tu tienda se arma en minutos con tu nombre, tus colores y los productos que elijas del mismo catálogo.
+            Novedades, lanzamientos y descuentos directo a tu correo.
           </p>
-          <Button asChild className="mt-5"><Link to="/auth">Crear mi tienda</Link></Button>
+          <Button asChild variant="outline" className="mt-5"><Link to="/auth">Quiero una tienda así</Link></Button>
         </div>
+
       </main>
     </>
   );
