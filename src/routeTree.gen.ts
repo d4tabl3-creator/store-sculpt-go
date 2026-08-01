@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoIndexRouteImport } from './routes/demo.index'
 import { Route as TSlugRouteImport } from './routes/t.$slug'
+import { Route as DemoProductIdRouteImport } from './routes/demo.$productId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCuentaRouteImport } from './routes/_authenticated.cuenta'
@@ -67,6 +68,11 @@ const TSlugRoute = TSlugRouteImport.update({
   id: '/t/$slug',
   path: '/t/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DemoProductIdRoute = DemoProductIdRouteImport.update({
+  id: '/$productId',
+  path: '/$productId',
+  getParentRoute: () => DemoRoute,
 } as any)
 const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   id: '/checkout/return',
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/demo/$productId': typeof DemoProductIdRoute
   '/t/$slug': typeof TSlugRoute
   '/demo/': typeof DemoIndexRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/demo/$productId': typeof DemoProductIdRoute
   '/t/$slug': typeof TSlugRoute
   '/demo': typeof DemoIndexRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/_authenticated/cuenta': typeof AuthenticatedCuentaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
+  '/demo/$productId': typeof DemoProductIdRoute
   '/t/$slug': typeof TSlugRoute
   '/demo/': typeof DemoIndexRoute
   '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/cuenta'
     | '/dashboard'
     | '/checkout/return'
+    | '/demo/$productId'
     | '/t/$slug'
     | '/demo/'
     | '/preparando/$id'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/cuenta'
     | '/dashboard'
     | '/checkout/return'
+    | '/demo/$productId'
     | '/t/$slug'
     | '/demo'
     | '/preparando/$id'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cuenta'
     | '/_authenticated/dashboard'
     | '/checkout/return'
+    | '/demo/$productId'
     | '/t/$slug'
     | '/demo/'
     | '/_authenticated/preparando/$id'
@@ -322,6 +334,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/t/$slug'
       preLoaderRoute: typeof TSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/demo/$productId': {
+      id: '/demo/$productId'
+      path: '/$productId'
+      fullPath: '/demo/$productId'
+      preLoaderRoute: typeof DemoProductIdRouteImport
+      parentRoute: typeof DemoRoute
     }
     '/checkout/return': {
       id: '/checkout/return'
@@ -428,10 +447,12 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface DemoRouteChildren {
+  DemoProductIdRoute: typeof DemoProductIdRoute
   DemoIndexRoute: typeof DemoIndexRoute
 }
 
 const DemoRouteChildren: DemoRouteChildren = {
+  DemoProductIdRoute: DemoProductIdRoute,
   DemoIndexRoute: DemoIndexRoute,
 }
 
