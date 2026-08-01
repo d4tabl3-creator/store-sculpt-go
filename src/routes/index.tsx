@@ -108,8 +108,9 @@ function Nav() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
+          <a href="#plantillas" className="hover:text-foreground">Plantillas</a>
           <a href="#como-funciona" className="hover:text-foreground">Cómo funciona</a>
-          <Link to="/demo" className="hover:text-foreground">Ver demo</Link>
+
           <a href="#para-quien" className="hover:text-foreground">Para quién</a>
           <a href="#ia" className="hover:text-foreground">IA</a>
           <a href="#precios" className="hover:text-foreground">Precios</a>
