@@ -44,20 +44,21 @@ function DemoIndex() {
 
   return (
     <>
-      <section className="border-b border-border/60 bg-card/40">
-        <div className="mx-auto max-w-6xl px-4 py-14 text-center">
-          <h1 className="font-display text-4xl sm:text-5xl">Tienda demo</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Navega, elige talla y color, agrega al carrito y llega al pago. Todo lo que ves aquí es
-            exactamente lo que recibe tu cliente cuando abres tu tienda.
+      <section className="border-b border-border">
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center">
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Nueva temporada</p>
+          <h1 className="mt-4 font-display text-4xl sm:text-6xl">Hecho para ti, enviado a tu puerta</h1>
+          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+            Piezas producidas bajo pedido. Elige tu talla y color; nosotros lo fabricamos y lo enviamos.
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Truck className="size-4 text-primary" /> Envío directo del proveedor</span>
-            <span className="flex items-center gap-1"><ShieldCheck className="size-4 text-primary" /> Pago seguro con tarjeta</span>
-            <span className="flex items-center gap-1"><Sparkles className="size-4 text-primary" /> Sin inventario</span>
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Truck className="size-4" /> Envío a todo México</span>
+            <span className="flex items-center gap-1"><ShieldCheck className="size-4" /> Pago seguro</span>
+            <span className="flex items-center gap-1"><Sparkles className="size-4" /> Producción bajo pedido</span>
           </div>
         </div>
       </section>
+
 
       <main className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-8 flex flex-wrap gap-2">
@@ -73,7 +74,7 @@ function DemoIndex() {
               onClick={() => setActive(c.slug)}
               className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${selected === c.slug ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"}`}
             >
-              <span className="mr-1">{c.emoji}</span>{c.label}
+              {c.label}
             </button>
           ))}
         </div>
@@ -103,7 +104,7 @@ function DemoIndex() {
                 key={p.id}
                 to="/demo/$productId"
                 params={{ productId: String(p.id) }}
-                className="group overflow-hidden rounded-2xl border border-border bg-card shadow-pop transition hover:-translate-y-1"
+                className="group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-lg"
               >
                 <div className="aspect-square overflow-hidden bg-muted">
                   <img src={p.image} alt={p.title} loading="lazy" className="size-full object-cover transition-transform group-hover:scale-105" />
@@ -126,13 +127,14 @@ function DemoIndex() {
           <p className="py-16 text-center text-muted-foreground">No hay productos en esta categoría.</p>
         )}
 
-        <div className="mt-16 rounded-3xl border border-border bg-card/60 p-8 text-center">
-          <h2 className="font-display text-2xl">¿Te gusta cómo se ve?</h2>
+        <div className="mt-16 rounded-2xl border border-border p-8 text-center">
+          <h2 className="font-display text-2xl">Suscríbete y recibe 10% en tu primera compra</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            Tu tienda se arma en minutos con tu nombre, tus colores y los productos que elijas del mismo catálogo.
+            Novedades, lanzamientos y descuentos directo a tu correo.
           </p>
-          <Button asChild className="mt-5"><Link to="/auth">Crear mi tienda</Link></Button>
+          <Button asChild variant="outline" className="mt-5"><Link to="/auth">Quiero una tienda así</Link></Button>
         </div>
+
       </main>
     </>
   );
