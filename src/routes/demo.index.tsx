@@ -74,7 +74,7 @@ function DemoIndex() {
               onClick={() => setActive(c.slug)}
               className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${selected === c.slug ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"}`}
             >
-              <span className="mr-1">{c.emoji}</span>{c.label}
+              {c.label}
             </button>
           ))}
         </div>
@@ -104,7 +104,7 @@ function DemoIndex() {
                 key={p.id}
                 to="/demo/$productId"
                 params={{ productId: String(p.id) }}
-                className="group overflow-hidden rounded-2xl border border-border bg-card shadow-pop transition hover:-translate-y-1"
+                className="group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-lg"
               >
                 <div className="aspect-square overflow-hidden bg-muted">
                   <img src={p.image} alt={p.title} loading="lazy" className="size-full object-cover transition-transform group-hover:scale-105" />
