@@ -11,9 +11,9 @@ const DESC =
   "Recorre una tienda de ejemplo real: categorías, productos con tallas y colores, carrito y checkout. Así se ve la tienda que te entregamos.";
 
 export const Route = createFileRoute("/demo/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    cat: typeof search.cat === "string" ? search.cat : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { cat?: string } =>
+    typeof search.cat === "string" ? { cat: search.cat } : {},
+
   head: () => ({
     meta: [
       { title: "Tienda demo — Prueba cómo funciona tu tienda | DªTªBLe" },
