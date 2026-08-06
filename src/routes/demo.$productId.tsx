@@ -110,21 +110,31 @@ function DemoProductPage() {
           )}
           <h1 className="mt-1 font-display text-3xl sm:text-4xl">{data.product.title}</h1>
           <div className="mt-3 font-display text-3xl text-primary">{formatMxn(current.priceCents)}</div>
+          <div className="mt-1 text-xs font-semibold uppercase tracking-widest">
+            {current.inStock ? (
+              <span className="text-emerald-600">Disponible</span>
+            ) : (
+              <span className="text-muted-foreground">Agotado en esta variante</span>
+            )}
+          </div>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{data.product.description}</p>
 
           {colors.length > 1 && (
             <div className="mt-6">
               <div className="text-sm font-semibold">Color: <span className="text-muted-foreground">{color}</span></div>
               <div className="mt-2 flex flex-wrap gap-2">
-                {colors.map((c) => (
-                  <button
-                    key={c.color}
-                    onClick={() => { setColor(c.color); setSize(null); }}
-                    title={c.color}
-                    className={`size-8 rounded-full border-2 transition ${color === c.color ? "border-primary scale-110" : "border-border"}`}
-                    style={{ background: c.code || "#ccc" }}
-                  />
-                ))}
+                {colors.map((c) => {
+                  const available = variants.some((v) => v.color === c.color && v.inStock);
+                  return (
+                    <button
+                      key={c.color}
+                      onClick={() => { setColor(c.color); setSize(null); }}
+                      title={available ? c.color : `${c.color} · agotado`}
+                      className={`size-8 rounded-full border-2 transition ${color === c.color ? "border-primary scale-110" : "border-border"} ${available ? "" : "opacity-30"}`}
+                      style={{ background: c.code || "#ccc" }}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
@@ -138,7 +148,8 @@ function DemoProductPage() {
                     key={v.id}
                     disabled={!v.inStock}
                     onClick={() => setSize(v.size)}
-                    className={`min-w-12 rounded-lg border px-3 py-2 text-sm font-semibold transition disabled:opacity-40 ${current.id === v.id ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"}`}
+                    title={v.inStock ? v.size ?? "" : "Agotado"}
+                    className={`min-w-12 rounded-lg border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:line-through disabled:opacity-40 ${current.id === v.id ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"}`}
                   >
                     {v.size}
                   </button>
@@ -150,6 +161,7 @@ function DemoProductPage() {
           <Button
             className="mt-8 w-full"
             size="lg"
+            disabled={!current.inStock}
             onClick={() => {
               addToDemoCart({
                 productId: data.product.id,
@@ -162,8 +174,9 @@ function DemoProductPage() {
               toast.success("Agregado al carrito");
             }}
           >
-            Agregar al carrito
+            {current.inStock ? "Agregar al carrito" : "Agotado"}
           </Button>
+
 
           <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
             <li className="flex items-center gap-2"><Truck className="size-4 text-primary" /> Se produce y envía cuando alguien compra</li>
