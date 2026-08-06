@@ -32,6 +32,10 @@ export type DemoProduct = {
   category: string;
   description: string;
   priceCents: number;
+  /** Costo del proveedor y margen de la variante más económica. */
+  costCents: number;
+  marginCents: number;
+  marginPct: number;
   colors: number;
   sizes: number;
 };
@@ -39,3 +43,4 @@ export type DemoProduct = {
 export function formatMxn(cents: number): string {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(cents / 100);
 }
+
