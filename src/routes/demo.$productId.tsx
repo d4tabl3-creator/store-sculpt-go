@@ -117,7 +117,16 @@ function DemoProductPage() {
               <span className="text-muted-foreground">Agotado en esta variante</span>
             )}
           </div>
+          <div className="mt-4 rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
+            <div className="mb-1 font-semibold uppercase tracking-widest">Solo para ti (no lo ve tu cliente)</div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <span>Costo proveedor: <strong className="text-foreground">{formatMxn(current.costCents)}</strong></span>
+              <span>Tu ganancia: <strong className="text-foreground">{formatMxn(current.marginCents)}</strong></span>
+              <span>Margen: <strong className="text-foreground">{current.marginPct}%</strong></span>
+            </div>
+          </div>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{data.product.description}</p>
+
 
           {colors.length > 1 && (
             <div className="mt-6">
