@@ -50,14 +50,19 @@ function DemoProductPage() {
   }, [variants, color]);
 
   const sizes = useMemo(
-    () => variants.filter((v) => (color ? v.color === color : true)),
+    () =>
+      variants
+        .filter((v) => (color ? v.color === color : true))
+        .slice()
+        .sort((a, b) => sizeRank(a.size) - sizeRank(b.size)),
     [variants, color],
   );
 
   const current = useMemo(
-    () => sizes.find((v) => v.size === size) ?? sizes[0] ?? variants[0],
+    () => sizes.find((v) => v.size === size) ?? sizes.find((v) => v.inStock) ?? sizes[0] ?? variants[0],
     [sizes, size, variants],
   );
+
 
   if (isLoading) {
     return (
