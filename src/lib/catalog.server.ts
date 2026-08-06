@@ -30,9 +30,16 @@ export type CatalogVariant = {
   colorCode: string | null;
   image: string;
   costUsd: number;
+  /** Costo del proveedor convertido a centavos MXN. */
+  costCents: number;
   priceCents: number;
+  /** Ganancia bruta en centavos MXN y su porcentaje sobre el precio final. */
+  marginCents: number;
+  marginPct: number;
+  markup: number;
   inStock: boolean;
 };
+
 
 let cache: { at: number; items: CatalogItem[] } | null = null;
 const TTL_MS = 30 * 60 * 1000;
@@ -126,6 +133,7 @@ export async function getCatalogVariants(productId: number): Promise<{
     },
     variants: data.variants.map((v) => {
       const costUsd = Number(v.price) || 0;
+      const money = priceBreakdown(costUsd);
       return {
         id: v.id,
         name: v.name,
@@ -134,7 +142,11 @@ export async function getCatalogVariants(productId: number): Promise<{
         colorCode: v.color_code ?? null,
         image: v.image,
         costUsd,
-        priceCents: suggestedPriceCents(costUsd),
+        costCents: money.costCents,
+        priceCents: money.priceCents,
+        marginCents: money.marginCents,
+        marginPct: money.marginPct,
+        markup: money.markup,
         inStock: v.in_stock,
       };
     }),
