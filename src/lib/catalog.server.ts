@@ -3,9 +3,12 @@
  * Server-only: usa el token privado y nunca lo expone al navegador.
  */
 
+import { priceBreakdown, suggestedPriceCents } from "@/lib/pricing";
+
 const BASE_URL = "https://api.printful.com";
-/** Tipo de cambio conservador para convertir el costo del proveedor. */
-const USD_MXN = 18;
+
+export { suggestedPriceCents };
+
 
 
 export type CatalogItem = {
