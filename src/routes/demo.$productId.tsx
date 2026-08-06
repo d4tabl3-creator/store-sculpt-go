@@ -23,7 +23,16 @@ export const Route = createFileRoute("/demo/$productId")({
   component: DemoProductPage,
 });
 
+/** Orden natural de tallas (XS → 6XL); lo demás va al final alfabético. */
+const SIZE_ORDER = ["XXS", "2XS", "XS", "S", "M", "L", "XL", "2XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+function sizeRank(size: string | null): number {
+  if (!size) return 999;
+  const i = SIZE_ORDER.indexOf(size.toUpperCase().trim());
+  return i === -1 ? 500 : i;
+}
+
 function DemoProductPage() {
+
   const { productId } = Route.useParams();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["demo-product", productId],
