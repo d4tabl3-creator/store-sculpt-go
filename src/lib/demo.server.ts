@@ -31,7 +31,8 @@ export async function buildDemoCatalog(): Promise<DemoProduct[]> {
           const available = variants.filter((v) => v.inStock);
           const pool = available.length ? available : variants;
           if (!pool.length) return null;
-          const priceCents = Math.min(...pool.map((v) => v.priceCents));
+          // La variante más barata define el precio "desde" y su margen real.
+          const cheapest = pool.reduce((a, b) => (b.priceCents < a.priceCents ? b : a));
           return {
             id: product.id,
             title: product.title,
@@ -39,7 +40,10 @@ export async function buildDemoCatalog(): Promise<DemoProduct[]> {
             image: product.image,
             category: entry.category,
             description: product.description,
-            priceCents,
+            priceCents: cheapest.priceCents,
+            costCents: cheapest.costCents,
+            marginCents: cheapest.marginCents,
+            marginPct: cheapest.marginPct,
             colors: new Set(pool.map((v) => v.color).filter(Boolean)).size,
             sizes: new Set(pool.map((v) => v.size).filter(Boolean)).size,
           } satisfies DemoProduct;

@@ -3,9 +3,12 @@
  * Server-only: usa el token privado y nunca lo expone al navegador.
  */
 
+import { priceBreakdown, suggestedPriceCents } from "@/lib/pricing";
+
 const BASE_URL = "https://api.printful.com";
-/** Tipo de cambio conservador para convertir el costo del proveedor. */
-const USD_MXN = 18;
+
+export { suggestedPriceCents };
+
 
 
 export type CatalogItem = {
@@ -27,9 +30,16 @@ export type CatalogVariant = {
   colorCode: string | null;
   image: string;
   costUsd: number;
+  /** Costo del proveedor convertido a centavos MXN. */
+  costCents: number;
   priceCents: number;
+  /** Ganancia bruta en centavos MXN y su porcentaje sobre el precio final. */
+  marginCents: number;
+  marginPct: number;
+  markup: number;
   inStock: boolean;
 };
+
 
 let cache: { at: number; items: CatalogItem[] } | null = null;
 const TTL_MS = 30 * 60 * 1000;
@@ -50,19 +60,6 @@ async function api<T>(path: string): Promise<T> {
   return (json.result ?? (json as unknown)) as T;
 }
 
-/**
- * Precio de venta sugerido, con margen escalonado: mayor margen en productos
- * baratos y margen menor en los caros, para que el precio final sea vendible
- * en México (una gorra no debe costar $1,400).
- */
-export function suggestedPriceCents(costUsd: number): number {
-  const costMxn = costUsd * USD_MXN;
-  const markup = costMxn <= 150 ? 1.9 : costMxn <= 350 ? 1.65 : costMxn <= 700 ? 1.45 : 1.3;
-  const mxn = costMxn * markup;
-  // Redondeo comercial a decenas terminadas en 9 (p. ej. 349, 599).
-  const rounded = Math.round(mxn / 10) * 10 - 1;
-  return Math.max(9900, Math.round(rounded * 100));
-}
 
 
 export async function listCatalog(): Promise<CatalogItem[]> {
@@ -136,6 +133,7 @@ export async function getCatalogVariants(productId: number): Promise<{
     },
     variants: data.variants.map((v) => {
       const costUsd = Number(v.price) || 0;
+      const money = priceBreakdown(costUsd);
       return {
         id: v.id,
         name: v.name,
@@ -144,7 +142,11 @@ export async function getCatalogVariants(productId: number): Promise<{
         colorCode: v.color_code ?? null,
         image: v.image,
         costUsd,
-        priceCents: suggestedPriceCents(costUsd),
+        costCents: money.costCents,
+        priceCents: money.priceCents,
+        marginCents: money.marginCents,
+        marginPct: money.marginPct,
+        markup: money.markup,
         inStock: v.in_stock,
       };
     }),

@@ -27,6 +27,9 @@ export const getDemoProduct = createServerFn({ method: "GET" })
         colorCode: v.colorCode,
         image: v.image,
         priceCents: v.priceCents,
+        costCents: v.costCents,
+        marginCents: v.marginCents,
+        marginPct: v.marginPct,
         inStock: v.inStock,
       })),
     };
