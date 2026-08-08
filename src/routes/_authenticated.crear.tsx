@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Loader2, Rocket, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Palette, Rocket, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { getMyPlan } from "@/lib/plans.functions";
 import { planLimit } from "@/lib/plans";
 import { startProvisioning } from "@/lib/commerce.functions";
 import { addCatalogProducts, getCatalog, getCatalogProduct } from "@/lib/catalog.functions";
+import { DesignStudio, type StudioResult } from "@/components/DesignStudio";
 
 export const Route = createFileRoute("/_authenticated/crear")({
   head: () => ({ meta: [{ title: "Crear tienda — DªTªBLe" }] }),
@@ -27,6 +28,8 @@ type CatalogItem = {
   image: string;
   variantCount: number;
   description: string;
+  category: string;
+  categoryId: number;
 };
 
 type Picked = {
@@ -36,6 +39,9 @@ type Picked = {
   image: string;
   typeName: string;
   priceCents: number | null;
+  designUrl?: string;
+  mockupUrl?: string;
+  placement?: string;
 };
 
 type State = {
@@ -53,6 +59,7 @@ const MAX_PRODUCTS = 40;
 function money(cents: number) {
   return `$${(cents / 100).toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
+
 
 function WizardPage() {
   const navigate = useNavigate();
