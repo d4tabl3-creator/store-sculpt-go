@@ -540,24 +540,58 @@ export async function handleInboundWebhook(
     detail: parsed.payload as never,
   });
 
-  if (parsed.topic.toLowerCase().includes("fulfill") || parsed.topic.toLowerCase().includes("package_shipped")) {
-    const p = parsed.payload as { id?: string | number; note?: string; tracking_number?: string; tracking_url?: string; order?: { id?: string | number } };
-    const match = /DªTªBLe order ([0-9a-f-]{36})/i.exec(p.note ?? "");
-    const orderId = match?.[1] || (p.order?.id ? String(p.order.id) : null);
+  const topic = parsed.topic.toLowerCase();
+  if (topic.includes("fulfill") || topic.includes("package_shipped") || topic.includes("shipment")) {
+    // Printful envuelve el evento en `data`; Shopify manda el objeto plano.
+    const root = parsed.payload as Record<string, unknown>;
+    const body = (root["data"] as Record<string, unknown> | undefined) ?? root;
+    const order = (body["order"] as Record<string, unknown> | undefined) ?? root;
+    const shipment = (body["shipment"] as Record<string, unknown> | undefined) ?? body;
+
+    const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const note = typeof order["note"] === "string" ? (order["note"] as string) : "";
+    // 1) external_id que enviamos al crear el pedido, 2) nota, 3) id externo del proveedor.
+    const externalId = order["external_id"] != null ? String(order["external_id"]) : "";
+    const internalFromNote = UUID_RE.exec(`${externalId} ${note}`)?.[0] ?? null;
+    const providerOrderId = order["id"] != null ? String(order["id"]) : null;
+
+    let orderId = internalFromNote;
+    if (!orderId && providerOrderId) {
+      const { data: ob } = await supabaseAdmin
+        .from("commerce_order_bindings")
+        .select("order_id")
+        .eq("provider", providerId)
+        .eq("external_order_id", providerOrderId)
+        .maybeSingle();
+      orderId = (ob?.order_id as string | undefined) ?? null;
+    }
+
     if (orderId) {
+      const tracking = shipment["tracking_number"] ?? order["tracking_number"] ?? null;
+      const trackingUrl = shipment["tracking_url"] ?? order["tracking_url"] ?? null;
       await supabaseAdmin
         .from("commerce_order_bindings")
         .update({
           fulfillment_status: "fulfilled",
-          tracking_number: p.tracking_number ?? null,
-          tracking_url: p.tracking_url ?? null,
+          tracking_number: tracking ? String(tracking) : null,
+          tracking_url: trackingUrl ? String(trackingUrl) : null,
           last_synced_at: new Date().toISOString(),
         })
         .eq("order_id", orderId)
         .eq("provider", providerId);
       await supabaseAdmin.from("store_orders").update({ status: "shipped" }).eq("id", orderId);
+    } else {
+      await supabaseAdmin.from("commerce_event_log").insert({
+        store_id: bindingRow.store_id as string,
+        provider: providerId,
+        direction: "inbound",
+        event: `${parsed.topic}:unmatched_order`,
+        level: "warn",
+        detail: parsed.payload as never,
+      });
     }
   }
+
 
   return { ok: true };
 }
