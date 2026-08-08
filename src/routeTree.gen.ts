@@ -26,6 +26,7 @@ import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
 import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authenticated.preparando.$id'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicCommerceWorkerRouteImport } from './routes/api/public/commerce/worker'
 import { Route as ApiPublicCommerceWebhookProviderRouteImport } from './routes/api/public/commerce/webhook.$provider'
@@ -115,6 +116,12 @@ const AuthenticatedPreparandoIdRoute =
     path: '/preparando/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRoutesByTo {
@@ -172,6 +180,7 @@ export interface FileRoutesByTo {
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRoutesById {
@@ -195,6 +204,7 @@ export interface FileRoutesById {
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRouteTypes {
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/tienda/$id'
     | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
+    | '/lovable/email/queue/process'
     | '/api/public/commerce/webhook/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/tienda/$id'
     | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
+    | '/lovable/email/queue/process'
     | '/api/public/commerce/webhook/$provider'
   id:
     | '__root__'
@@ -260,6 +272,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tienda/$id'
     | '/api/public/commerce/worker'
     | '/api/public/payments/webhook'
+    | '/lovable/email/queue/process'
     | '/api/public/commerce/webhook/$provider'
   fileRoutesById: FileRoutesById
 }
@@ -274,6 +287,7 @@ export interface RootRouteChildren {
   TSlugRoute: typeof TSlugRoute
   ApiPublicCommerceWorkerRoute: typeof ApiPublicCommerceWorkerRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   ApiPublicCommerceWebhookProviderRoute: typeof ApiPublicCommerceWebhookProviderRoute
 }
 
@@ -398,6 +412,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPreparandoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -469,18 +490,9 @@ const rootRouteChildren: RootRouteChildren = {
   TSlugRoute: TSlugRoute,
   ApiPublicCommerceWorkerRoute: ApiPublicCommerceWorkerRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   ApiPublicCommerceWebhookProviderRoute: ApiPublicCommerceWebhookProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
