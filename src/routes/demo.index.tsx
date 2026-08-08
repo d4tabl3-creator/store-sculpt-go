@@ -29,18 +29,22 @@ export const Route = createFileRoute("/demo/")({
 
 function DemoIndex() {
   const { cat } = Route.useSearch();
-  const [active, setActive] = useState<string | undefined>(cat);
+  const navigate = Route.useNavigate();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["demo-catalog"],
     queryFn: () => getDemoCatalog(),
     staleTime: 10 * 60 * 1000,
   });
 
-  const selected = active ?? cat;
+  // La URL es la única fuente de verdad del filtro.
+  const selected = cat;
+  const setActive = (slug?: string) =>
+    navigate({ search: slug ? { cat: slug } : {}, replace: true });
   const products = useMemo(
     () => (data || []).filter((p) => !selected || p.category === selected),
     [data, selected],
   );
+
 
   return (
     <>
