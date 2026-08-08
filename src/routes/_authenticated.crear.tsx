@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Loader2, Rocket, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Palette, Rocket, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { getMyPlan } from "@/lib/plans.functions";
 import { planLimit } from "@/lib/plans";
 import { startProvisioning } from "@/lib/commerce.functions";
 import { addCatalogProducts, getCatalog, getCatalogProduct } from "@/lib/catalog.functions";
+import { DesignStudio, type StudioResult } from "@/components/DesignStudio";
 
 export const Route = createFileRoute("/_authenticated/crear")({
   head: () => ({ meta: [{ title: "Crear tienda — DªTªBLe" }] }),
@@ -27,6 +28,8 @@ type CatalogItem = {
   image: string;
   variantCount: number;
   description: string;
+  category: string;
+  categoryId: number;
 };
 
 type Picked = {
@@ -36,6 +39,9 @@ type Picked = {
   image: string;
   typeName: string;
   priceCents: number | null;
+  designUrl?: string;
+  mockupUrl?: string;
+  placement?: string;
 };
 
 type State = {
@@ -53,6 +59,7 @@ const MAX_PRODUCTS = 40;
 function money(cents: number) {
   return `$${(cents / 100).toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
+
 
 function WizardPage() {
   const navigate = useNavigate();
@@ -114,9 +121,11 @@ function WizardPage() {
     })();
   }, [gateChecked]);
 
+  const [studio, setStudio] = useState<{ id: number; title: string; category: string } | null>(null);
+
   const categories = useMemo(() => {
     const map = new Map<string, number>();
-    for (const p of catalog) map.set(p.typeName, (map.get(p.typeName) || 0) + 1);
+    for (const p of catalog) map.set(p.category || p.typeName, (map.get(p.category || p.typeName) || 0) + 1);
     return [...map.entries()].sort((a, b) => b[1] - a[1]);
   }, [catalog]);
 
@@ -124,13 +133,42 @@ function WizardPage() {
     const q = query.trim().toLowerCase();
     return catalog.filter(
       (p) =>
-        (category === "all" || p.typeName === category) &&
-        (!q || p.title.toLowerCase().includes(q) || (p.brand || "").toLowerCase().includes(q)),
+        (category === "all" || (p.category || p.typeName) === category) &&
+        (!q ||
+          p.title.toLowerCase().includes(q) ||
+          (p.brand || "").toLowerCase().includes(q) ||
+          (p.typeName || "").toLowerCase().includes(q) ||
+          (p.category || "").toLowerCase().includes(q)),
     );
   }, [catalog, query, category]);
 
   const pickedList = Object.values(picked);
   const slug = useMemo(() => slugify(s.storeName), [s.storeName]);
+
+  function applyStudio(r: StudioResult) {
+    setPicked((prev) => ({
+      ...prev,
+      [r.productId]: {
+        productId: r.productId,
+        variantId: r.variantId,
+        title: r.title,
+        image: r.image,
+        typeName: r.category,
+        priceCents: r.priceCents,
+        designUrl: r.designUrl,
+        mockupUrl: r.mockupUrl,
+        placement: r.placement,
+      },
+    }));
+  }
+
+  function openStudio(item: CatalogItem) {
+    if (!picked[item.id] && pickedList.length >= MAX_PRODUCTS) {
+      toast.error(`Máximo ${MAX_PRODUCTS} productos por tienda.`);
+      return;
+    }
+    setStudio({ id: item.id, title: item.title, category: item.category || item.typeName });
+  }
 
   async function toggle(item: CatalogItem) {
     if (picked[item.id]) {
@@ -147,7 +185,14 @@ function WizardPage() {
     }
     setPicked((prev) => ({
       ...prev,
-      [item.id]: { productId: item.id, variantId: null, title: item.title, image: item.image, typeName: item.typeName, priceCents: null },
+      [item.id]: {
+        productId: item.id,
+        variantId: null,
+        title: item.title,
+        image: item.image,
+        typeName: item.category || item.typeName,
+        priceCents: null,
+      },
     }));
     try {
       const detail = (await getCatalogProduct({ data: { productId: item.id } })) as {
@@ -164,6 +209,7 @@ function WizardPage() {
       /* el precio se resuelve en el servidor al crear la tienda */
     }
   }
+
 
   const canNext =
     (step === 0 && pickedList.length > 0) ||
@@ -210,7 +256,15 @@ function WizardPage() {
       await addCatalogProducts({
         data: {
           storeId: store.id,
-          items: pickedList.map((p) => ({ productId: p.productId, variantId: p.variantId ?? undefined })),
+          items: pickedList.map((p) => ({
+            productId: p.productId,
+            variantId: p.variantId ?? undefined,
+            name: p.title,
+            designUrl: p.designUrl,
+            mockupUrl: p.mockupUrl,
+            placement: p.placement,
+          })),
+
         },
       });
 
@@ -298,9 +352,8 @@ function WizardPage() {
               {filtered.slice(0, visible).map((p) => {
                 const on = !!picked[p.id];
                 return (
-                  <button
+                  <div
                     key={p.id}
-                    onClick={() => toggle(p)}
                     className={`relative overflow-hidden rounded-2xl border-2 bg-card text-left transition-all hover:shadow-pop ${on ? "border-primary" : "border-border"}`}
                   >
                     {on && (
@@ -308,20 +361,31 @@ function WizardPage() {
                         <Check className="size-4" />
                       </span>
                     )}
-                    <div className="aspect-square bg-muted">
-                      <img src={p.image} alt={p.title} loading="lazy" className="size-full object-cover" />
+                    <button onClick={() => toggle(p)} className="block w-full text-left">
+                      <div className="aspect-square bg-muted">
+                        <img src={picked[p.id]?.image || p.image} alt={p.title} loading="lazy" className="size-full object-cover" />
+                      </div>
+                      <div className="p-3 pb-1">
+                        <div className="line-clamp-2 text-xs font-bold leading-snug">{picked[p.id]?.title || p.title}</div>
+                        <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                          {p.category || p.typeName}
+                        </div>
+                        {picked[p.id]?.priceCents != null && (
+                          <div className="mt-1 text-xs font-bold text-primary">{money(picked[p.id].priceCents!)} MXN</div>
+                        )}
+                      </div>
+                    </button>
+                    <div className="px-3 pb-3">
+                      <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => openStudio(p)}>
+                        <Palette className="mr-1 size-3.5" />
+                        {picked[p.id]?.mockupUrl ? "Editar diseño" : "Personalizar"}
+                      </Button>
                     </div>
-                    <div className="p-3">
-                      <div className="line-clamp-2 text-xs font-bold leading-snug">{p.title}</div>
-                      <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{p.typeName}</div>
-                      {picked[p.id]?.priceCents != null && (
-                        <div className="mt-1 text-xs font-bold text-primary">{money(picked[p.id].priceCents!)} MXN</div>
-                      )}
-                    </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
+
 
             {filtered.length > visible && (
               <div className="mt-6 flex justify-center">
@@ -452,6 +516,16 @@ function WizardPage() {
             </Button>
           )}
         </div>
+
+        <DesignStudio
+          productId={studio?.id ?? null}
+          productTitle={studio?.title ?? ""}
+          category={studio?.category ?? ""}
+          open={!!studio}
+          onOpenChange={(v) => { if (!v) setStudio(null); }}
+          onSave={applyStudio}
+        />
+
       </main>
     </div>
   );
