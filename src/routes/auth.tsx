@@ -41,12 +41,25 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  function mensajeError(err: unknown): string {
+    const raw = err instanceof Error ? err.message : String(err ?? "");
+    const m = raw.toLowerCase();
+    if (m.includes("weak") || m.includes("pwned"))
+      return "Esa contraseña es muy común y fue filtrada en internet. Usa una de 8+ caracteres con mayúsculas, números y un símbolo (ej. Tienda#2026mx).";
+    if (m.includes("already registered") || m.includes("user already"))
+      return "Ese correo ya tiene cuenta. Entra con “Continuar con Google” o inicia sesión con tu contraseña.";
+    if (m.includes("invalid login")) return "Correo o contraseña incorrectos.";
+    if (m.includes("email not confirmed")) return "Confirma tu correo con el enlace que te enviamos.";
+    if (m.includes("rate limit")) return "Demasiados intentos. Espera un minuto e inténtalo de nuevo.";
+    return raw || "Ocurrió un error. Inténtalo de nuevo.";
+  }
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -55,15 +68,19 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Cuenta creada. Revisa tu correo si te lo pide.");
-        navigate({ to: "/bienvenida" });
+        if (data.session) {
+          navigate({ to: "/bienvenida" });
+        } else {
+          toast.success("Cuenta creada. Revisa tu correo para confirmarla.");
+          setMode("signin");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         navigate({ to: "/dashboard" });
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error");
+      toast.error(mensajeError(err));
     } finally {
       setLoading(false);
     }
@@ -71,11 +88,20 @@ function AuthPage() {
 
   async function handleGoogle() {
     try {
-      await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result?.error) {
+        toast.error(mensajeError(result.error));
+        return;
+      }
+      if (result?.redirected) return;
+      navigate({ to: "/dashboard" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error con Google");
+      toast.error(mensajeError(err));
     }
   }
+
 
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4">
@@ -111,8 +137,14 @@ function AuthPage() {
           </div>
           <div>
             <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+            {mode === "signup" && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Mínimo 8 caracteres. Evita palabras comunes (ej. usa Tienda#2026mx).
+              </p>
+            )}
           </div>
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Cargando…" : mode === "signin" ? "Entrar" : "Crear cuenta"}
           </Button>
