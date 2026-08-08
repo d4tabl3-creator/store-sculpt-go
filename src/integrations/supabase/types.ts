@@ -790,9 +790,12 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          design_url: string | null
           id: string
           image_url: string | null
+          mockup_url: string | null
           name: string
+          placement: string | null
           price_cents: number
           sort_order: number
           source_product_id: string | null
@@ -805,9 +808,12 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          design_url?: string | null
           id?: string
           image_url?: string | null
+          mockup_url?: string | null
           name: string
+          placement?: string | null
           price_cents?: number
           sort_order?: number
           source_product_id?: string | null
@@ -820,9 +826,12 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          design_url?: string | null
           id?: string
           image_url?: string | null
+          mockup_url?: string | null
           name?: string
+          placement?: string | null
           price_cents?: number
           sort_order?: number
           source_product_id?: string | null
