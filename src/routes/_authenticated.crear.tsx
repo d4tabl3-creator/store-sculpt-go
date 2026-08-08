@@ -516,6 +516,16 @@ function WizardPage() {
             </Button>
           )}
         </div>
+
+        <DesignStudio
+          productId={studio?.id ?? null}
+          productTitle={studio?.title ?? ""}
+          category={studio?.category ?? ""}
+          open={!!studio}
+          onOpenChange={(v) => { if (!v) setStudio(null); }}
+          onSave={applyStudio}
+        />
+
       </main>
     </div>
   );
