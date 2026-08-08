@@ -256,7 +256,15 @@ function WizardPage() {
       await addCatalogProducts({
         data: {
           storeId: store.id,
-          items: pickedList.map((p) => ({ productId: p.productId, variantId: p.variantId ?? undefined })),
+          items: pickedList.map((p) => ({
+            productId: p.productId,
+            variantId: p.variantId ?? undefined,
+            name: p.title,
+            designUrl: p.designUrl,
+            mockupUrl: p.mockupUrl,
+            placement: p.placement,
+          })),
+
         },
       });
 
