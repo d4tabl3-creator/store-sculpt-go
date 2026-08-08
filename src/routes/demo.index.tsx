@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Truck, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,18 +29,22 @@ export const Route = createFileRoute("/demo/")({
 
 function DemoIndex() {
   const { cat } = Route.useSearch();
-  const [active, setActive] = useState<string | undefined>(cat);
+  const navigate = Route.useNavigate();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["demo-catalog"],
     queryFn: () => getDemoCatalog(),
     staleTime: 10 * 60 * 1000,
   });
 
-  const selected = active ?? cat;
+  // La URL es la única fuente de verdad del filtro.
+  const selected = cat;
+  const setActive = (slug?: string) =>
+    navigate({ search: slug ? { cat: slug } : {}, replace: true });
   const products = useMemo(
     () => (data || []).filter((p) => !selected || p.category === selected),
     [data, selected],
   );
+
 
   return (
     <>

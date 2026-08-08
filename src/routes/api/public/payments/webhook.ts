@@ -40,9 +40,20 @@ async function handleStoreOrderPaid(session: any) {
     .maybeSingle();
   const ownerId = (orderRow as any)?.stores?.owner_id as string | undefined;
   if (ownerId) {
-    const { data: plan } = await sb.rpc("active_plan_for", { _user_id: ownerId });
-    if (plan === "starter" || plan === "pro") commissionBps = 1000;
+    // Lectura directa con service role: `active_plan_for` depende de auth.uid()
+    // y siempre devuelve NULL desde un webhook (sin sesión de usuario).
+    const { data: subs } = await sb
+      .from("merchant_subscriptions")
+      .select("plan, status, current_period_end")
+      .eq("user_id", ownerId)
+      .in("status", ["active", "trialing", "past_due"]);
+    const now = Date.now();
+    const active = (subs ?? []).filter(
+      (s: any) => !s.current_period_end || new Date(s.current_period_end).getTime() > now,
+    );
+    if (active.some((s: any) => s.plan === "starter" || s.plan === "pro")) commissionBps = 1000;
   }
+
 
   const { error } = await sb.rpc("apply_paid_order", {
     _order_id: orderId,
