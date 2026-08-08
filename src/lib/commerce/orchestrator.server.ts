@@ -494,16 +494,18 @@ export async function handleInboundWebhook(
   // Shopify identifica la tienda por dominio en header.
   const domain = headers.get("x-shopify-shop-domain");
 
-  // Printful envía store_id en el payload; hacemos un parse seguro para buscar.
+  // Printful envía el id de tienda en el payload (`store` o `store_id`).
   let printfulStoreId: string | null = null;
   if (providerId === "printful") {
     try {
-      const payload = JSON.parse(rawBody) as { store_id?: number };
-      if (payload.store_id) printfulStoreId = String(payload.store_id);
+      const payload = JSON.parse(rawBody) as { store_id?: number; store?: number };
+      const sid = payload.store_id ?? payload.store;
+      if (sid) printfulStoreId = String(sid);
     } catch {
       printfulStoreId = null;
     }
   }
+
 
   let bindingQuery;
   if (domain) {
