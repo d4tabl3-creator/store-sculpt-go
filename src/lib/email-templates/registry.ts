@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { template as assetReadyTemplate } from './asset-ready'
 
 export interface TemplateEntry {
   component: ComponentType<any>
