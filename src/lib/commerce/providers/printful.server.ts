@@ -2,13 +2,19 @@ import type {
   CommerceProvider,
   NormalizedWebhook,
   ProviderBinding,
+  ProviderFileResult,
   ProviderOrder,
+  ProviderOrderLine,
   ProviderOrderResult,
   ProviderProduct,
   ProviderProductResult,
   ProviderStoreContext,
+  ProviderTemplate,
+  ShippingDetails,
+  ShippingRate,
+  SizeGuideTable,
 } from "../types";
-import { OrchestratorError } from "../types";
+import { NO_CAPABILITIES, OrchestratorError } from "../types";
 
 const BASE_URL = "https://api.printful.com";
 
@@ -17,6 +23,7 @@ type PrintfulResponse<T> = { result?: T; error?: { message: string } };
 function apiToken() {
   return process.env.PRINTFUL_API_TOKEN;
 }
+
 
 async function printful<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = apiToken();
