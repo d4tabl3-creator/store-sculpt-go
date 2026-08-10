@@ -687,6 +687,50 @@ export type Database = {
         }
         Relationships: []
       }
+      guide_progress: {
+        Row: {
+          completed_at: string | null
+          completed_steps: string[]
+          created_at: string
+          current_step: string | null
+          guide_id: string
+          id: string
+          owner_id: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_steps?: string[]
+          created_at?: string
+          current_step?: string | null
+          guide_id: string
+          id?: string
+          owner_id: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_steps?: string[]
+          created_at?: string
+          current_step?: string | null
+          guide_id?: string
+          id?: string
+          owner_id?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guide_progress_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_subscriptions: {
         Row: {
           cancel_at_period_end: boolean
