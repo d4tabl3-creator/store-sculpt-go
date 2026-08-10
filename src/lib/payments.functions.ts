@@ -52,6 +52,7 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       storeId: string;
       items: CartLine[];
       shippingId?: string;
+      shipping?: ShippingInput;
       customer: {
         name: string;
         email: string;
