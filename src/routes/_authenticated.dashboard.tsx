@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
 import { getGuideState } from "@/lib/guides.functions";
+import { GuideChecklist } from "@/components/GuideChecklist";
 import type { GuideState } from "@/lib/guides/types";
 
 
