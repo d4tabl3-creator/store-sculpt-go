@@ -388,7 +388,7 @@ function camel(r: {
 export async function pushOrderToProvider(orderId: string) {
   const { data: order } = await supabaseAdmin
     .from("store_orders")
-    .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, items, total_cents")
+    .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, shipping_details, items, total_cents")
     .eq("id", orderId)
     .maybeSingle();
   if (!order) return;
@@ -408,12 +408,32 @@ export async function pushOrderToProvider(orderId: string) {
     : { data: [] as Array<{ product_id: string; external_variant_id: string | null }> };
   const variantByProduct = new Map((pbs || []).map((p) => [p.product_id as string, p.external_variant_id as string | null]));
 
+  const { data: assets } = ids.length
+    ? await supabaseAdmin
+        .from("commerce_design_assets")
+        .select("product_id, url, placement, external_file_id, external_template_id")
+        .eq("provider", binding.provider)
+        .in("product_id", ids)
+    : { data: [] as Array<Record<string, unknown>> };
+  const designByProduct = new Map(
+    (assets || []).map((a) => [
+      a.product_id as string,
+      {
+        url: (a.url as string | null) ?? null,
+        placement: (a.placement as string | null) ?? null,
+        externalFileId: (a.external_file_id as string | null) ?? null,
+        externalTemplateId: (a.external_template_id as string | null) ?? null,
+      },
+    ]),
+  );
+
   const payload: ProviderOrder = {
     orderId: order.id as string,
     customerName: order.customer_name as string,
     customerEmail: order.customer_email as string,
     customerPhone: (order.customer_phone as string | null) ?? null,
     shippingAddress: (order.shipping_address as string | null) ?? null,
+    shipping: normalizeShipping(order.shipping_details as Record<string, unknown> | null),
     totalCents: order.total_cents as number,
     lines: rawItems.map((i) => ({
       productId: i.productId ?? "",
@@ -421,8 +441,10 @@ export async function pushOrderToProvider(orderId: string) {
       qty: i.qty,
       priceCents: i.price_cents,
       externalVariantId: i.productId ? variantByProduct.get(i.productId) ?? null : null,
+      design: i.productId ? designByProduct.get(i.productId) ?? null : null,
     })),
   };
+
 
   try {
     const res = await provider.createOrder(binding, payload);
