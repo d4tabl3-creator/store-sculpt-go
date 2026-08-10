@@ -16,6 +16,9 @@ import type {
   ProviderOrder,
   ProviderProduct,
   ProvisioningStatus,
+  ShippingDetails,
+  ShippingRate,
+  SizeGuideTable,
 } from "./types";
 import { OrchestratorError, PROVISION_STEPS } from "./types";
 import { getProvider, pickProvider } from "./providers/registry.server";
@@ -385,7 +388,83 @@ function camel(r: {
   };
 }
 
+/** Convierte la dirección guardada (jsonb neutral) al contrato del orquestador. */
+export function normalizeShipping(raw: Record<string, unknown> | null): ShippingDetails | null {
+  if (!raw) return null;
+  const address1 = typeof raw["address1"] === "string" ? (raw["address1"] as string).trim() : "";
+  const city = typeof raw["city"] === "string" ? (raw["city"] as string).trim() : "";
+  const countryCode = typeof raw["countryCode"] === "string" ? (raw["countryCode"] as string).trim().toUpperCase() : "";
+  const zip = typeof raw["zip"] === "string" ? (raw["zip"] as string).trim() : "";
+  if (!address1 || !city || !countryCode || !zip) return null;
+  return {
+    address1,
+    address2: (raw["address2"] as string | null) ?? null,
+    city,
+    stateCode: (raw["stateCode"] as string | null) ?? null,
+    stateName: (raw["stateName"] as string | null) ?? null,
+    countryCode,
+    zip,
+  };
+}
+
+/** Costos y tiempos de envío reales del proveedor de la tienda. */
+export async function estimateShippingForStore(
+  storeId: string,
+  shipping: ShippingDetails,
+  items: Array<{ productId: string; qty: number }>,
+): Promise<ShippingRate[]> {
+  const binding = await loadBinding(storeId);
+  if (!binding) return [];
+  const provider = getProvider(binding.provider);
+  if (!provider.capabilities.shippingRates || !provider.estimateShipping) return [];
+
+  const ids = items.map((i) => i.productId);
+  const { data: rows } = await supabaseAdmin
+    .from("store_products")
+    .select("id, name, price_cents, source_variant_id")
+    .in("id", ids);
+  const byId = new Map((rows || []).map((r) => [r.id as string, r]));
+
+  const lines = items
+    .map((i) => {
+      const r = byId.get(i.productId);
+      if (!r) return null;
+      return {
+        productId: i.productId,
+        name: r.name as string,
+        qty: i.qty,
+        priceCents: r.price_cents as number,
+        externalVariantId: (r.source_variant_id as string | null) ?? null,
+      };
+    })
+    .filter(Boolean) as Array<{
+    productId: string;
+    name: string;
+    qty: number;
+    priceCents: number;
+    externalVariantId: string | null;
+  }>;
+
+  return provider.estimateShipping(binding, { shipping, lines });
+}
+
+/** Guía de tallas real del producto de catálogo. */
+export async function getSizeGuideForProduct(
+  providerId: ProviderId,
+  externalProductId: string,
+): Promise<SizeGuideTable[]> {
+  const provider = getProvider(providerId);
+  if (!provider.capabilities.sizeGuide || !provider.getSizeGuide) return [];
+  try {
+    return await provider.getSizeGuide(externalProductId);
+  } catch (err) {
+    console.error("size guide error:", err);
+    return [];
+  }
+}
+
 export async function pushOrderToProvider(orderId: string) {
+
   const { data: order } = await supabaseAdmin
     .from("store_orders")
     .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, shipping_details, items, total_cents")
