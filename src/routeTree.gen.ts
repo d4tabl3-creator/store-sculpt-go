@@ -26,6 +26,7 @@ import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
 import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authenticated.preparando.$id'
+import { Route as AuthenticatedGuiaIdRouteImport } from './routes/_authenticated.guia.$id'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicCommerceWorkerRouteImport } from './routes/api/public/commerce/worker'
@@ -116,6 +117,11 @@ const AuthenticatedPreparandoIdRoute =
     path: '/preparando/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedGuiaIdRoute = AuthenticatedGuiaIdRouteImport.update({
+  id: '/guia/$id',
+  path: '/guia/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/demo/$productId': typeof DemoProductIdRoute
   '/t/$slug': typeof TSlugRoute
   '/demo/': typeof DemoIndexRoute
+  '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/demo/$productId': typeof DemoProductIdRoute
   '/t/$slug': typeof TSlugRoute
   '/demo': typeof DemoIndexRoute
+  '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/demo/$productId': typeof DemoProductIdRoute
   '/t/$slug': typeof TSlugRoute
   '/demo/': typeof DemoIndexRoute
+  '/_authenticated/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/demo/$productId'
     | '/t/$slug'
     | '/demo/'
+    | '/guia/$id'
     | '/preparando/$id'
     | '/tienda/$id'
     | '/api/public/commerce/worker'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/demo/$productId'
     | '/t/$slug'
     | '/demo'
+    | '/guia/$id'
     | '/preparando/$id'
     | '/tienda/$id'
     | '/api/public/commerce/worker'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/demo/$productId'
     | '/t/$slug'
     | '/demo/'
+    | '/_authenticated/guia/$id'
     | '/_authenticated/preparando/$id'
     | '/_authenticated/tienda/$id'
     | '/api/public/commerce/worker'
@@ -412,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPreparandoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/guia/$id': {
+      id: '/_authenticated/guia/$id'
+      path: '/guia/$id'
+      fullPath: '/guia/$id'
+      preLoaderRoute: typeof AuthenticatedGuiaIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
@@ -449,6 +468,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCrearRoute: typeof AuthenticatedCrearRoute
   AuthenticatedCuentaRoute: typeof AuthenticatedCuentaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedGuiaIdRoute: typeof AuthenticatedGuiaIdRoute
   AuthenticatedPreparandoIdRoute: typeof AuthenticatedPreparandoIdRoute
   AuthenticatedTiendaIdRoute: typeof AuthenticatedTiendaIdRoute
 }
@@ -459,6 +479,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCrearRoute: AuthenticatedCrearRoute,
   AuthenticatedCuentaRoute: AuthenticatedCuentaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedGuiaIdRoute: AuthenticatedGuiaIdRoute,
   AuthenticatedPreparandoIdRoute: AuthenticatedPreparandoIdRoute,
   AuthenticatedTiendaIdRoute: AuthenticatedTiendaIdRoute,
 }
@@ -496,13 +517,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
