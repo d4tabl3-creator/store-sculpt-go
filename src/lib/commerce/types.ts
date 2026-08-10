@@ -252,7 +252,26 @@ export interface CommerceProvider {
   ): Promise<NormalizedWebhook | null>;
   /** Libera recursos del proveedor cuando se elimina el Activo Digital. */
   teardown(binding: ProviderBinding): Promise<void>;
+
+  // --- Opcionales: sólo si la capacidad correspondiente está declarada ---
+
+  /** Sube un archivo de impresión a la biblioteca del proveedor (permanente). */
+  uploadDesignFile?(
+    binding: ProviderBinding,
+    input: { url: string; filename?: string | null },
+  ): Promise<ProviderFileResult>;
+  /** Plantillas de producto guardadas en el proveedor. */
+  listTemplates?(binding: ProviderBinding): Promise<ProviderTemplate[]>;
+  getTemplate?(binding: ProviderBinding, externalTemplateId: string): Promise<ProviderTemplate | null>;
+  /** Guía de tallas real del producto de catálogo. */
+  getSizeGuide?(externalProductId: string): Promise<SizeGuideTable[]>;
+  /** Costos y tiempos de envío reales para una dirección concreta. */
+  estimateShipping?(
+    binding: ProviderBinding,
+    input: { shipping: ShippingDetails; lines: ProviderOrderLine[] },
+  ): Promise<ShippingRate[]>;
 }
+
 
 export class OrchestratorError extends Error {
   constructor(
