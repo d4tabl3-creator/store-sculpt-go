@@ -33,6 +33,7 @@ function Preparando() {
           if (stopped.current) return;
           setView(v);
           if (v?.status === "ready") {
+            void notifyAssetReady(id);
             setTimeout(() => navigate({ to: "/tienda/$id", params: { id } }), 900);
             return;
           }

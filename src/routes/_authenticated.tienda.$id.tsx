@@ -150,6 +150,10 @@ function StoreManage() {
             <ArrowLeft className="size-4" /> Mis tiendas
           </Link>
           <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="ghost">
+              <Link to="/guia/$id" params={{ id }}>Guía de inicio</Link>
+            </Button>
+
             {store.status === "published" ? (
               <Button asChild size="sm" variant="outline">
                 <Link to="/t/$slug" params={{ slug: store.slug }} target="_blank">

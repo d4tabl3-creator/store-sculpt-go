@@ -1,11 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CreditCard, Edit3, ExternalLink, LogOut, Plus, Settings, ShieldCheck, ShoppingBag, Store, TrendingUp } from "lucide-react";
+import { Compass, CreditCard, Edit3, ExternalLink, LogOut, Plus, Settings, ShieldCheck, ShoppingBag, Store, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
+import { getGuideState } from "@/lib/guides.functions";
+import { GuideChecklist } from "@/components/GuideChecklist";
+import type { GuideState } from "@/lib/guides/types";
+
 
 type StoreRow = {
   id: string;
@@ -29,6 +33,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<Awaited<ReturnType<typeof getMyPlan>> | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [guide, setGuide] = useState<{ storeId: string; state: GuideState } | null>(null);
 
   useEffect(() => { load(); }, []);
 
@@ -51,7 +56,15 @@ function Dashboard() {
     );
     setStores(enriched);
     setLoading(false);
+    const first = (storesData || [])[0];
+    if (first) {
+      try {
+        const state = await getGuideState({ data: { storeId: first.id } });
+        if (state) setGuide({ storeId: first.id, state });
+      } catch { /* el acompañamiento no bloquea el panel */ }
+    }
   }
+
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -96,6 +109,31 @@ function Dashboard() {
             </Link>
           </Button>
         </div>
+
+        {guide && !guide.state.finished && (
+          <div className="mt-6 rounded-2xl border border-primary/40 bg-card p-5 shadow-pop">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-primary">
+                <Compass className="size-4" />
+                <span className="text-xs font-bold uppercase tracking-wide">¿Qué hago ahora?</span>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {guide.state.completedCount} de {guide.state.totalCount} pasos
+              </span>
+            </div>
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full bg-primary transition-all" style={{ width: `${guide.state.progress}%` }} />
+            </div>
+            <div className="mt-4">
+              <GuideChecklist storeId={guide.storeId} state={guide.state} compact />
+            </div>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link to="/guia/$id" params={{ id: guide.storeId }}>Ver guía completa</Link>
+            </Button>
+          </div>
+        )}
+
+
 
         {loading ? (
           <div className="mt-10 text-center text-muted-foreground">Cargando…</div>
