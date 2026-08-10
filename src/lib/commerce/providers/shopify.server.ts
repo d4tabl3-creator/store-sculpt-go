@@ -22,7 +22,7 @@ import type {
   ProviderProductResult,
   ProviderStoreContext,
 } from "../types";
-import { OrchestratorError } from "../types";
+import { NO_CAPABILITIES, OrchestratorError } from "../types";
 
 const DEFAULT_API_VERSION = "2024-10";
 
@@ -87,6 +87,16 @@ function timingSafeEqual(a: string, b: string): boolean {
 export const shopifyProvider: CommerceProvider = {
   id: "shopify",
   label: "Infraestructura de comercio A",
+
+  capabilities: {
+    ...NO_CAPABILITIES,
+    catalog: true,
+    variants: true,
+    orderTracking: true,
+    webhooks: true,
+  },
+
+
 
   isConfigured() {
     return !!(process.env.SHOPIFY_PARTNER_API_TOKEN && process.env.SHOPIFY_PARTNER_ORG_ID);
