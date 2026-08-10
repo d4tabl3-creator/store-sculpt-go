@@ -109,6 +109,31 @@ function Dashboard() {
           </Button>
         </div>
 
+        {guide && !guide.state.finished && (
+          <div className="mt-6 rounded-2xl border border-primary/40 bg-card p-5 shadow-pop">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-primary">
+                <Compass className="size-4" />
+                <span className="text-xs font-bold uppercase tracking-wide">¿Qué hago ahora?</span>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {guide.state.completedCount} de {guide.state.totalCount} pasos
+              </span>
+            </div>
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full bg-primary transition-all" style={{ width: `${guide.state.progress}%` }} />
+            </div>
+            <div className="mt-4">
+              <GuideChecklist storeId={guide.storeId} state={guide.state} compact />
+            </div>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link to="/guia/$id" params={{ id: guide.storeId }}>Ver guía completa</Link>
+            </Button>
+          </div>
+        )}
+
+
+
         {loading ? (
           <div className="mt-10 text-center text-muted-foreground">Cargando…</div>
         ) : stores.length === 0 ? (
