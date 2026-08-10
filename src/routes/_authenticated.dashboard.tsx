@@ -32,6 +32,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<Awaited<ReturnType<typeof getMyPlan>> | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [guide, setGuide] = useState<{ storeId: string; state: GuideState } | null>(null);
 
   useEffect(() => { load(); }, []);
 
@@ -54,7 +55,15 @@ function Dashboard() {
     );
     setStores(enriched);
     setLoading(false);
+    const first = (storesData || [])[0];
+    if (first) {
+      try {
+        const state = await getGuideState({ data: { storeId: first.id } });
+        if (state) setGuide({ storeId: first.id, state });
+      } catch { /* el acompañamiento no bloquea el panel */ }
+    }
   }
+
 
   async function handleSignOut() {
     await supabase.auth.signOut();
