@@ -16,14 +16,18 @@ import type {
   ProviderProductResult,
   ProviderStoreContext,
 } from "../types";
+import { NO_CAPABILITIES } from "../types";
 
 export const internalProvider: CommerceProvider = {
   id: "internal",
   label: "Motor nativo DªTªBLe",
 
+  capabilities: { ...NO_CAPABILITIES, catalog: true, variants: true },
+
   isConfigured() {
     return true;
   },
+
 
   async provisionStore(ctx: ProviderStoreContext) {
     const credentials: ProviderCredentials = { extra: { engine: "native" } };
