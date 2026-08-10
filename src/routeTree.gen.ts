@@ -29,6 +29,7 @@ import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedGuiaIdRouteImport } from './routes/_authenticated.guia.$id'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicGuiaIdRouteImport } from './routes/api/public/guia/$id'
 import { Route as ApiPublicCommerceWorkerRouteImport } from './routes/api/public/commerce/worker'
 import { Route as ApiPublicCommerceWebhookProviderRouteImport } from './routes/api/public/commerce/webhook.$provider'
 
@@ -134,6 +135,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicGuiaIdRoute = ApiPublicGuiaIdRouteImport.update({
+  id: '/api/public/guia/$id',
+  path: '/api/public/guia/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCommerceWorkerRoute = ApiPublicCommerceWorkerRouteImport.update({
   id: '/api/public/commerce/worker',
   path: '/api/public/commerce/worker',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
+  '/api/public/guia/$id': typeof ApiPublicGuiaIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
+  '/api/public/guia/$id': typeof ApiPublicGuiaIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
+  '/api/public/guia/$id': typeof ApiPublicGuiaIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
@@ -237,6 +246,7 @@ export interface FileRouteTypes {
     | '/preparando/$id'
     | '/tienda/$id'
     | '/api/public/commerce/worker'
+    | '/api/public/guia/$id'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
     | '/api/public/commerce/webhook/$provider'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/preparando/$id'
     | '/tienda/$id'
     | '/api/public/commerce/worker'
+    | '/api/public/guia/$id'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
     | '/api/public/commerce/webhook/$provider'
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/_authenticated/preparando/$id'
     | '/_authenticated/tienda/$id'
     | '/api/public/commerce/worker'
+    | '/api/public/guia/$id'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
     | '/api/public/commerce/webhook/$provider'
@@ -298,6 +310,7 @@ export interface RootRouteChildren {
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   TSlugRoute: typeof TSlugRoute
   ApiPublicCommerceWorkerRoute: typeof ApiPublicCommerceWorkerRoute
+  ApiPublicGuiaIdRoute: typeof ApiPublicGuiaIdRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   ApiPublicCommerceWebhookProviderRoute: typeof ApiPublicCommerceWebhookProviderRoute
@@ -445,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/guia/$id': {
+      id: '/api/public/guia/$id'
+      path: '/api/public/guia/$id'
+      fullPath: '/api/public/guia/$id'
+      preLoaderRoute: typeof ApiPublicGuiaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/commerce/worker': {
       id: '/api/public/commerce/worker'
       path: '/api/public/commerce/worker'
@@ -510,6 +530,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutReturnRoute: CheckoutReturnRoute,
   TSlugRoute: TSlugRoute,
   ApiPublicCommerceWorkerRoute: ApiPublicCommerceWorkerRoute,
+  ApiPublicGuiaIdRoute: ApiPublicGuiaIdRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   ApiPublicCommerceWebhookProviderRoute: ApiPublicCommerceWebhookProviderRoute,

@@ -1,11 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CreditCard, Edit3, ExternalLink, LogOut, Plus, Settings, ShieldCheck, ShoppingBag, Store, TrendingUp } from "lucide-react";
+import { Compass, CreditCard, Edit3, ExternalLink, LogOut, Plus, Settings, ShieldCheck, ShoppingBag, Store, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
+import { getGuideState } from "@/lib/guides.functions";
+import type { GuideState } from "@/lib/guides/types";
+
 
 type StoreRow = {
   id: string;
