@@ -227,8 +227,11 @@ export type NormalizedWebhook = {
 export interface CommerceProvider {
   readonly id: ProviderId;
   readonly label: string;
+  /** Lo que este conector sabe hacer de verdad. El orquestador nunca asume. */
+  readonly capabilities: ProviderCapabilities;
   /** ¿Tiene credenciales de plataforma para operar? Si no, el orquestador degrada al motor nativo. */
   isConfigured(): boolean;
+
   /** Crea la tienda aislada del cliente en el proveedor. */
   provisionStore(ctx: ProviderStoreContext): Promise<{
     externalStoreId: string;
