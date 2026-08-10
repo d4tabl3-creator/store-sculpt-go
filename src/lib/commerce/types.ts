@@ -86,6 +86,8 @@ export type ProviderProduct = {
   sourceProvider?: string | null;
   sourceProductId?: string | null;
   sourceVariantId?: string | null;
+  /** Diseño asociado, en formato neutral. */
+  design?: DesignAssetRef | null;
 };
 
 export type ProviderProductResult = {
