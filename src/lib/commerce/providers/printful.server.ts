@@ -352,15 +352,18 @@ export const printfulProvider: CommerceProvider = {
       };
     }
 
-    // Si el producto vino del catálogo abierto, ya conocemos la variante real.
+    // El producto debe traer su variante real de catálogo. Sin ella no se
+    // fabrica nada: es preferible marcarlo para revisión que enviar a producir
+    // un artículo distinto al que eligió el comerciante.
     const chosen = Number(product.sourceVariantId);
-    let variantId: number;
-    if (product.sourceProvider === "printful" && Number.isFinite(chosen) && chosen > 0) {
-      variantId = chosen;
-    } else {
-      const catalog = await findCatalogVariantByKeyword(product.name);
-      variantId = (catalog || (await getDefaultVariant())).variant_id;
+    if (product.sourceProvider !== "printful" || !Number.isFinite(chosen) || chosen <= 0) {
+      throw new OrchestratorError(
+        `"${product.name}" no tiene variante de catálogo asociada. Elige el producto desde el catálogo para poder fabricarlo.`,
+        "printful",
+        false,
+      );
     }
+    const variantId = chosen;
     const created = await createSyncProduct(storeId, product, variantId);
     return {
       externalProductId: created.external_product_id,
