@@ -396,7 +396,8 @@ export const printfulProvider: CommerceProvider = {
       externalProductId: created.external_product_id,
       externalVariantId: created.external_variant_id,
       externalInventoryItemId: null,
-    };
+      externalFileId: created.external_file_id,
+    } as ProviderProductResult;
   },
 
   async deleteProduct(binding: ProviderBinding, externalProductId: string) {
@@ -413,25 +414,24 @@ export const printfulProvider: CommerceProvider = {
     const storeId = Number(binding.externalStoreId);
     if (!storeId) throw new OrchestratorError("Tienda Printful no disponible", "printful", false);
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const items = await Promise.all(
       order.lines
         .filter((l) => !!l.externalVariantId)
         .map(async (l) => {
-          const { data: pb } = await import("@/integrations/supabase/client.server")
-            .then((m) => m.supabaseAdmin)
-            .then((sb) =>
-              sb
-                .from("commerce_product_bindings")
-                .select("external_product_id")
-                .eq("provider", "printful")
-                .eq("product_id", l.productId)
-                .maybeSingle(),
-            );
+          const { data: pb } = await supabaseAdmin
+            .from("commerce_product_bindings")
+            .select("external_product_id")
+            .eq("provider", "printful")
+            .eq("product_id", l.productId)
+            .maybeSingle();
+          const file = fileEntry(l.design ?? null);
           return {
             sync_variant_id: Number(l.externalVariantId),
             quantity: l.qty,
             retail_price: (l.priceCents / 100).toFixed(2),
-            files: [] as unknown[],
+            // Sin archivo explícito, el proveedor usa el del producto sincronizado.
+            files: file ? [file] : [],
             product_id: pb?.external_product_id ? Number(pb.external_product_id) : undefined,
           };
         }),
@@ -441,27 +441,17 @@ export const printfulProvider: CommerceProvider = {
       return { externalOrderId: null, fulfillmentStatus: "unfulfilled" };
     }
 
-    const nameParts = order.customerName.trim().split(/\s+/);
-    const recipient = {
-      name: order.customerName,
-      email: order.customerEmail,
-      phone: order.customerPhone || undefined,
-      address1: order.shippingAddress || "Dirección no proporcionada",
-      city: "Ciudad de México",
-      country_code: "MX",
-      zip: "01000",
-    };
-
     const payload = {
       external_id: order.orderId,
       shipping: "STANDARD",
-      recipient,
+      recipient: recipientFrom(order),
       items,
       retail_costs: {
         currency: "USD",
         subtotal: (order.totalCents / 100).toFixed(2),
       },
     };
+
 
     const created = await printful<{ id: number; status: string }>(`/orders?store_id=${storeId}`, {
       method: "POST",
