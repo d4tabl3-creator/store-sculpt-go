@@ -8,6 +8,39 @@ import {
 type CartLine = { productId: string; qty: number };
 type CheckoutResult = { clientSecret: string; orderId: string } | { error: string };
 
+/** Dirección estructurada neutral (opcional; si no llega, se deduce del texto). */
+type ShippingInput = {
+  address1?: string;
+  address2?: string;
+  city?: string;
+  stateCode?: string;
+  countryCode?: string;
+  zip?: string;
+};
+
+/**
+ * Deducción mínima de la dirección estructurada a partir del texto libre.
+ * Sólo se usa cuando el formulario no envía los campos por separado; el
+ * proveedor de fabricación necesita CP, ciudad y país reales.
+ */
+function deriveShipping(address: string, provided?: ShippingInput) {
+  const zip = provided?.zip?.trim() || address.match(/\b(\d{5})\b/)?.[1] || "";
+  const parts = address.split(/[,\n]/).map((p) => p.trim()).filter(Boolean);
+  const city = provided?.city?.trim() || (parts.length > 1 ? parts[parts.length - 2] : "");
+  const address1 = provided?.address1?.trim() || parts[0] || address.trim();
+  const countryCode = (provided?.countryCode?.trim() || "MX").toUpperCase();
+  if (!address1 || !city || !zip) return null;
+  return {
+    address1,
+    address2: provided?.address2?.trim() || null,
+    city,
+    stateCode: provided?.stateCode?.trim() || null,
+    stateName: null,
+    countryCode,
+    zip,
+  };
+}
+
 /**
  * SEGURO: el cliente sólo manda productIds+qty. El servidor lee precios,
  * envío y stock desde la BD, valida y recalcula todo. El total NUNCA viene
