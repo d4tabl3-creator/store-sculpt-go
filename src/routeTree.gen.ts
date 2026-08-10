@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoIndexRouteImport } from './routes/demo.index'
 import { Route as TSlugRouteImport } from './routes/t.$slug'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DemoProductIdRouteImport } from './routes/demo.$productId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
@@ -24,9 +25,12 @@ import { Route as AuthenticatedCuentaRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.crear'
 import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authenticated.bienvenida'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
 import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authenticated.preparando.$id'
 import { Route as AuthenticatedGuiaIdRouteImport } from './routes/_authenticated.guia.$id'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicGuiaIdRouteImport } from './routes/api/public/guia/$id'
@@ -72,6 +76,11 @@ const TSlugRoute = TSlugRouteImport.update({
   path: '/t/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoProductIdRoute = DemoProductIdRouteImport.update({
   id: '/$productId',
   path: '/$productId',
@@ -107,6 +116,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedTiendaIdRoute = AuthenticatedTiendaIdRouteImport.update({
   id: '/tienda/$id',
   path: '/tienda/$id',
@@ -123,6 +137,18 @@ const AuthenticatedGuiaIdRoute = AuthenticatedGuiaIdRouteImport.update({
   path: '/guia/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -165,15 +191,19 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/t/$slug': typeof TSlugRoute
   '/demo/': typeof DemoIndexRoute
   '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/guia/$id': typeof ApiPublicGuiaIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRoutesByTo {
@@ -188,15 +218,19 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/t/$slug': typeof TSlugRoute
   '/demo': typeof DemoIndexRoute
   '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/guia/$id': typeof ApiPublicGuiaIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRoutesById {
@@ -214,15 +248,19 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/t/$slug': typeof TSlugRoute
   '/demo/': typeof DemoIndexRoute
   '/_authenticated/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
   '/api/public/guia/$id': typeof ApiPublicGuiaIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/commerce/webhook/$provider': typeof ApiPublicCommerceWebhookProviderRoute
 }
 export interface FileRouteTypes {
@@ -240,15 +278,19 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/checkout/return'
     | '/demo/$productId'
+    | '/email/unsubscribe'
     | '/t/$slug'
     | '/demo/'
     | '/guia/$id'
     | '/preparando/$id'
     | '/tienda/$id'
+    | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
     | '/api/public/guia/$id'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/public/commerce/webhook/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -263,15 +305,19 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/checkout/return'
     | '/demo/$productId'
+    | '/email/unsubscribe'
     | '/t/$slug'
     | '/demo'
     | '/guia/$id'
     | '/preparando/$id'
     | '/tienda/$id'
+    | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
     | '/api/public/guia/$id'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/public/commerce/webhook/$provider'
   id:
     | '__root__'
@@ -288,15 +334,19 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/checkout/return'
     | '/demo/$productId'
+    | '/email/unsubscribe'
     | '/t/$slug'
     | '/demo/'
     | '/_authenticated/guia/$id'
     | '/_authenticated/preparando/$id'
     | '/_authenticated/tienda/$id'
+    | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
     | '/api/public/guia/$id'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/public/commerce/webhook/$provider'
   fileRoutesById: FileRoutesById
 }
@@ -308,11 +358,15 @@ export interface RootRouteChildren {
   PlanesRoute: typeof PlanesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   TSlugRoute: typeof TSlugRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicCommerceWorkerRoute: typeof ApiPublicCommerceWorkerRoute
   ApiPublicGuiaIdRoute: typeof ApiPublicGuiaIdRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiPublicCommerceWebhookProviderRoute: typeof ApiPublicCommerceWebhookProviderRoute
 }
 
@@ -374,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/$productId': {
       id: '/demo/$productId'
       path: '/$productId'
@@ -423,6 +484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/tienda/$id': {
       id: '/_authenticated/tienda/$id'
       path: '/tienda/$id'
@@ -443,6 +511,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/guia/$id'
       preLoaderRoute: typeof AuthenticatedGuiaIdRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
@@ -528,13 +610,27 @@ const rootRouteChildren: RootRouteChildren = {
   PlanesRoute: PlanesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   TSlugRoute: TSlugRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicCommerceWorkerRoute: ApiPublicCommerceWorkerRoute,
   ApiPublicGuiaIdRoute: ApiPublicGuiaIdRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiPublicCommerceWebhookProviderRoute: ApiPublicCommerceWebhookProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
