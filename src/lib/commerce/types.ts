@@ -86,12 +86,17 @@ export type ProviderProduct = {
   sourceProvider?: string | null;
   sourceProductId?: string | null;
   sourceVariantId?: string | null;
+  /** Diseño asociado, en formato neutral. */
+  design?: DesignAssetRef | null;
 };
 
 export type ProviderProductResult = {
   externalProductId: string | null;
   externalVariantId: string | null;
   externalInventoryItemId: string | null;
+  /** Archivo de impresión guardado en la biblioteca del proveedor, si aplica. */
+  externalFileId?: string | null;
+  externalTemplateId?: string | null;
 };
 
 export type ProviderOrderLine = {
@@ -100,6 +105,19 @@ export type ProviderOrderLine = {
   qty: number;
   priceCents: number;
   externalVariantId?: string | null;
+  /** Diseño asociado a la línea, en formato neutral (ver DesignAsset). */
+  design?: DesignAssetRef | null;
+};
+
+/** Dirección estructurada, neutral respecto al proveedor. */
+export type ShippingDetails = {
+  address1: string;
+  address2?: string | null;
+  city: string;
+  stateCode?: string | null;
+  stateName?: string | null;
+  countryCode: string;
+  zip: string;
 };
 
 export type ProviderOrder = {
@@ -108,9 +126,96 @@ export type ProviderOrder = {
   customerEmail: string;
   customerPhone: string | null;
   shippingAddress: string | null;
+  /** Dirección estructurada cuando existe; los conectores la prefieren. */
+  shipping?: ShippingDetails | null;
   totalCents: number;
   lines: ProviderOrderLine[];
 };
+
+// ---------------------------------------------------------------------------
+// Diseños: representación neutral
+// ---------------------------------------------------------------------------
+
+/**
+ * Un diseño puede venir de tres orígenes y la arquitectura no distingue entre
+ * ellos: carga directa, editor provisional de DªTªBLe, o el Creador de Diseños
+ * Integrado del proveedor cuando esté disponible.
+ */
+export type DesignSource = "upload" | "provisional_editor" | "embedded_designer";
+
+export type DesignAssetRef = {
+  /** URL pública/firmada del archivo de impresión. */
+  url?: string | null;
+  /** Identificador del archivo en la biblioteca del proveedor. */
+  externalFileId?: string | null;
+  /** Identificador de plantilla del proveedor, si el diseño se guardó como tal. */
+  externalTemplateId?: string | null;
+  placement?: string | null;
+  source?: DesignSource;
+};
+
+export type ProviderFileResult = {
+  externalFileId: string;
+  url: string;
+  previewUrl: string | null;
+  status: string;
+};
+
+export type ProviderTemplate = {
+  externalTemplateId: string;
+  title: string;
+  externalProductId: string | null;
+  previewUrl: string | null;
+};
+
+export type SizeGuideTable = {
+  type: string;
+  unit: string;
+  description: string | null;
+  rows: Array<Record<string, string>>;
+};
+
+export type ShippingRate = {
+  id: string;
+  label: string;
+  costUsd: number;
+  currency: string;
+  minDays: number | null;
+  maxDays: number | null;
+};
+
+/**
+ * Capacidades declaradas por cada conector. El orquestador consulta esto y
+ * jamás asume que un proveedor soporta algo: así Travelino, Mega Travel o
+ * cualquier otro proveedor futuro se integran sin reescribir el núcleo.
+ */
+export type ProviderCapabilities = {
+  catalog: boolean;
+  variants: boolean;
+  fileLibrary: boolean;
+  templates: boolean;
+  mockups: boolean;
+  sizeGuide: boolean;
+  shippingRates: boolean;
+  orderTracking: boolean;
+  webhooks: boolean;
+  /** Creador de diseños oficial embebible dentro de DªTªBLe. */
+  embeddedDesigner: boolean;
+};
+
+export const NO_CAPABILITIES: ProviderCapabilities = {
+  catalog: false,
+  variants: false,
+  fileLibrary: false,
+  templates: false,
+  mockups: false,
+  sizeGuide: false,
+  shippingRates: false,
+  orderTracking: false,
+  webhooks: false,
+  embeddedDesigner: false,
+};
+
 
 export type ProviderOrderResult = {
   externalOrderId: string | null;
@@ -127,8 +232,11 @@ export type NormalizedWebhook = {
 export interface CommerceProvider {
   readonly id: ProviderId;
   readonly label: string;
+  /** Lo que este conector sabe hacer de verdad. El orquestador nunca asume. */
+  readonly capabilities: ProviderCapabilities;
   /** ¿Tiene credenciales de plataforma para operar? Si no, el orquestador degrada al motor nativo. */
   isConfigured(): boolean;
+
   /** Crea la tienda aislada del cliente en el proveedor. */
   provisionStore(ctx: ProviderStoreContext): Promise<{
     externalStoreId: string;
@@ -149,7 +257,26 @@ export interface CommerceProvider {
   ): Promise<NormalizedWebhook | null>;
   /** Libera recursos del proveedor cuando se elimina el Activo Digital. */
   teardown(binding: ProviderBinding): Promise<void>;
+
+  // --- Opcionales: sólo si la capacidad correspondiente está declarada ---
+
+  /** Sube un archivo de impresión a la biblioteca del proveedor (permanente). */
+  uploadDesignFile?(
+    binding: ProviderBinding,
+    input: { url: string; filename?: string | null },
+  ): Promise<ProviderFileResult>;
+  /** Plantillas de producto guardadas en el proveedor. */
+  listTemplates?(binding: ProviderBinding): Promise<ProviderTemplate[]>;
+  getTemplate?(binding: ProviderBinding, externalTemplateId: string): Promise<ProviderTemplate | null>;
+  /** Guía de tallas real del producto de catálogo. */
+  getSizeGuide?(externalProductId: string): Promise<SizeGuideTable[]>;
+  /** Costos y tiempos de envío reales para una dirección concreta. */
+  estimateShipping?(
+    binding: ProviderBinding,
+    input: { shipping: ShippingDetails; lines: ProviderOrderLine[] },
+  ): Promise<ShippingRate[]>;
 }
+
 
 export class OrchestratorError extends Error {
   constructor(

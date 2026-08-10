@@ -1,8 +1,50 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { ProvisioningStatus, ProvisioningView } from "@/lib/commerce/types";
+import type {
+  ProviderId,
+  ProvisioningStatus,
+  ProvisioningView,
+  ShippingDetails,
+  ShippingRate,
+  SizeGuideTable,
+} from "@/lib/commerce/types";
 
 const UUID = /^[0-9a-fA-F-]{36}$/;
+
+/** Costos y tiempos de envío reales para un carrito de una tienda publicada. */
+export const estimateShippingRates = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: { storeId: string; shipping: ShippingDetails; items: Array<{ productId: string; qty: number }> }) => {
+      if (!UUID.test(data.storeId)) throw new Error("storeId inválido");
+      if (!data.items?.length) throw new Error("Carrito vacío");
+      const s = data.shipping;
+      if (!s?.address1?.trim() || !s?.city?.trim() || !s?.countryCode?.trim() || !s?.zip?.trim()) {
+        throw new Error("Dirección incompleta");
+      }
+      return data;
+    },
+  )
+  .handler(async ({ data }): Promise<ShippingRate[]> => {
+    const { estimateShippingForStore } = await import("@/lib/commerce/orchestrator.server");
+    try {
+      return await estimateShippingForStore(data.storeId, data.shipping, data.items);
+    } catch (err) {
+      console.error("estimateShippingRates error:", err);
+      return [];
+    }
+  });
+
+/** Guía de tallas real del producto de catálogo. */
+export const getProductSizeGuide = createServerFn({ method: "GET" })
+  .inputValidator((data: { provider: string; externalProductId: string }) => {
+    if (!data.externalProductId?.trim()) throw new Error("Producto inválido");
+    return data;
+  })
+  .handler(async ({ data }): Promise<SizeGuideTable[]> => {
+    const { getSizeGuideForProduct } = await import("@/lib/commerce/orchestrator.server");
+    return getSizeGuideForProduct(data.provider as ProviderId, data.externalProductId);
+  });
+
 
 async function readStatus(storeId: string): Promise<ProvisioningView | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

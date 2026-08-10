@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      commerce_design_assets: {
+        Row: {
+          created_at: string
+          external_file_id: string | null
+          external_template_id: string | null
+          id: string
+          kind: string
+          metadata: Json
+          owner_id: string
+          placement: string | null
+          preview_url: string | null
+          product_id: string | null
+          provider: string
+          source: string
+          store_id: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          external_file_id?: string | null
+          external_template_id?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          owner_id: string
+          placement?: string | null
+          preview_url?: string | null
+          product_id?: string | null
+          provider?: string
+          source?: string
+          store_id: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          external_file_id?: string | null
+          external_template_id?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          owner_id?: string
+          placement?: string | null
+          preview_url?: string | null
+          product_id?: string | null
+          provider?: string
+          source?: string
+          store_id?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commerce_design_assets_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "store_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_design_assets_provider_fkey"
+            columns: ["provider"]
+            isOneToOne: false
+            referencedRelation: "commerce_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commerce_design_assets_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commerce_event_log: {
         Row: {
           created_at: string
@@ -130,6 +206,7 @@ export type Database = {
           created_at: string
           external_inventory_item_id: string | null
           external_product_id: string | null
+          external_template_id: string | null
           external_variant_id: string | null
           id: string
           last_synced_at: string | null
@@ -145,6 +222,7 @@ export type Database = {
           created_at?: string
           external_inventory_item_id?: string | null
           external_product_id?: string | null
+          external_template_id?: string | null
           external_variant_id?: string | null
           id?: string
           last_synced_at?: string | null
@@ -160,6 +238,7 @@ export type Database = {
           created_at?: string
           external_inventory_item_id?: string | null
           external_product_id?: string | null
+          external_template_id?: string | null
           external_variant_id?: string | null
           id?: string
           last_synced_at?: string | null
@@ -712,6 +791,7 @@ export type Database = {
           notes: string | null
           payment_status: string
           shipping_address: string | null
+          shipping_details: Json
           status: string
           store_id: string
           stripe_session_id: string | null
@@ -727,6 +807,7 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           shipping_address?: string | null
+          shipping_details?: Json
           status?: string
           store_id: string
           stripe_session_id?: string | null
@@ -742,6 +823,7 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           shipping_address?: string | null
+          shipping_details?: Json
           status?: string
           store_id?: string
           stripe_session_id?: string | null

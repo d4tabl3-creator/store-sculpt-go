@@ -16,6 +16,9 @@ import type {
   ProviderOrder,
   ProviderProduct,
   ProvisioningStatus,
+  ShippingDetails,
+  ShippingRate,
+  SizeGuideTable,
 } from "./types";
 import { OrchestratorError, PROVISION_STEPS } from "./types";
 import { getProvider, pickProvider } from "./providers/registry.server";
@@ -261,7 +264,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
   const provider = getProvider(binding.provider);
   const { data: row } = await supabaseAdmin
     .from("store_products")
-    .select("id, store_id, name, description, price_cents, image_url, stock, source_provider, source_product_id, source_variant_id")
+    .select("id, store_id, name, description, price_cents, image_url, stock, source_provider, source_product_id, source_variant_id, design_url, placement")
     .eq("id", productId)
     .maybeSingle();
   if (!row) return;
@@ -276,6 +279,27 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
   const hash = hashProduct(row as never);
   if (existing?.sync_hash === hash) return;
 
+  // Diseño en formato neutral: da igual si vino del editor provisional, de una
+  // carga directa o (en el futuro) del Creador de Diseños Integrado.
+  const { data: asset } = await supabaseAdmin
+    .from("commerce_design_assets")
+    .select("url, placement, external_file_id, external_template_id, source")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const design =
+    asset || row.design_url
+      ? {
+          url: (asset?.url as string | null) ?? (row.design_url as string | null) ?? null,
+          placement: (asset?.placement as string | null) ?? (row.placement as string | null) ?? null,
+          externalFileId: (asset?.external_file_id as string | null) ?? null,
+          externalTemplateId: (asset?.external_template_id as string | null) ?? null,
+          source: ((asset?.source as string | null) ?? "provisional_editor") as never,
+        }
+      : null;
+
   const product: ProviderProduct = {
     productId: row.id as string,
     name: row.name as string,
@@ -289,6 +313,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
     sourceProvider: (row.source_provider as string | null) ?? null,
     sourceProductId: (row.source_product_id as string | null) ?? null,
     sourceVariantId: (row.source_variant_id as string | null) ?? null,
+    design,
   };
 
   try {
@@ -302,6 +327,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
         external_product_id: result.externalProductId,
         external_variant_id: result.externalVariantId,
         external_inventory_item_id: result.externalInventoryItemId,
+        external_template_id: result.externalTemplateId ?? null,
         sync_hash: hash,
         sync_status: "synced",
         sync_error: null,
@@ -309,6 +335,31 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
       },
       { onConflict: "product_id,provider" },
     );
+
+    // Guardamos el identificador del archivo permanente del proveedor para no
+    // volver a depender de una URL temporal en el siguiente pedido.
+    if (result.externalFileId && design) {
+      const { data: store } = await supabaseAdmin
+        .from("stores")
+        .select("owner_id")
+        .eq("id", row.store_id as string)
+        .maybeSingle();
+      if (store) {
+        await supabaseAdmin.from("commerce_design_assets").insert({
+          store_id: row.store_id as string,
+          owner_id: store.owner_id as string,
+          product_id: productId,
+          provider: binding.provider,
+          kind: "file",
+          source: design.source ?? "provisional_editor",
+          placement: design.placement,
+          url: design.url,
+          external_file_id: result.externalFileId,
+          external_template_id: result.externalTemplateId ?? null,
+        });
+      }
+    }
+
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error de sincronización";
     await supabaseAdmin.from("commerce_product_bindings").upsert(
@@ -337,10 +388,86 @@ function camel(r: {
   };
 }
 
+/** Convierte la dirección guardada (jsonb neutral) al contrato del orquestador. */
+export function normalizeShipping(raw: Record<string, unknown> | null): ShippingDetails | null {
+  if (!raw) return null;
+  const address1 = typeof raw["address1"] === "string" ? (raw["address1"] as string).trim() : "";
+  const city = typeof raw["city"] === "string" ? (raw["city"] as string).trim() : "";
+  const countryCode = typeof raw["countryCode"] === "string" ? (raw["countryCode"] as string).trim().toUpperCase() : "";
+  const zip = typeof raw["zip"] === "string" ? (raw["zip"] as string).trim() : "";
+  if (!address1 || !city || !countryCode || !zip) return null;
+  return {
+    address1,
+    address2: (raw["address2"] as string | null) ?? null,
+    city,
+    stateCode: (raw["stateCode"] as string | null) ?? null,
+    stateName: (raw["stateName"] as string | null) ?? null,
+    countryCode,
+    zip,
+  };
+}
+
+/** Costos y tiempos de envío reales del proveedor de la tienda. */
+export async function estimateShippingForStore(
+  storeId: string,
+  shipping: ShippingDetails,
+  items: Array<{ productId: string; qty: number }>,
+): Promise<ShippingRate[]> {
+  const binding = await loadBinding(storeId);
+  if (!binding) return [];
+  const provider = getProvider(binding.provider);
+  if (!provider.capabilities.shippingRates || !provider.estimateShipping) return [];
+
+  const ids = items.map((i) => i.productId);
+  const { data: rows } = await supabaseAdmin
+    .from("store_products")
+    .select("id, name, price_cents, source_variant_id")
+    .in("id", ids);
+  const byId = new Map((rows || []).map((r) => [r.id as string, r]));
+
+  const lines = items
+    .map((i) => {
+      const r = byId.get(i.productId);
+      if (!r) return null;
+      return {
+        productId: i.productId,
+        name: r.name as string,
+        qty: i.qty,
+        priceCents: r.price_cents as number,
+        externalVariantId: (r.source_variant_id as string | null) ?? null,
+      };
+    })
+    .filter(Boolean) as Array<{
+    productId: string;
+    name: string;
+    qty: number;
+    priceCents: number;
+    externalVariantId: string | null;
+  }>;
+
+  return provider.estimateShipping(binding, { shipping, lines });
+}
+
+/** Guía de tallas real del producto de catálogo. */
+export async function getSizeGuideForProduct(
+  providerId: ProviderId,
+  externalProductId: string,
+): Promise<SizeGuideTable[]> {
+  const provider = getProvider(providerId);
+  if (!provider.capabilities.sizeGuide || !provider.getSizeGuide) return [];
+  try {
+    return await provider.getSizeGuide(externalProductId);
+  } catch (err) {
+    console.error("size guide error:", err);
+    return [];
+  }
+}
+
 export async function pushOrderToProvider(orderId: string) {
+
   const { data: order } = await supabaseAdmin
     .from("store_orders")
-    .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, items, total_cents")
+    .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, shipping_details, items, total_cents")
     .eq("id", orderId)
     .maybeSingle();
   if (!order) return;
@@ -360,12 +487,32 @@ export async function pushOrderToProvider(orderId: string) {
     : { data: [] as Array<{ product_id: string; external_variant_id: string | null }> };
   const variantByProduct = new Map((pbs || []).map((p) => [p.product_id as string, p.external_variant_id as string | null]));
 
+  const { data: assets } = ids.length
+    ? await supabaseAdmin
+        .from("commerce_design_assets")
+        .select("product_id, url, placement, external_file_id, external_template_id")
+        .eq("provider", binding.provider)
+        .in("product_id", ids)
+    : { data: [] as Array<Record<string, unknown>> };
+  const designByProduct = new Map(
+    (assets || []).map((a) => [
+      a.product_id as string,
+      {
+        url: (a.url as string | null) ?? null,
+        placement: (a.placement as string | null) ?? null,
+        externalFileId: (a.external_file_id as string | null) ?? null,
+        externalTemplateId: (a.external_template_id as string | null) ?? null,
+      },
+    ]),
+  );
+
   const payload: ProviderOrder = {
     orderId: order.id as string,
     customerName: order.customer_name as string,
     customerEmail: order.customer_email as string,
     customerPhone: (order.customer_phone as string | null) ?? null,
     shippingAddress: (order.shipping_address as string | null) ?? null,
+    shipping: normalizeShipping(order.shipping_details as Record<string, unknown> | null),
     totalCents: order.total_cents as number,
     lines: rawItems.map((i) => ({
       productId: i.productId ?? "",
@@ -373,8 +520,10 @@ export async function pushOrderToProvider(orderId: string) {
       qty: i.qty,
       priceCents: i.price_cents,
       externalVariantId: i.productId ? variantByProduct.get(i.productId) ?? null : null,
+      design: i.productId ? designByProduct.get(i.productId) ?? null : null,
     })),
   };
+
 
   try {
     const res = await provider.createOrder(binding, payload);

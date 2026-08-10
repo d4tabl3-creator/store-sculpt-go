@@ -1,4 +1,4 @@
-import type { CommerceProvider, ProviderId } from "../types";
+import type { CommerceProvider, ProviderCapabilities, ProviderId } from "../types";
 import { internalProvider } from "./internal.server";
 import { shopifyProvider } from "./shopify.server";
 import { printfulProvider } from "./printful.server";
@@ -13,6 +13,17 @@ const REGISTRY: Partial<Record<ProviderId, CommerceProvider>> = {
 export function getProvider(id: ProviderId | string | null | undefined): CommerceProvider {
   return REGISTRY[(id as ProviderId) ?? "internal"] ?? internalProvider;
 }
+
+/** Capacidades declaradas del conector; el núcleo nunca las asume. */
+export function getCapabilities(id: ProviderId | string | null | undefined): ProviderCapabilities {
+  return getProvider(id).capabilities;
+}
+
+/** ¿Puede este conector hacer X? Punto único de verificación. */
+export function supports(id: ProviderId | string | null | undefined, cap: keyof ProviderCapabilities): boolean {
+  return getCapabilities(id)[cap] === true;
+}
+
 
 /**
  * Elige el mejor conector disponible para una tienda nueva.
