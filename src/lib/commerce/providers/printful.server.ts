@@ -73,43 +73,13 @@ async function findStore(ctx: ProviderStoreContext): Promise<{ id: number; name:
 
 
 /**
- * Búsqueda de respaldo en el catálogo real cuando el producto no trae
- * variante de origen (tiendas creadas antes del catálogo abierto).
+ * Antes existía una búsqueda por palabras clave que "adivinaba" el producto
+ * cuando faltaba la variante de origen: eso podía mandar a fabricar un
+ * artículo equivocado. Se eliminó a propósito. Sin variante real de catálogo,
+ * el producto se marca para revisión en lugar de inventar una.
  */
-async function findCatalogVariantByKeyword(name: string): Promise<{ product_id: number; variant_id: number; name: string } | null> {
-  try {
-    const { listCatalog, getCatalogVariants } = await import("@/lib/catalog.server");
-    const items = await listCatalog();
-    const normalized = name.toLowerCase();
-    const keywords: Array<{ test: RegExp; hint: RegExp }> = [
-      { test: /hoodie|sudadera/i, hint: /hoodie/i },
-      { test: /t[- ]?shirt|tee|playera/i, hint: /t-shirt|tee/i },
-      { test: /cap|gorra|trucker|snapback/i, hint: /cap|hat/i },
-      { test: /mug|taza/i, hint: /mug/i },
-      { test: /tote|bag|bolsa|mochila/i, hint: /tote|bag/i },
-      { test: /poster|cuadro|lienzo|canvas/i, hint: /poster|canvas/i },
-    ];
-    const hint = keywords.find((k) => k.test.test(normalized))?.hint ?? /t-shirt|tee/i;
-    const candidates = items
-      .filter((p) => hint.test(`${p.title} ${p.typeName ?? ""}`))
-      .slice(0, 5);
-    for (const candidate of candidates) {
-      const { variants } = await getCatalogVariants(candidate.id);
-      const variant = variants.find((v) => v.inStock) || variants[0];
-      if (variant) return { product_id: candidate.id, variant_id: variant.id, name: variant.name };
-    }
-    return null;
-  } catch (err) {
-    console.error("Printful catalog search error:", err);
-    return null;
-  }
-}
 
-async function getDefaultVariant(): Promise<{ product_id: number; variant_id: number; name: string }> {
-  const fallback = await findCatalogVariantByKeyword("Unisex Staple T-Shirt");
-  if (fallback) return fallback;
-  throw new OrchestratorError("No se encontró un producto base en Printful", "printful", true);
-}
+
 
 
 // ---------------------------------------------------------------------------
