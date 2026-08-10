@@ -94,6 +94,9 @@ export type ProviderProductResult = {
   externalProductId: string | null;
   externalVariantId: string | null;
   externalInventoryItemId: string | null;
+  /** Archivo de impresión guardado en la biblioteca del proveedor, si aplica. */
+  externalFileId?: string | null;
+  externalTemplateId?: string | null;
 };
 
 export type ProviderOrderLine = {
