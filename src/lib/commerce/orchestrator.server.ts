@@ -261,7 +261,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
   const provider = getProvider(binding.provider);
   const { data: row } = await supabaseAdmin
     .from("store_products")
-    .select("id, store_id, name, description, price_cents, image_url, stock, source_provider, source_product_id, source_variant_id")
+    .select("id, store_id, name, description, price_cents, image_url, stock, source_provider, source_product_id, source_variant_id, design_url, placement")
     .eq("id", productId)
     .maybeSingle();
   if (!row) return;
@@ -276,6 +276,27 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
   const hash = hashProduct(row as never);
   if (existing?.sync_hash === hash) return;
 
+  // Diseño en formato neutral: da igual si vino del editor provisional, de una
+  // carga directa o (en el futuro) del Creador de Diseños Integrado.
+  const { data: asset } = await supabaseAdmin
+    .from("commerce_design_assets")
+    .select("url, placement, external_file_id, external_template_id, source")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const design =
+    asset || row.design_url
+      ? {
+          url: (asset?.url as string | null) ?? (row.design_url as string | null) ?? null,
+          placement: (asset?.placement as string | null) ?? (row.placement as string | null) ?? null,
+          externalFileId: (asset?.external_file_id as string | null) ?? null,
+          externalTemplateId: (asset?.external_template_id as string | null) ?? null,
+          source: ((asset?.source as string | null) ?? "provisional_editor") as never,
+        }
+      : null;
+
   const product: ProviderProduct = {
     productId: row.id as string,
     name: row.name as string,
@@ -289,6 +310,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
     sourceProvider: (row.source_provider as string | null) ?? null,
     sourceProductId: (row.source_product_id as string | null) ?? null,
     sourceVariantId: (row.source_variant_id as string | null) ?? null,
+    design,
   };
 
   try {
@@ -302,6 +324,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
         external_product_id: result.externalProductId,
         external_variant_id: result.externalVariantId,
         external_inventory_item_id: result.externalInventoryItemId,
+        external_template_id: result.externalTemplateId ?? null,
         sync_hash: hash,
         sync_status: "synced",
         sync_error: null,
@@ -309,6 +332,31 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
       },
       { onConflict: "product_id,provider" },
     );
+
+    // Guardamos el identificador del archivo permanente del proveedor para no
+    // volver a depender de una URL temporal en el siguiente pedido.
+    if (result.externalFileId && design) {
+      const { data: store } = await supabaseAdmin
+        .from("stores")
+        .select("owner_id")
+        .eq("id", row.store_id as string)
+        .maybeSingle();
+      if (store) {
+        await supabaseAdmin.from("commerce_design_assets").insert({
+          store_id: row.store_id as string,
+          owner_id: store.owner_id as string,
+          product_id: productId,
+          provider: binding.provider,
+          kind: "file",
+          source: design.source ?? "provisional_editor",
+          placement: design.placement,
+          url: design.url,
+          external_file_id: result.externalFileId,
+          external_template_id: result.externalTemplateId ?? null,
+        });
+      }
+    }
+
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error de sincronización";
     await supabaseAdmin.from("commerce_product_bindings").upsert(
