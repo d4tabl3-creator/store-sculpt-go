@@ -1,101 +1,73 @@
-# Fase 2 — Commerce Orchestrator
+# Guía de inicio y acompañamiento del cliente
 
-DªTªBLe pasa de ser una app con tiendas propias (`stores` / `store_products` / `store_orders` en nuestra BD) a ser **la única interfaz** que orquesta tiendas reales en Shopify (y a futuro Woo, MercadoLibre, etc.). El usuario nunca ve ni toca Shopify.
+Sistema que entrega a cada cliente un camino claro ("¿Qué hago ahora?") al recibir su activo digital. Se agrega encima de lo que ya existe: no toca la arquitectura de proveedores, ni el editor provisional, ni la identidad visual.
 
-## 1. Principios de arquitectura
+## 1. Archivos existentes que se modifican
 
-- **Un proveedor por Activo Digital**, aislado: cada tienda del usuario = 1 tienda Shopify dedicada (development store creada vía Partner API) + credenciales propias guardadas cifradas.
-- **Nunca compartir**: productos, pedidos, inventario, webhooks y tokens viven ligados a `store_id` + `owner_id`. Cero recursos compartidos entre clientes.
-- **Adapter pattern**: la app sólo habla con una interfaz `CommerceProvider`. Shopify es la primera implementación; agregar Woo/ML/Etsy = nuevo adapter, sin tocar UI ni lógica de negocio.
-- **Idempotencia y estado**: cada tienda tiene una máquina de estados de provisión (`queued → creating → linking → seeding → webhooks → ready | failed`) reintentable.
-- **DªTªBLe es fuente de verdad para UX** (catálogo editable, pedidos, dashboards). Shopify es fuente de verdad operativa (inventario real, checkout, fulfillment). Un **bus de sincronización** los mantiene alineados en ambas direcciones.
+- `src/routes/_authenticated.dashboard.tsx` — se agrega la tarjeta "¿Qué hago ahora?" con el progreso del cliente, enlazando a la guía.
+- `src/routes/_authenticated.bienvenida.tsx` — la hoja de ruta actual pasa a leer la secuencia dinámica en vez de su lista fija.
+- `src/lib/commerce/orchestrator.server.ts` — al marcar el activo como listo, se dispara el correo de bienvenida (una sola llamada añadida, sin cambiar la lógica existente).
+- `src/routes/_authenticated.tienda.$id.tsx` — enlace visible "Guía de inicio" en el encabezado del activo.
 
-## 2. Componentes nuevos
+Nada más se modifica: catálogo, variantes, mockups, pedidos, costos, envíos, seguimiento, webhooks, pagos y comisiones quedan intactos.
 
-### 2.1 Capa de dominio (`src/lib/commerce/`)
-- `types.ts` — interfaces `CommerceProvider`, `ProviderProduct`, `ProviderOrder`, `ProviderWebhookEvent`, `ProvisionPlan`.
-- `registry.ts` — `getProvider(kind)` devuelve el adapter (`shopify`, futuro `woo`, …).
-- `orchestrator.ts` — API pública consumida por el resto de la app: `provisionAsset`, `syncProduct`, `syncInventory`, `pullOrders`, `handleWebhook`, `teardown`.
-- `state-machine.ts` — transición de `provisioning_status` con reintentos y backoff.
+## 2. Archivos nuevos
 
-### 2.2 Adapter Shopify (`src/lib/commerce/providers/shopify/`)
-- `client.ts` — factory de cliente Admin GraphQL por tienda (token cifrado).
-- `provision.ts` — crea development store via Partner API, instala custom app, guarda credenciales.
-- `products.ts`, `inventory.ts`, `orders.ts`, `webhooks.ts` — mapping DªTªBLe ↔ Shopify.
-- `errors.ts` — normaliza errores del proveedor a `OrchestratorError`.
+- `src/lib/guides/types.ts` — contratos de guía y pasos (client-safe).
+- `src/lib/guides/registry.ts` — catálogo de guías y regla de selección por tipo de activo + proveedor.
+- `src/lib/guides/content/pod-basico.ts` — primera guía (caso cliente cero), con el contenido en blanco/marcador hasta que tú lo entregues.
+- `src/lib/guides/progress.server.ts` — cálculo del paso actual a partir del estado real del activo.
+- `src/lib/guides.functions.ts` — funciones de servidor: obtener guía, progreso, marcar paso manual.
+- `src/components/GuideChecklist.tsx` — lista visual de pasos reutilizable.
+- `src/routes/_authenticated.guia.$id.tsx` — la guía completa en línea, consultable siempre.
+- `src/routes/api/public/guia/$id[.]md` (descarga) — entrega la guía como archivo para adjuntar/compartir.
+- `src/lib/email-templates/asset-ready.tsx` — correo de bienvenida (requiere el andamiaje de correos de la app).
 
-### 2.3 Server functions (`src/lib/commerce.functions.ts`)
-Wrappers `createServerFn` autenticados que exponen al frontend sólo lo necesario:
-- `provisionAssetFn({ storeId })` — dispara/consulta el pipeline.
-- `getProvisioningStatusFn({ storeId })` — para el polling de "Estamos preparando tu Activo Digital".
-- `syncProductFn`, `deleteProductFn`, `refreshInventoryFn`.
-Todas usan `requireSupabaseAuth` y verifican `owner_id`.
+## 3. Cómo se almacenan las guías
 
-### 2.4 Server routes (`src/routes/api/public/commerce/`)
-- `shopify/webhook.ts` — recibe webhooks (orders/create, inventory_levels/update, products/update, app/uninstalled). Verifica HMAC con el secreto por tienda, resuelve `store_id` desde `X-Shopify-Shop-Domain`, encola en el bus.
-- `shopify/oauth-callback.ts` — sólo si más adelante se ofrece "conectar tienda existente"; en Fase 2 no se expone al usuario.
+El contenido vive en archivos de contenido bajo `src/lib/guides/content/`, uno por guía, como datos puros (título, intro, pasos, ayuda). Cambiar el texto de una guía nunca implica tocar la lógica de la aplicación. Se deja opcionalmente la posibilidad de sobreescribir textos desde base de datos más adelante sin cambiar la interfaz.
 
-### 2.5 Bus de sincronización
-Tabla `commerce_sync_jobs` + worker por polling desde un server route protegido con `CRON_SECRET`, invocable por `pg_cron` cada minuto. Procesa provisioning y sync de forma idempotente.
+En base de datos solo se guarda el avance, no el contenido:
 
-### 2.6 UI mínima
-- `src/routes/_authenticated/preparando.$id.tsx` — pantalla única con mensajes:
-  - "Estamos preparando tu Activo Digital." (con pasos internos opcionales, sin nombrar Shopify).
-  - "Tu Activo Digital está listo." + CTA a `/tienda/$id`.
-- Redirección desde el wizard (`_authenticated.crear.tsx`) a `/preparando/$id` en vez de ir directo a la tienda.
-- `_authenticated.tienda.$id.tsx`: sigue igual visualmente; internamente cada mutación llama al orchestrator, nunca a Shopify directo.
+- Tabla nueva `guide_progress`: activo, dueño, id de guía, pasos completados, paso actual, fecha de finalización. Con reglas de acceso: cada dueño ve y edita solo su propio avance.
 
-## 3. Cambios en lo existente
+## 4. Asociación guía ↔ activo/proveedor
 
-- `src/routes/_authenticated.crear.tsx` — al crear la store en Supabase, dispara `provisionAssetFn` y navega a `/preparando/$id`.
-- `src/lib/payments.functions.ts` / `src/routes/api/public/payments/webhook.ts` — al marcar `payment_status='paid'`, delega a `orchestrator.createOrder(providerOrder)` para que la orden aterrice también en Shopify (fulfillment). Comisión sigue calculada en `apply_paid_order`.
-- Ediciones de producto en `_authenticated.tienda.$id.tsx` pasan por `syncProductFn` (Supabase + Shopify en la misma transacción lógica).
-- `store_orders` sigue siendo la vista del merchant; se enriquecen con `provider_order_id` y `fulfillment_status` traídos por webhook.
+Regla de resolución en el registro, en este orden:
 
-## 4. Cambios de base de datos (migración única)
+```text
+(tipo de activo + proveedor)  ->  guía específica
+(tipo de activo)              ->  guía del tipo
+(por defecto)                 ->  guía general de inicio
+```
 
-Tablas nuevas:
-- `commerce_providers` (catálogo estático: `shopify`, futuros).
-- `commerce_store_bindings` — 1:1 con `stores`: `provider`, `external_store_id`, `shop_domain`, `admin_token_encrypted`, `webhook_secret_encrypted`, `provisioning_status`, `provisioning_error`, `last_synced_at`.
-- `commerce_product_bindings` — mapping `store_products.id` ↔ `external_product_id`, `external_variant_id`, `last_synced_at`, `sync_hash`.
-- `commerce_order_bindings` — mapping `store_orders.id` ↔ `external_order_id`, `fulfillment_status`.
-- `commerce_sync_jobs` — cola: `store_id`, `kind`, `payload jsonb`, `status`, `attempts`, `run_after`, `last_error`.
-- `commerce_event_log` — auditoría de eventos entrantes/salientes por tienda (para debugging sin exponer Shopify al usuario).
+El tipo de activo se deduce del rubro/kit ya guardado en el activo, y el proveedor del enlace de comercio existente. Agregar un activo turístico o de servicios en el futuro es agregar un archivo de contenido y una línea en el registro.
 
-Reglas:
-- RLS: lectura sólo por owner o admin; escritura exclusiva por service role. GRANTs explícitos por tabla.
-- Tokens cifrados con `pgcrypto` usando `COMMERCE_ENCRYPTION_KEY` (secreto nuevo, generado con `generate_secret`).
-- Índices por `store_id`, `status`, `run_after`.
+## 5. Entrega por correo
 
-## 5. Secretos y configuración
+Cuando el activo pasa a "listo", se envía un correo con: nombre del cliente, confirmación, enlace a la tienda, enlace al panel, cuál es el primer paso y enlace a la guía en línea (más la versión descargable). El envío usa la infraestructura de correo del dominio ya verificado y una clave de idempotencia por activo, para que no se duplique si el proceso reintenta.
 
-Se solicitarán vía `add_secret` cuando el usuario apruebe el plan:
-- `SHOPIFY_PARTNER_API_TOKEN` y `SHOPIFY_PARTNER_ORGANIZATION_ID` — para crear development stores programáticamente.
-- `SHOPIFY_APP_CLIENT_ID` / `SHOPIFY_APP_CLIENT_SECRET` — custom app que se instala en cada tienda.
-- `COMMERCE_ENCRYPTION_KEY` (generado) y `CRON_SECRET` (generado) para el worker.
+## 6. Dentro del panel
 
-## 6. Extensibilidad
+- En el panel principal: tarjeta "¿Qué hago ahora?" con el paso actual destacado, el porcentaje de avance y un botón directo a la acción.
+- En la página del activo: acceso permanente a la guía completa.
+- Ruta propia de guía: pasos numerados, qué recibió, qué configurar, qué revisar, cómo saber que terminó, qué pasa con la primera venta y dónde pedir ayuda.
 
-Agregar un proveedor futuro = crear `src/lib/commerce/providers/<x>/` implementando `CommerceProvider`, registrarlo en `registry.ts`, agregar fila a `commerce_providers` y opciones en el wizard. UI, tablas de dominio (`stores`, `store_products`, `store_orders`) y flujos del usuario no cambian.
+## 7. Seguimiento de pasos
 
-## 7. Entrega en fases (dentro de esta Fase 2)
+Cada paso declara cómo se comprueba: automático (por ejemplo, existen productos, hay medios de cobro, el activo está publicado, hay un pedido pagado) o manual (el cliente lo marca). El progreso se calcula al abrir el panel combinando el estado real del activo con los pasos marcados a mano, así nunca pide algo que el cliente ya hizo.
 
-1. **Migración + tipos + interfaz `CommerceProvider`** (sin llamadas reales todavía).
-2. **Adapter Shopify: provisioning end-to-end** + pantalla "Estamos preparando…".
-3. **Sync de productos e inventario** (push desde DªTªBLe).
-4. **Sync de pedidos + webhooks + fulfillment** al pagar.
-5. **Worker cron + reintentos + panel admin** para reprovisionar tiendas fallidas.
+## 8. Independencia de Printful
 
-## 8. Detalles técnicos
+Ni el registro ni los componentes mencionan a un proveedor concreto. Las comprobaciones automáticas se hacen sobre datos propios de la plataforma (productos, cobros, publicación, pedidos) y, cuando algo depende del proveedor, se consulta la capacidad declarada que ya existe en la arquitectura, no un nombre. La primera guía es solo un archivo de contenido más.
 
-- Todas las llamadas a Shopify van desde server functions/routes; el navegador nunca ve tokens ni dominios `.myshopify.com`.
-- Cada webhook route valida HMAC con el `webhook_secret_encrypted` de esa tienda; requests no verificados devuelven 401 sin tocar BD.
-- `orchestrator.provisionAsset` es idempotente: reejecutable sin duplicar recursos (busca binding existente antes de crear).
-- Errores del proveedor se loguean en `commerce_event_log` y, si son bloqueantes, dejan la tienda en `provisioning_status='failed'` con acción de reintento desde `/admin`.
-- Ningún nombre de proveedor aparece en textos visibles al usuario final.
+## 9. Reutilización futura
 
-## 9. Preguntas antes de implementar
+Para un proveedor o activo nuevo: se agrega un archivo de contenido y su entrada en el registro. Panel, correo, descarga, progreso y diseño se reutilizan sin cambios.
 
-1. ¿Confirmas usar **Shopify Partner API + development stores** como base (una tienda Shopify real por cliente), o prefieres primero un modo simulado que sólo persista en nuestra BD y agregar Shopify después?
-2. ¿Podrás proveer credenciales de Partner (`SHOPIFY_PARTNER_API_TOKEN`, org id) y credenciales de una custom app? Sin ellas puedo dejar el adapter listo pero el provisioning quedará en modo stub.
-3. ¿Los Activos Digitales existentes deben migrarse retroactivamente a Shopify, o sólo los nuevos?
+## Detalles técnicos
+
+- Tabla `guide_progress` con permisos por dueño; sin datos sensibles.
+- Funciones de servidor autenticadas para leer y actualizar progreso; la guía en sí se resuelve en el cliente desde el registro (contenido público, sin secretos).
+- El correo requiere activar el andamiaje de correos de la aplicación (una sola vez) sobre el dominio ya verificado.
+- Diseño con los tokens visuales actuales; sin colores ni marcas del proveedor.
