@@ -23,3 +23,33 @@ export async function sendAppEmail(input: SendInput): Promise<boolean> {
     return false;
   }
 }
+
+/** Avisa al cliente que su activo quedó listo, con su primer paso. Nunca rompe el flujo. */
+export async function notifyAssetReady(storeId: string): Promise<boolean> {
+  try {
+    const { data: userRes } = await supabase.auth.getUser();
+    const user = userRes.user;
+    if (!user?.email) return false;
+    const { data: store } = await supabase
+      .from("stores")
+      .select("name, slug")
+      .eq("id", storeId)
+      .maybeSingle();
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return await sendAppEmail({
+      templateName: "asset-ready",
+      recipientEmail: user.email,
+      idempotencyKey: `asset-ready:${storeId}`,
+      templateData: {
+        name: (user.user_metadata?.["full_name"] as string | undefined)?.split(" ")[0],
+        storeName: store?.name,
+        storeUrl: store?.slug ? `${origin}/t/${store.slug}` : undefined,
+        panelUrl: `${origin}/dashboard`,
+        guideUrl: `${origin}/guia/${storeId}`,
+        firstStep: "Revisa tu activo y confirma tus productos.",
+      },
+    });
+  } catch {
+    return false;
+  }
+}

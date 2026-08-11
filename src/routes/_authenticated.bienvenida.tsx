@@ -136,7 +136,7 @@ function Bienvenida() {
       <main className="mx-auto max-w-5xl px-4 py-10 md:py-14">
         {/* Bienvenida corta */}
         <section className="text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-black px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary-soft px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary">
             <Sparkles className="size-3.5" /> Bienvenida
           </div>
           <h1 className="mt-4 font-display text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">

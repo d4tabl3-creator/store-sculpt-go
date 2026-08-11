@@ -139,12 +139,12 @@ function Hero() {
       <div className="grid-noise absolute inset-0 opacity-40" aria-hidden />
       <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-16 pb-20 md:grid-cols-2 md:items-center md:pt-24 md:pb-28">
         <div>
-          <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border-2 border-primary bg-black px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary shadow-[3px_3px_0_0_rgba(0,0,0,0.9)]">
+          <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary-soft px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary">
             <Sparkles className="size-3.5" /> Activo digital productivo
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
             Construimos para ti{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-primary to-action bg-clip-text text-transparent">
               activos digitales
             </span>{" "}
             diseñados para generar ingresos.
@@ -195,7 +195,7 @@ function HeroMock() {
   ];
   return (
     <div className="relative">
-      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/20 to-accent/20 blur-2xl" />
+      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-linear-to-br from-primary/20 to-action/20 blur-2xl" />
       <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-pop">
         <div className="flex items-center justify-between border-b border-border/60 pb-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -499,7 +499,7 @@ function IAFantasma() {
               className="group rounded-2xl border border-border/60 bg-card p-7 transition-all hover:shadow-pop hover:-translate-y-1"
             >
               <div className="flex items-center justify-between">
-                <span className="grid size-11 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent">
+                <span className="grid size-11 place-items-center rounded-xl bg-linear-to-br from-primary to-action">
                   <it.icon className="size-5 text-primary-foreground" />
                 </span>
                 <Brain className="size-4 text-muted-foreground opacity-50 group-hover:opacity-100" />
@@ -644,7 +644,7 @@ function Precios() {
               className={
                 "relative rounded-3xl border p-7 transition-all " +
                 (p.featured
-                  ? "border-primary bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-pop"
+                  ? "border-primary bg-linear-to-br from-primary to-action text-primary-foreground shadow-pop"
                   : "border-border/60 bg-card")
               }
             >
@@ -741,7 +741,7 @@ function Marketplace() {
           </div>
 
           <div className="relative">
-            <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-tr from-accent/20 to-primary/20 blur-2xl" />
+            <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-linear-to-tr from-action/20 to-primary/20 blur-2xl" />
             <div className="grid grid-cols-2 gap-4">
               {[
                 { name: "Bolsas tejidas", city: "Costa", tag: "Artesanal" },
@@ -756,7 +756,7 @@ function Marketplace() {
                     (i % 2 === 1 ? "translate-y-4" : "")
                   }
                 >
-                  <div className="grid h-20 place-items-center rounded-lg bg-gradient-to-br from-primary-soft to-accent-soft">
+                  <div className="grid h-20 place-items-center rounded-lg bg-linear-to-br from-primary-soft to-action-soft">
                     <ShoppingBag className="size-7 text-primary" />
                   </div>
                   <div className="mt-3 text-sm font-semibold text-foreground">{p.name}</div>

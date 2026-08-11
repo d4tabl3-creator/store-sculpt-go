@@ -66,7 +66,7 @@ function GuidePage() {
               <h1 className="mt-2 font-display text-3xl font-extrabold">{state.title}</h1>
               <p className="mt-2 text-muted-foreground">{state.intro}</p>
               <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div className="h-full bg-primary transition-all" style={{ width: `${state.progress}%` }} />
+                <div className="h-full bg-progress transition-all" style={{ width: `${state.progress}%` }} />
               </div>
               <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
                 <span>

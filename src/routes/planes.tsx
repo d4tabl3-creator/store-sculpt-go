@@ -129,7 +129,7 @@ function PlansPage() {
 
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               {PLANS.map((p) => (
-                <div key={p.id} className={"relative rounded-3xl border p-7 transition-all " + (p.featured ? "border-primary bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-pop" : "border-border bg-card")}>
+                <div key={p.id} className={"relative rounded-3xl border p-7 transition-all " + (p.featured ? "border-primary bg-linear-to-br from-primary to-action text-primary-foreground shadow-pop" : "border-border bg-card")}>
                   {p.featured && (
                     <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent-foreground">Más elegido</span>
                   )}

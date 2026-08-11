@@ -5,9 +5,13 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * DªTªBLe — Lemon Grove on Onyx
- * Onyx negro satinado + lemon pulp #F4C430 · aromatic zest #E0A91F ·
- * lemon sprig #6E8F2A · citrus leaf #2F4A1F. Pop-art, glass 3D, jugoso.
+ * DªTªBLe — Sistema visual global (neutral respecto a proveedores)
+ * Los colores representan FUNCIONES y ESTADOS de la plataforma, nunca proveedores.
+ *   identidad  violeta  #6D4AFF   acción   azul     #2563EB
+ *   proceso    turquesa #0D9488   éxito    verde    #16A34A
+ *   atención   ámbar    #D97706   error    rojo     #DC2626
+ *   info       azul     #0284C7
+ *   fondo #F8FAFC · superficie #FFFFFF · texto #172033 / #64748B · borde #E2E8F0
  */
 
 @theme inline {
@@ -28,6 +32,18 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-soft: var(--primary-soft);
+  --color-action: var(--action);
+  --color-action-foreground: var(--action-foreground);
+  --color-action-soft: var(--action-soft);
+  --color-progress: var(--progress);
+  --color-progress-foreground: var(--progress-foreground);
+  --color-progress-soft: var(--progress-soft);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -37,8 +53,10 @@
   --color-accent-soft: var(--accent-soft);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -49,95 +67,139 @@
   --font-bubble: "Bungee", "Rubik Mono One", system-ui, sans-serif;
   --font-serif: "Fraunces", Georgia, serif;
 
-  --shadow-soft: 0 1px 2px rgba(0,0,0,0.5),
-                 0 12px 32px -14px color-mix(in oklab, var(--primary) 40%, transparent);
-  --shadow-pop: 0 24px 60px -18px color-mix(in oklab, var(--primary) 60%, transparent),
-                0 4px 0 0 rgba(0,0,0,0.9);
-  --shadow-cta: 0 14px 30px -8px color-mix(in oklab, var(--primary) 70%, transparent),
-                inset 0 1px 0 rgba(255,255,255,0.55);
+  --shadow-soft: 0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
+                 0 10px 28px -18px color-mix(in oklab, var(--foreground) 30%, transparent);
+  --shadow-pop: 0 18px 40px -24px color-mix(in oklab, var(--foreground) 35%, transparent),
+                0 2px 0 0 color-mix(in oklab, var(--border) 90%, transparent);
+  --shadow-cta: 0 12px 24px -12px color-mix(in oklab, var(--action) 55%, transparent),
+                inset 0 1px 0 rgba(255,255,255,0.35);
 
   --gradient-hero: radial-gradient(
       ellipse at top left,
-      color-mix(in oklab, var(--primary) 32%, transparent),
-      transparent 55%
+      color-mix(in oklab, var(--primary) 16%, transparent),
+      transparent 58%
     ),
     radial-gradient(
       ellipse at bottom right,
-      color-mix(in oklab, var(--accent) 30%, transparent),
-      transparent 55%
+      color-mix(in oklab, var(--action) 14%, transparent),
+      transparent 58%
     );
 
   --gradient-glass: linear-gradient(
     145deg,
-    rgba(255,255,255,0.14) 0%,
-    rgba(255,255,255,0.04) 40%,
-    rgba(255,255,255,0.10) 100%
+    color-mix(in oklab, white 92%, transparent) 0%,
+    color-mix(in oklab, white 70%, transparent) 45%,
+    color-mix(in oklab, white 88%, transparent) 100%
   );
 }
 
 :root {
-  --radius: 1.25rem;
+  --radius: 1rem;
 
-  /* Citrus leaf verde profundo */
-  --background: oklch(0.32 0.09 135);
-  --foreground: oklch(0.98 0.02 95);
-  --card: oklch(0.26 0.08 135);
-  --card-foreground: oklch(0.98 0.02 95);
-  --popover: oklch(0.26 0.08 135);
-  --popover-foreground: oklch(0.98 0.02 95);
+  /* Superficies y texto */
+  --background: oklch(0.984 0.003 248); /* #F8FAFC */
+  --foreground: oklch(0.245 0.039 264); /* #172033 */
+  --card: oklch(1 0 0); /* #FFFFFF */
+  --card-foreground: oklch(0.245 0.039 264);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.245 0.039 264);
 
-  /* Lemon pulp #F4C430 */
-  --primary: oklch(0.85 0.17 92);
-  --primary-foreground: oklch(0.16 0.02 90);
-  --primary-soft: oklch(0.28 0.09 92);
+  /* Identidad Datable — violeta #6D4AFF */
+  --primary: oklch(0.562 0.251 284);
+  --primary-foreground: oklch(1 0 0);
+  --primary-soft: oklch(0.955 0.025 285);
 
-  /* Aromatic zest #E0A91F */
-  --accent: oklch(0.78 0.17 78);
-  --accent-foreground: oklch(0.16 0.02 90);
-  --accent-soft: oklch(0.26 0.1 80);
+  /* Acción principal — azul #2563EB */
+  --action: oklch(0.546 0.215 263);
+  --action-foreground: oklch(1 0 0);
+  --action-soft: oklch(0.955 0.025 263);
 
-  /* Lemon sprig #6E8F2A - secondary green */
-  --secondary: oklch(0.58 0.16 128);
-  --secondary-foreground: oklch(0.12 0.03 128);
+  /* Proceso activo — turquesa #0D9488 */
+  --progress: oklch(0.6 0.104 185);
+  --progress-foreground: oklch(1 0 0);
+  --progress-soft: oklch(0.96 0.022 185);
 
-  --muted: oklch(0.3 0.06 135);
-  --muted-foreground: oklch(0.85 0.05 100);
+  /* Información — #0284C7 */
+  --info: oklch(0.588 0.139 242);
+  --info-foreground: oklch(1 0 0);
+  --info-soft: oklch(0.958 0.024 242);
 
-  --success: oklch(0.7 0.18 140);
-  --success-foreground: oklch(0.12 0.05 140);
+  /* Éxito — #16A34A */
+  --success: oklch(0.627 0.17 149);
+  --success-foreground: oklch(1 0 0);
+  --success-soft: oklch(0.958 0.032 149);
 
-  --destructive: oklch(0.62 0.24 27);
-  --destructive-foreground: oklch(0.98 0 0);
+  /* Atención — #D97706 */
+  --warning: oklch(0.666 0.157 58);
+  --warning-foreground: oklch(0.245 0.039 264);
+  --warning-soft: oklch(0.96 0.038 78);
 
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.85 0.17 92);
+  /* Error — #DC2626 */
+  --destructive: oklch(0.577 0.215 27);
+  --destructive-foreground: oklch(1 0 0);
+  --destructive-soft: oklch(0.958 0.026 27);
+
+  /* Neutrales */
+  --secondary: oklch(0.968 0.007 248); /* #F1F5F9 */
+  --secondary-foreground: oklch(0.245 0.039 264);
+  --muted: oklch(0.96 0.008 254); /* #EEF2F7 */
+  --muted-foreground: oklch(0.554 0.041 257); /* #64748B */
+  --accent: oklch(0.96 0.008 254);
+  --accent-foreground: oklch(0.245 0.039 264);
+  --accent-soft: oklch(0.975 0.006 254);
+
+  --border: oklch(0.929 0.013 256); /* #E2E8F0 */
+  --input: oklch(0.929 0.013 256);
+  --ring: oklch(0.546 0.215 263);
 }
 
 .dark {
-  --background: oklch(0.11 0.008 90);
-  --foreground: oklch(0.98 0.02 95);
-  --card: oklch(0.16 0.012 90);
-  --card-foreground: oklch(0.98 0.02 95);
-  --popover: oklch(0.16 0.012 90);
-  --popover-foreground: oklch(0.98 0.02 95);
-  --primary: oklch(0.87 0.17 92);
-  --primary-foreground: oklch(0.14 0.02 90);
-  --primary-soft: oklch(0.26 0.09 92);
-  --accent: oklch(0.8 0.17 78);
-  --accent-foreground: oklch(0.14 0.02 90);
-  --accent-soft: oklch(0.24 0.1 80);
-  --secondary: oklch(0.6 0.16 128);
-  --secondary-foreground: oklch(0.12 0.03 128);
-  --muted: oklch(0.2 0.012 90);
-  --muted-foreground: oklch(0.74 0.02 90);
-  --success: oklch(0.72 0.18 140);
-  --success-foreground: oklch(0.12 0.05 140);
-  --destructive: oklch(0.68 0.22 27);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.87 0.17 92);
+  --background: oklch(0.21 0.03 264);
+  --foreground: oklch(0.97 0.005 248);
+  --card: oklch(0.26 0.03 264);
+  --card-foreground: oklch(0.97 0.005 248);
+  --popover: oklch(0.26 0.03 264);
+  --popover-foreground: oklch(0.97 0.005 248);
+
+  --primary: oklch(0.65 0.21 284);
+  --primary-foreground: oklch(0.16 0.03 264);
+  --primary-soft: oklch(0.3 0.07 284);
+
+  --action: oklch(0.63 0.18 263);
+  --action-foreground: oklch(0.16 0.03 264);
+  --action-soft: oklch(0.3 0.07 263);
+
+  --progress: oklch(0.68 0.1 185);
+  --progress-foreground: oklch(0.16 0.03 264);
+  --progress-soft: oklch(0.3 0.05 185);
+
+  --info: oklch(0.66 0.13 242);
+  --info-foreground: oklch(0.16 0.03 264);
+  --info-soft: oklch(0.3 0.06 242);
+
+  --success: oklch(0.7 0.16 149);
+  --success-foreground: oklch(0.16 0.03 264);
+  --success-soft: oklch(0.3 0.06 149);
+
+  --warning: oklch(0.75 0.15 66);
+  --warning-foreground: oklch(0.16 0.03 264);
+  --warning-soft: oklch(0.3 0.06 66);
+
+  --destructive: oklch(0.65 0.2 27);
+  --destructive-foreground: oklch(0.98 0 0);
+  --destructive-soft: oklch(0.3 0.08 27);
+
+  --secondary: oklch(0.3 0.03 264);
+  --secondary-foreground: oklch(0.97 0.005 248);
+  --muted: oklch(0.3 0.03 264);
+  --muted-foreground: oklch(0.75 0.02 256);
+  --accent: oklch(0.3 0.03 264);
+  --accent-foreground: oklch(0.97 0.005 248);
+  --accent-soft: oklch(0.27 0.03 264);
+
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.63 0.18 263);
 }
 
 @layer base {
@@ -152,13 +214,10 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    /* Onyx satinado: sutil brillo tornasol */
-    /* Degradado verde → amarillo → naranja */
+    /* Fondo claro Datable con acentos de identidad muy sutiles */
     background-image:
-      radial-gradient(ellipse 70% 55% at 15% 0%, color-mix(in oklab, var(--primary) 45%, transparent), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 95% 20%, color-mix(in oklab, var(--accent) 55%, transparent), transparent 60%),
-      radial-gradient(ellipse 80% 60% at 50% 100%, color-mix(in oklab, var(--secondary) 40%, transparent), transparent 65%),
-      linear-gradient(160deg, oklch(0.34 0.1 140) 0%, oklch(0.26 0.09 130) 55%, oklch(0.2 0.07 128) 100%);
+      radial-gradient(ellipse 60% 45% at 12% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 62%),
+      radial-gradient(ellipse 55% 40% at 95% 8%, color-mix(in oklab, var(--action) 9%, transparent), transparent 62%);
     background-attachment: fixed;
   }
   h1, h2, h3, h4 {
@@ -183,7 +242,7 @@
     background: linear-gradient(
       120deg,
       transparent 30%,
-      color-mix(in oklab, white 55%, transparent) 50%,
+      color-mix(in oklab, white 45%, transparent) 50%,
       transparent 70%
     );
     transform: translateX(-120%);
@@ -196,58 +255,51 @@
 
 @utility grid-noise {
   background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--primary) 5%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--primary) 5%, transparent) 1px, transparent 1px);
+    linear-gradient(to right, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px);
   background-size: 36px 36px;
 }
 
-/* Glass 3D — cristal superrealista */
+/* Superficie elevada translúcida */
 @utility glass-3d {
-  background: var(--gradient-glass), color-mix(in oklab, var(--card) 60%, transparent);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border: 1px solid rgba(255,255,255,0.14);
+  background: var(--gradient-glass), color-mix(in oklab, var(--card) 85%, transparent);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border: 1px solid var(--color-border);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.28),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    0 30px 60px -20px rgba(0,0,0,0.7),
-    0 8px 20px -10px color-mix(in oklab, var(--primary) 40%, transparent);
+    inset 0 1px 0 rgba(255,255,255,0.6),
+    0 18px 40px -26px color-mix(in oklab, var(--foreground) 40%, transparent);
 }
 
-/* Botón caramelo brillante — pop art */
+/* Botón de acción principal */
 @utility candy-btn {
   background: linear-gradient(180deg,
-    color-mix(in oklab, var(--primary) 100%, white 8%) 0%,
-    var(--primary) 55%,
-    color-mix(in oklab, var(--primary) 85%, black 15%) 100%);
-  color: var(--primary-foreground);
+    color-mix(in oklab, var(--action) 92%, white 8%) 0%,
+    var(--action) 100%);
+  color: var(--action-foreground);
   box-shadow:
-    inset 0 2px 0 rgba(255,255,255,0.65),
-    inset 0 -2px 0 rgba(0,0,0,0.25),
-    0 8px 0 -2px color-mix(in oklab, var(--primary) 60%, black 40%),
-    0 18px 30px -12px color-mix(in oklab, var(--primary) 70%, transparent);
-  border: 1px solid color-mix(in oklab, var(--primary) 60%, black 40%);
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 10px 22px -12px color-mix(in oklab, var(--action) 65%, transparent);
+  border: 1px solid color-mix(in oklab, var(--action) 80%, black 20%);
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 @utility candy-btn-press {
   &:active {
-    transform: translateY(3px);
+    transform: translateY(1px);
     box-shadow:
-      inset 0 2px 0 rgba(255,255,255,0.55),
-      inset 0 -1px 0 rgba(0,0,0,0.25),
-      0 3px 0 -1px color-mix(in oklab, var(--primary) 60%, black 40%),
-      0 8px 16px -8px color-mix(in oklab, var(--primary) 60%, transparent);
+      inset 0 1px 0 rgba(255,255,255,0.3),
+      0 6px 14px -10px color-mix(in oklab, var(--action) 60%, transparent);
   }
 }
 
-/* Sticker pop-art con borde negro grueso */
+/* Tarjeta con borde marcado (personalidad Datable, en neutrales) */
 @utility sticker {
-  border: 3px solid oklch(0.08 0 0);
-  box-shadow: 6px 6px 0 0 oklch(0.08 0 0);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 26px -20px color-mix(in oklab, var(--foreground) 45%, transparent);
   border-radius: var(--radius);
 }
 
-/* Texto serif jugoso */
+/* Texto serif expresivo */
 @utility text-juicy {
   font-family: var(--font-serif);
   font-style: italic;
