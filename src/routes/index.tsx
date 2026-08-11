@@ -262,6 +262,9 @@ function QueEsActivo() {
               </li>
             ))}
           </ol>
+          <p className="mx-auto mt-6 max-w-3xl text-center text-sm text-muted-foreground">
+            Así puedes convertir una oferta en una operación que tus clientes encuentren y utilicen por internet, con la posibilidad de generar ingresos según tu propuesta, tu gestión y la respuesta del mercado.
+          </p>
         </div>
       </div>
     </section>
