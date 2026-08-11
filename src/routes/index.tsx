@@ -137,7 +137,7 @@ function Hero() {
   return (
     <section className="hero-surface relative overflow-hidden">
       <div className="grid-noise absolute inset-0 opacity-40" aria-hidden />
-      <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-16 pb-20 md:grid-cols-2 md:items-center md:pt-24 md:pb-28">
+      <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
         <div>
           <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary-soft px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary">
             <Sparkles className="size-3.5" /> Activo digital productivo
@@ -179,63 +179,11 @@ function Hero() {
             ))}
           </ul>
         </div>
-
-        <HeroMock />
       </div>
     </section>
   );
 }
 
-function HeroMock() {
-  const steps = [
-    { icon: Boxes, label: "Rubro", value: "Ropa Deportiva" },
-    { icon: Package, label: "Kit", value: "Yoga Básico" },
-    { icon: Palette, label: "Fachada", value: "Skin · Aurora" },
-    { icon: CreditCard, label: "Pagos", value: "Pago + Envío" },
-  ];
-  return (
-    <div className="relative">
-      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-linear-to-br from-primary/20 to-action/20 blur-2xl" />
-      <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-pop">
-        <div className="flex items-center justify-between border-b border-border/60 pb-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="size-2.5 rounded-full bg-destructive/70" />
-            <span className="size-2.5 rounded-full bg-accent" />
-            <span className="size-2.5 rounded-full bg-success" />
-            <span className="ml-2 font-mono">tutienda.datable.com.mx</span>
-          </div>
-          <Badge variant="secondary" className="text-[10px]">EN VIVO</Badge>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          {steps.map((s, i) => (
-            <div
-              key={s.label}
-              className="rounded-xl border border-border/60 bg-background/60 p-4"
-            >
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <span className="grid size-5 place-items-center rounded-md bg-primary text-[10px] font-bold text-primary-foreground">
-                  {i + 1}
-                </span>
-                {s.label}
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <s.icon className="size-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">{s.value}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 flex items-center justify-between rounded-xl bg-primary p-4 text-primary-foreground">
-          <div>
-            <div className="text-[11px] uppercase tracking-wider opacity-80">Tu tienda</div>
-            <div className="font-display text-base font-bold">¡Lista en 1:42 min!</div>
-          </div>
-          <Rocket className="size-6" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ---------- Cómo funciona — 4 ventanillas ---------- */
 
