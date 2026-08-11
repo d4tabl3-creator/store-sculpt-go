@@ -137,7 +137,7 @@ function Hero() {
   return (
     <section className="hero-surface relative overflow-hidden">
       <div className="grid-noise absolute inset-0 opacity-40" aria-hidden />
-      <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-16 pb-20 md:grid-cols-2 md:items-center md:pt-24 md:pb-28">
+      <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
         <div>
           <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary-soft px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary">
             <Sparkles className="size-3.5" /> Activo digital productivo
@@ -179,8 +179,6 @@ function Hero() {
             ))}
           </ul>
         </div>
-
-        <HeroMock />
       </div>
     </section>
   );
