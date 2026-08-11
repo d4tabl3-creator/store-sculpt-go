@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Loader2, AlertTriangle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { tickProvisioning } from "@/lib/commerce.functions";
+import { notifyAssetReady } from "@/lib/email/send";
 import { PROVISION_STEPS, type ProvisioningView } from "@/lib/commerce/types";
 
 export const Route = createFileRoute("/_authenticated/preparando/$id")({
