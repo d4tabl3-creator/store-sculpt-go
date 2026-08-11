@@ -61,7 +61,7 @@ function Preparando() {
     <div className="min-h-screen bg-background">
       <main className="mx-auto flex max-w-2xl flex-col px-4 py-16">
         <div className="rounded-3xl border-2 border-border bg-card p-8 shadow-pop">
-          <div className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-foreground px-3 py-1 text-xs font-bold uppercase tracking-wide text-background">
+          <div className="inline-flex items-center gap-2 rounded-full border border-progress/30 bg-progress-soft px-3 py-1 text-xs font-bold uppercase tracking-wide text-progress">
             <Sparkles className="size-3.5" /> Ensamblando
           </div>
 
@@ -107,7 +107,7 @@ function Preparando() {
           </ol>
 
           {view?.status === "failed" && (
-            <div className="mt-6 rounded-2xl border-2 border-destructive/40 bg-destructive/10 p-4">
+            <div className="mt-6 rounded-2xl border border-destructive/40 bg-destructive-soft p-4">
               <div className="flex items-center gap-2 font-bold">
                 <AlertTriangle className="size-4" /> No pudimos terminar el ensamblaje
               </div>

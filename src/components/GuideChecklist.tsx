@@ -30,7 +30,7 @@ export function GuideChecklist({ storeId, state, busyStepId, onToggle, compact }
             <div className="flex items-start gap-3">
               <div
                 className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border ${
-                  step.completed ? "border-primary bg-primary text-primary-foreground" : "border-border"
+                  step.completed ? "border-success bg-success text-success-foreground" : "border-border"
                 }`}
               >
                 {step.completed ? <Check className="size-3.5" /> : <Circle className="size-2.5 opacity-40" />}

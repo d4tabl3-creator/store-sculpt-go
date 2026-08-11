@@ -122,7 +122,7 @@ function Dashboard() {
               </span>
             </div>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-full bg-primary transition-all" style={{ width: `${guide.state.progress}%` }} />
+              <div className="h-full bg-progress transition-all" style={{ width: `${guide.state.progress}%` }} />
             </div>
             <div className="mt-4">
               <GuideChecklist storeId={guide.storeId} state={guide.state} compact />
