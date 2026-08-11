@@ -41,8 +41,8 @@ function CheckoutReturn() {
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4 text-center">
       <div className="max-w-md">
-        <div className={"mx-auto grid size-16 place-items-center rounded-full " + (failed ? "bg-destructive/10" : paid ? "bg-green-100" : "bg-muted")}>
-          {failed ? <X className="size-8 text-destructive" /> : paid ? <Check className="size-8 text-green-600" /> : <Clock className="size-8 animate-pulse text-muted-foreground" />}
+        <div className={"mx-auto grid size-16 place-items-center rounded-full " + (failed ? "bg-destructive/10" : paid ? "bg-success-soft" : "bg-muted")}>
+          {failed ? <X className="size-8 text-destructive" /> : paid ? <Check className="size-8 text-success" /> : <Clock className="size-8 animate-pulse text-muted-foreground" />}
         </div>
         <h1 className="mt-6 font-display text-3xl font-extrabold">
           {failed ? "Pago rechazado" : paid ? "¡Pago recibido!" : "Confirmando pago…"}

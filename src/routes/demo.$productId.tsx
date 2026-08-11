@@ -112,7 +112,7 @@ function DemoProductPage() {
           <div className="mt-3 font-display text-3xl text-primary">{formatMxn(current.priceCents)}</div>
           <div className="mt-1 text-xs font-semibold uppercase tracking-widest">
             {current.inStock ? (
-              <span className="text-emerald-600">Disponible</span>
+              <span className="text-success">Disponible</span>
             ) : (
               <span className="text-muted-foreground">Agotado en esta variante</span>
             )}
