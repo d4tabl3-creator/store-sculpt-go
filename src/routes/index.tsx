@@ -185,6 +185,92 @@ function Hero() {
 }
 
 
+/* ---------- Qué es un activo digital productivo ---------- */
+
+const ACTIVO_STEPS = [
+  {
+    icon: Store,
+    title: "Tú defines el punto de partida",
+    desc: "Aportas tu marca, tu oferta y las decisiones que quieres tomar.",
+    tone: "bg-primary-soft text-primary",
+  },
+  {
+    icon: Layers,
+    title: "Datable construye el activo",
+    desc: "Convertimos esa idea en una experiencia preparada para cumplir una función comercial.",
+    tone: "bg-action-soft text-action",
+  },
+  {
+    icon: Settings2,
+    title: "Se prepara para operar",
+    desc: "Se organizan las capacidades que necesita: vender, cobrar, recibir pedidos, reservar o captar clientes.",
+    tone: "bg-progress-soft text-progress",
+  },
+  {
+    icon: LineChart,
+    title: "Tú lo gestionas y lo haces crecer",
+    desc: "Tus clientes interactúan por internet y tú decides cómo mejorar tu oferta y avanzar.",
+    tone: "bg-success-soft text-success",
+  },
+];
+
+const ACTIVO_FLOW = [
+  "Tú",
+  "Tu marca + tu oferta",
+  "Datable construye el activo",
+  "Se conectan las capacidades necesarias",
+  "El activo opera en internet",
+  "Tus clientes pueden interactuar con él",
+  "Tú lo gestionas y lo haces crecer",
+];
+
+function QueEsActivo() {
+  return (
+    <section id="que-es-activo" className="border-t border-border/60 bg-card/40">
+      <div className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+        <SectionHeader
+          eyebrow="Qué estás construyendo"
+          title="¿Qué es un activo digital productivo?"
+          desc="Una página web principalmente informa. Un activo digital productivo está diseñado para realizar una función comercial y operar por internet: puede ayudarte a vender, recibir pedidos, cobrar, gestionar reservas, captar clientes o contratar servicios."
+        />
+
+        <div className="mx-auto mt-10 grid max-w-5xl gap-4 md:grid-cols-2">
+          {ACTIVO_STEPS.map((step) => (
+            <div key={step.title} className="rounded-2xl border border-border/60 bg-background p-5 md:p-6">
+              <div className={`grid size-11 place-items-center rounded-xl ${step.tone}`}>
+                <step.icon className="size-5" />
+              </div>
+              <h3 className="mt-4 font-display text-lg font-bold text-foreground">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mx-auto mt-10 max-w-5xl">
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Una forma sencilla de entenderlo
+          </p>
+          <ol className="mt-4 flex flex-col items-stretch gap-2 md:flex-row md:items-center md:gap-0">
+            {ACTIVO_FLOW.map((step, index) => (
+              <li key={step} className="flex min-w-0 flex-1 items-center gap-2 md:gap-0">
+                <div className="flex min-h-16 flex-1 items-center rounded-xl border border-border/60 bg-background px-3 py-3 text-center text-sm font-semibold text-foreground md:min-h-20 md:justify-center">
+                  {step}
+                </div>
+                {index < ACTIVO_FLOW.length - 1 && (
+                  <ArrowRight className="mx-1 size-4 shrink-0 rotate-90 text-primary md:mx-2 md:rotate-0" aria-hidden="true" />
+                )}
+              </li>
+            ))}
+          </ol>
+          <p className="mx-auto mt-6 max-w-3xl text-center text-sm text-muted-foreground">
+            Así puedes convertir una oferta en una operación que tus clientes encuentren y utilicen por internet, con la posibilidad de generar ingresos según tu propuesta, tu gestión y la respuesta del mercado.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ---------- Cómo funciona — 4 ventanillas ---------- */
 
 const VENTANILLAS = [
@@ -970,6 +1056,7 @@ function Landing() {
       <Nav />
       <main>
         <Hero />
+        <QueEsActivo />
         <DemoVitrina />
         <ComoFunciona />
 
