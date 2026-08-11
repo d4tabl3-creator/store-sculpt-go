@@ -139,7 +139,7 @@ function Hero() {
       <div className="grid-noise absolute inset-0 opacity-40" aria-hidden />
       <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-16 pb-20 md:grid-cols-2 md:items-center md:pt-24 md:pb-28">
         <div>
-          <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border-2 border-primary bg-black px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary shadow-[3px_3px_0_0_rgba(0,0,0,0.9)]">
+          <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary-soft px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary">
             <Sparkles className="size-3.5" /> Activo digital productivo
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">

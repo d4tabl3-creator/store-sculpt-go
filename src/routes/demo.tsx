@@ -22,24 +22,24 @@ function DemoLayout() {
   const count = cart.reduce((s, i) => s + i.qty, 0);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       {/* Barra de control DªTªBLe (fuera de la tienda) */}
-      <div className="flex flex-wrap items-center justify-center gap-3 bg-black px-4 py-2 text-center text-[11px] font-semibold text-white/70 sm:text-xs">
+      <div className="flex flex-wrap items-center justify-center gap-3 border-b border-border bg-card px-4 py-2 text-center text-[11px] font-semibold text-muted-foreground sm:text-xs">
         <span>
           Vista previa de una tienda de cliente · el diseño es 100% tuyo
         </span>
-        <div className="flex items-center gap-1 rounded-full bg-white/10 p-1">
+        <div className="flex items-center gap-1 rounded-full bg-muted p-1">
           {DEMO_THEMES.map((t) => (
             <button
               key={t.id}
               onClick={() => setThemeId(t.id)}
-              className={`rounded-full px-3 py-1 transition ${t.id === themeId ? "bg-white text-black" : "text-white/70 hover:text-white"}`}
+              className={`rounded-full px-3 py-1 transition ${t.id === themeId ? "bg-card text-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}
             >
               {t.label}
             </button>
           ))}
         </div>
-        <Link to="/auth" className="underline underline-offset-2 hover:text-white">
+        <Link to="/auth" className="underline underline-offset-2 hover:text-foreground">
           Crear la mía
         </Link>
       </div>
