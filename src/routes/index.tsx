@@ -187,83 +187,65 @@ function Hero() {
 
 /* ---------- Qué es un activo digital productivo ---------- */
 
-const ACTIVO_STEPS = [
-  {
-    icon: Store,
-    title: "Tú defines el punto de partida",
-    desc: "Aportas tu marca, tu oferta y las decisiones que quieres tomar.",
-    tone: "bg-primary-soft text-primary",
-  },
-  {
-    icon: Layers,
-    title: "Datable construye el activo",
-    desc: "Convertimos esa idea en una experiencia preparada para cumplir una función comercial.",
-    tone: "bg-action-soft text-action",
-  },
-  {
-    icon: Settings2,
-    title: "Se prepara para operar",
-    desc: "Se organizan las capacidades que necesita: vender, cobrar, recibir pedidos, reservar o captar clientes.",
-    tone: "bg-progress-soft text-progress",
-  },
-  {
-    icon: LineChart,
-    title: "Tú lo gestionas y lo haces crecer",
-    desc: "Tus clientes interactúan por internet y tú decides cómo mejorar tu oferta y avanzar.",
-    tone: "bg-success-soft text-success",
-  },
+const ACTIVO_RECEIVES = [
+  "Una tienda digital ya estructurada.",
+  "Un catálogo de productos disponibles.",
+  "Precios y reglas ya definidos.",
+  "Personalización dentro de las opciones disponibles.",
+  "Herramientas para administrar tu tienda y tus ventas.",
+  "La operación del proveedor conectada al proceso.",
 ];
 
-const ACTIVO_FLOW = [
-  "Tú",
-  "Tu marca + tu oferta",
-  "Datable construye el activo",
-  "Se conectan las capacidades necesarias",
-  "El activo opera en internet",
-  "Tus clientes pueden interactuar con él",
-  "Tú lo gestionas y lo haces crecer",
+const ACTIVO_WORKFLOW = [
+  "Eliges una estructura disponible.",
+  "La personalizas dentro de las opciones permitidas.",
+  "Agregas tu identidad.",
+  "Los productos y precios base permanecen definidos por el sistema.",
+  "El sistema establece una comisión base para tu operación y, cuando está habilitado, puedes agregar una comisión adicional.",
+  "Publicas y vendes.",
+  "El proveedor ejecuta la parte operativa correspondiente.",
 ];
 
 function QueEsActivo() {
   return (
     <section id="que-es-activo" className="border-t border-border/60 bg-card/40">
-      <div className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+      <div className="mx-auto max-w-5xl px-4 py-16 md:py-20">
         <SectionHeader
-          eyebrow="Qué estás construyendo"
-          title="¿Qué es un activo digital productivo?"
-          desc="Una página web principalmente informa. Un activo digital productivo está diseñado para realizar una función comercial y operar por internet: puede ayudarte a vender, recibir pedidos, cobrar, gestionar reservas, captar clientes o contratar servicios."
+          eyebrow="Una estructura lista para comenzar"
+          title="Datable no te da una página en blanco."
+          desc="Te entrega una estructura comercial ya preparada que puedes personalizar dentro de sus opciones."
         />
 
-        <div className="mx-auto mt-10 grid max-w-5xl gap-4 md:grid-cols-2">
-          {ACTIVO_STEPS.map((step) => (
-            <div key={step.title} className="rounded-2xl border border-border/60 bg-background p-5 md:p-6">
-              <div className={`grid size-11 place-items-center rounded-xl ${step.tone}`}>
-                <step.icon className="size-5" />
-              </div>
-              <h3 className="mt-4 font-display text-lg font-bold text-foreground">{step.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.desc}</p>
-            </div>
-          ))}
+        <div className="mt-10 grid gap-8 md:grid-cols-2 md:gap-12">
+          <div>
+            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">¿Qué recibes?</h3>
+            <ul className="mt-5 space-y-3">
+              {ACTIVO_RECEIVES.map((item) => (
+                <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-foreground">
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">¿Cómo funciona?</h3>
+            <ol className="mt-5 space-y-3">
+              {ACTIVO_WORKFLOW.map((item) => (
+                <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-foreground">
+                  <ArrowRight className="mt-0.5 size-4 shrink-0 text-action" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
 
-        <div className="mx-auto mt-10 max-w-5xl">
-          <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            Una forma sencilla de entenderlo
-          </p>
-          <ol className="mt-4 flex flex-col items-stretch gap-2 md:flex-row md:items-center md:gap-0">
-            {ACTIVO_FLOW.map((step, index) => (
-              <li key={step} className="flex min-w-0 flex-1 items-center gap-2 md:gap-0">
-                <div className="flex min-h-16 flex-1 items-center rounded-xl border border-border/60 bg-background px-3 py-3 text-center text-sm font-semibold text-foreground md:min-h-20 md:justify-center">
-                  {step}
-                </div>
-                {index < ACTIVO_FLOW.length - 1 && (
-                  <ArrowRight className="mx-1 size-4 shrink-0 rotate-90 text-primary md:mx-2 md:rotate-0" aria-hidden="true" />
-                )}
-              </li>
-            ))}
-          </ol>
-          <p className="mx-auto mt-6 max-w-3xl text-center text-sm text-muted-foreground">
-            Así puedes convertir una oferta en una operación que tus clientes encuentren y utilicen por internet, con la posibilidad de generar ingresos según tu propuesta, tu gestión y la respuesta del mercado.
+        <div className="mt-12 border-t border-border/60 pt-8">
+          <h3 className="font-display text-xl font-bold text-foreground">¿Qué es un activo digital productivo?</h3>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            Es una tienda digital ya estructurada para cumplir una función comercial. En lugar de construir desde cero el catálogo, las reglas, la tecnología y la operación necesaria para vender, recibes una estructura preparada que puedes personalizar y administrar.
           </p>
         </div>
       </div>
