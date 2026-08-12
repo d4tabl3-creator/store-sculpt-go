@@ -137,7 +137,7 @@ async function createSyncProductVariants(
   variantId: number,
   file: { type: string; id?: number; url?: string },
 ) {
-  return printful<{ id: number; external_id: string; sync_variants: Array<{ id: number; external_id: string }> }>(
+  return printful<{ id: number; external_id?: string; sync_variants?: Array<{ id: number; external_id?: string }> }>(
     `/store/products?store_id=${storeId}`,
     {
       method: "POST",
