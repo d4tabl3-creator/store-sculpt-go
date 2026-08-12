@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { tickProvisioning } from "@/lib/commerce.functions";
 import { notifyAssetReady } from "@/lib/email/send";
 import { PROVISION_STEPS, type ProvisioningView } from "@/lib/commerce/types";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/preparando/$id")({
   head: () => ({
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/preparando/$id")({
 });
 
 function Preparando() {
+  const t = useT();
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const [view, setView] = useState<ProvisioningView | null>(null);
@@ -63,15 +65,17 @@ function Preparando() {
       <main className="mx-auto flex max-w-2xl flex-col px-4 py-16">
         <div className="rounded-3xl border-2 border-border bg-card p-8 shadow-pop">
           <div className="inline-flex items-center gap-2 rounded-full border border-progress/30 bg-progress-soft px-3 py-1 text-xs font-bold uppercase tracking-wide text-progress">
-            <Sparkles className="size-3.5" /> Ensamblando
+            <Sparkles className="size-3.5" /> {t("Ensamblando", "Assembling")}
           </div>
 
           <h1 className="mt-4 font-display text-3xl font-extrabold leading-tight">
-            Estamos preparando tu Activo Digital
+            {t("Estamos preparando tu Activo Digital", "We're preparing your Digital Asset")}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Tu tienda es independiente y sólo tuya. En cuanto termine el ensamblaje podrás
-            editarla y publicarla desde aquí mismo.
+            {t(
+              "Tu tienda es independiente y sólo tuya. En cuanto termine el ensamblaje podrás editarla y publicarla desde aquí mismo.",
+              "Your store is independent and only yours. Once the assembly finishes, you'll be able to edit and publish it right here.",
+            )}
           </p>
 
           <div className="mt-6 h-3 w-full overflow-hidden rounded-full bg-muted">
@@ -110,15 +114,15 @@ function Preparando() {
           {view?.status === "failed" && (
             <div className="mt-6 rounded-2xl border border-destructive/40 bg-destructive-soft p-4">
               <div className="flex items-center gap-2 font-bold">
-                <AlertTriangle className="size-4" /> No pudimos terminar el ensamblaje
+                <AlertTriangle className="size-4" /> {t("No pudimos terminar el ensamblaje", "We couldn't finish the assembly")}
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{view.error}</p>
               <div className="mt-3 flex gap-2">
                 <Button size="sm" onClick={() => window.location.reload()}>
-                  Reintentar
+                  {t("Reintentar", "Retry")}
                 </Button>
                 <Button asChild size="sm" variant="outline">
-                  <Link to="/dashboard">Ir a mis tiendas</Link>
+                  <Link to="/dashboard">{t("Ir a mis tiendas", "Go to my stores")}</Link>
                 </Button>
               </div>
             </div>
@@ -126,10 +130,9 @@ function Preparando() {
 
           {tooLong && view?.status !== "failed" && (
             <p className="mt-6 text-sm text-muted-foreground">
-              Está tardando un poco más de lo normal. Puedes cerrar esta página: el ensamblaje
-              continúa y te esperará en{" "}
+              {t("Está tardando un poco más de lo normal. Puedes cerrar esta página: el ensamblaje continúa y te esperará en", "This is taking a bit longer than usual. You can close this page: the assembly continues and will be waiting for you in")}{" "}
               <Link to="/dashboard" className="font-semibold text-primary hover:underline">
-                Mis tiendas
+                {t("Mis tiendas", "My stores")}
               </Link>
               .
             </p>

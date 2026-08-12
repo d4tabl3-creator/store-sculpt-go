@@ -8,13 +8,14 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/lib/i18n";
 
 const HOME_URL = "https://store-sculpt-go.lovable.app/";
 const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
 const HOME_TITLE = "DªTªBLe — Activos digitales productivos";
 const HOME_DESC = "Recibe una tienda digital ya estructurada, con catálogo y reglas comerciales preparadas. Personalízala dentro de las opciones disponibles, define tu margen y vende.";
 
-const HOME_FAQS = [
+const HOME_FAQS_STATIC = [
   {
     q: "¿Qué recibo exactamente?",
     a: "Una tienda digital ya estructurada: catálogo de productos disponibles, reglas comerciales preparadas, herramientas para administrar tus ventas y la operación conectada para que los pedidos lleguen a tus clientes.",
@@ -77,7 +78,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: HOME_FAQS.map((f) => ({
+          mainEntity: HOME_FAQS_STATIC.map((f) => ({
             "@type": "Question",
             name: f.q,
             acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -105,23 +106,24 @@ function Logo({ className = "" }: { className?: string }) {
 /* ---------- Nav ---------- */
 
 function Nav() {
+  const t = useT();
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
-          <a href="#que-es-activo" className="hover:text-foreground">Qué es</a>
-          <a href="#para-quien" className="hover:text-foreground">Para quién</a>
-          <a href="#precios" className="hover:text-foreground">Precios</a>
+          <a href="#que-es-activo" className="hover:text-foreground">{t("Qué es", "What it is")}</a>
+          <a href="#para-quien" className="hover:text-foreground">{t("Para quién", "Who it's for")}</a>
+          <a href="#precios" className="hover:text-foreground">{t("Precios", "Pricing")}</a>
           <a href="#faq" className="hover:text-foreground">FAQ</a>
         </nav>
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link to="/auth">Entrar</Link>
+            <Link to="/auth">{t("Entrar", "Log in")}</Link>
           </Button>
           <Button asChild size="sm" className="shine-on-hover">
             <Link to="/crear">
-              Crear mi tienda <ArrowRight className="ml-1" />
+              {t("Crear mi tienda", "Create my store")} <ArrowRight className="ml-1" />
             </Link>
           </Button>
         </div>
@@ -133,43 +135,46 @@ function Nav() {
 /* ---------- Hero ---------- */
 
 function Hero() {
+  const t = useT();
+  const bullets = [
+    t("No es una página en blanco", "It's not a blank page"),
+    t("Catálogo y estructura ya preparados", "Catalog and structure already set up"),
+    t("Tu identidad aplicada a la tienda", "Your brand applied to the store"),
+    t("Tú vendes; Datable conecta la operación", "You sell; Datable handles the operation"),
+  ];
   return (
     <section className="hero-surface relative overflow-hidden">
       <div className="grid-noise absolute inset-0 opacity-40" aria-hidden />
       <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
         <div>
           <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary-soft px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary">
-            <Sparkles className="size-3.5" /> Activo digital productivo
+            <Sparkles className="size-3.5" /> {t("Activo digital productivo", "A productive digital asset")}
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Datable crea y entrega{" "}
+            {t("Datable crea y entrega", "Datable creates and delivers")}{" "}
             <span className="bg-linear-to-r from-primary to-action bg-clip-text text-transparent">
-              activos digitales productivos
+              {t("activos digitales productivos", "productive digital assets")}
             </span>
             .
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            Hoy ese activo es una tienda digital de productos personalizados, ya estructurada y lista
-            para operar. Eliges una estructura disponible, la haces tuya dentro de sus opciones y la
-            pones a vender.
+            {t(
+              "Hoy ese activo es una tienda digital de productos personalizados, ya estructurada y lista para operar. Eliges una estructura disponible, la haces tuya dentro de sus opciones y la pones a vender.",
+              "Today that asset is a digital store for personalized products, already structured and ready to run. You choose an available structure, make it yours within its options, and start selling."
+            )}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
               <Link to="/crear">
-                Crear mi tienda <ArrowRight className="ml-1" />
+                {t("Crear mi tienda", "Create my store")} <ArrowRight className="ml-1" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="#precios">Ver precios</a>
+              <a href="#precios">{t("Ver precios", "See pricing")}</a>
             </Button>
           </div>
           <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-            {[
-              "No es una página en blanco",
-              "Catálogo y estructura ya preparados",
-              "Tu identidad aplicada a la tienda",
-              "Tú vendes; Datable conecta la operación",
-            ].map((f) => (
+            {bullets.map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" /> {f}
               </li>
@@ -183,40 +188,48 @@ function Hero() {
 
 /* ---------- Qué es un activo digital productivo ---------- */
 
-const ACTIVO_RECEIVES = [
-  "Una tienda digital ya estructurada.",
-  "Un catálogo de productos disponibles.",
-  "Una estructura comercial preparada para vender.",
-  "Personalización dentro de las opciones disponibles.",
-  "Tu identidad aplicada a la tienda.",
-  "Herramientas para administrar tu tienda y tus ventas.",
-  "Una operación conectada para que tus pedidos lleguen a tus clientes sin que tengas que encargarte de la logística.",
-];
-
-const ACTIVO_WORKFLOW = [
-  "COMIENZA CON UNA TIENDA LISTA PARA VENDER.",
-  "DALE A TU TIENDA TU IDENTIDAD.",
-  "TIENES PRODUCTOS PREPARADOS PARA VENDER.",
-  "DECIDE CUÁNTO QUIERES GANAR CON CADA VENTA.",
-  "PUBLICA Y VENDE.",
-  "NOSOTROS COORDINAMOS TODO LO NECESARIO PARA QUE EL PEDIDO LLEGUE A TU CLIENTE.",
-];
-
 function QueEsActivo() {
+  const t = useT();
+  const receives = [
+    t("Una tienda digital ya estructurada.", "An already-structured digital store."),
+    t("Un catálogo de productos disponibles.", "A catalog of available products."),
+    t("Una estructura comercial preparada para vender.", "A commercial structure ready to sell."),
+    t("Personalización dentro de las opciones disponibles.", "Customization within the available options."),
+    t("Tu identidad aplicada a la tienda.", "Your brand identity applied to the store."),
+    t("Herramientas para administrar tu tienda y tus ventas.", "Tools to manage your store and your sales."),
+    t(
+      "Una operación conectada para que tus pedidos lleguen a tus clientes sin que tengas que encargarte de la logística.",
+      "A connected operation so your orders reach your customers without you handling the logistics."
+    ),
+  ];
+  const workflow = [
+    t("COMIENZA CON UNA TIENDA LISTA PARA VENDER.", "START WITH A STORE READY TO SELL."),
+    t("DALE A TU TIENDA TU IDENTIDAD.", "GIVE YOUR STORE YOUR IDENTITY."),
+    t("TIENES PRODUCTOS PREPARADOS PARA VENDER.", "YOU HAVE PRODUCTS READY TO SELL."),
+    t("DECIDE CUÁNTO QUIERES GANAR CON CADA VENTA.", "DECIDE HOW MUCH YOU WANT TO EARN PER SALE."),
+    t("PUBLICA Y VENDE.", "PUBLISH AND SELL."),
+    t(
+      "NOSOTROS COORDINAMOS TODO LO NECESARIO PARA QUE EL PEDIDO LLEGUE A TU CLIENTE.",
+      "WE COORDINATE EVERYTHING NEEDED SO THE ORDER REACHES YOUR CUSTOMER."
+    ),
+  ];
   return (
     <section id="que-es-activo" className="border-t border-border/60 bg-card/40">
       <div className="mx-auto max-w-5xl px-4 py-16 md:py-20">
         <SectionHeader
-          eyebrow="Una estructura lista para comenzar"
-          title="Datable no te da una página en blanco."
-          desc="Te entrega una estructura comercial ya preparada que puedes personalizar dentro de sus opciones."
+          eyebrow={t("Una estructura lista para comenzar", "A structure ready to get started")}
+          title={t("Datable no te da una página en blanco.", "Datable doesn't give you a blank page.")}
+          desc={t(
+            "Te entrega una estructura comercial ya preparada que puedes personalizar dentro de sus opciones.",
+            "It delivers an already-prepared commercial structure that you can customize within its options."
+          )}
         />
 
         <div className="mt-10 grid gap-8 md:grid-cols-2 md:gap-12">
           <div>
-            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">¿Qué recibes?</h3>
+            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">{t("¿Qué recibes?", "What do you get?")}</h3>
             <ul className="mt-5 space-y-3">
-              {ACTIVO_RECEIVES.map((item) => (
+              {receives.map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-foreground">
                   <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
                   <span>{item}</span>
@@ -226,9 +239,9 @@ function QueEsActivo() {
           </div>
 
           <div>
-            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">¿Cómo funciona?</h3>
+            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">{t("¿Cómo funciona?", "How does it work?")}</h3>
             <ol className="mt-5 space-y-3">
-              {ACTIVO_WORKFLOW.map((item) => (
+              {workflow.map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-foreground">
                   <ArrowRight className="mt-0.5 size-4 shrink-0 text-action" />
                   <span>{item}</span>
@@ -239,13 +252,12 @@ function QueEsActivo() {
         </div>
 
         <div className="mt-12 border-t border-border/60 pt-8">
-          <h3 className="font-display text-xl font-bold text-foreground">¿Qué es un activo digital productivo?</h3>
+          <h3 className="font-display text-xl font-bold text-foreground">{t("¿Qué es un activo digital productivo?", "What is a productive digital asset?")}</h3>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-            Es una estructura digital que ya tiene organizado lo necesario para cumplir una función
-            comercial. En la etapa actual, ese activo es una tienda digital preparada para vender
-            productos personalizados: no tienes que construir desde cero el catálogo, la estructura
-            comercial, la tecnología ni la operación. Recibes una estructura preparada y la haces tuya
-            dentro de las opciones disponibles.
+            {t(
+              "Es una estructura digital que ya tiene organizado lo necesario para cumplir una función comercial. En la etapa actual, ese activo es una tienda digital preparada para vender productos personalizados: no tienes que construir desde cero el catálogo, la estructura comercial, la tecnología ni la operación. Recibes una estructura preparada y la haces tuya dentro de las opciones disponibles.",
+              "It's a digital structure that already has everything organized to fulfill a commercial function. At this stage, that asset is a digital store ready to sell personalized products: you don't have to build the catalog, the commercial structure, the technology, or the operation from scratch. You receive a prepared structure and make it yours within the available options."
+            )}
           </p>
         </div>
       </div>
@@ -256,19 +268,26 @@ function QueEsActivo() {
 /* ---------- Para quién ---------- */
 
 function ParaQuien() {
+  const t = useT();
   const items = [
-    "QUIERES EMPEZAR SIN UNA GRAN INVERSIÓN INICIAL.",
-    "QUIERES VENDER SIN OCUPARTE DE LA PARTE TÉCNICA.",
-    "QUIERES UNA TIENDA QUE YA TENGA LA ESTRUCTURA NECESARIA PARA OPERAR.",
-    "QUIERES ADMINISTRAR TUS VENTAS DESDE UN SOLO LUGAR.",
+    t("QUIERES EMPEZAR SIN UNA GRAN INVERSIÓN INICIAL.", "YOU WANT TO START WITHOUT A BIG INITIAL INVESTMENT."),
+    t("QUIERES VENDER SIN OCUPARTE DE LA PARTE TÉCNICA.", "YOU WANT TO SELL WITHOUT DEALING WITH THE TECHNICAL SIDE."),
+    t(
+      "QUIERES UNA TIENDA QUE YA TENGA LA ESTRUCTURA NECESARIA PARA OPERAR.",
+      "YOU WANT A STORE THAT ALREADY HAS THE STRUCTURE NEEDED TO OPERATE."
+    ),
+    t("QUIERES ADMINISTRAR TUS VENTAS DESDE UN SOLO LUGAR.", "YOU WANT TO MANAGE YOUR SALES FROM ONE PLACE."),
   ];
   return (
     <section id="para-quien" className="border-t border-border/60">
       <div className="mx-auto max-w-3xl px-4 py-20 md:py-28">
         <SectionHeader
-          eyebrow="PARA QUIÉN ES"
-          title="PARA TI, QUE QUIERES VENDER SIN CONSTRUIRLO TODO DESDE CERO."
-          desc="Datable te entrega la estructura digital para comenzar a vender. Tú te concentras en tu tienda, tus clientes y tus ventas."
+          eyebrow={t("PARA QUIÉN ES", "WHO IT'S FOR")}
+          title={t("PARA TI, QUE QUIERES VENDER SIN CONSTRUIRLO TODO DESDE CERO.", "FOR YOU, WHO WANTS TO SELL WITHOUT BUILDING EVERYTHING FROM SCRATCH.")}
+          desc={t(
+            "Datable te entrega la estructura digital para comenzar a vender. Tú te concentras en tu tienda, tus clientes y tus ventas.",
+            "Datable gives you the digital structure to start selling. You focus on your store, your customers, and your sales."
+          )}
         />
         <ul className="mt-10 grid gap-4 sm:grid-cols-2">
           {items.map((it) => (
@@ -289,19 +308,20 @@ function ParaQuien() {
 /* ---------- Precios ---------- */
 
 function Precios() {
+  const t = useT();
   const plans = [
     {
-      name: "GRATIS",
+      name: t("GRATIS", "FREE"),
       price: "$0",
-      commission: "10% de comisión por venta.",
-      cta: "Empezar gratis",
+      commission: t("10% de comisión por venta.", "10% commission per sale."),
+      cta: t("Empezar gratis", "Start for free"),
       featured: false,
     },
     {
       name: "PRO",
       price: "$499",
-      commission: "0% de comisión por venta.",
-      cta: "Activar Pro",
+      commission: t("0% de comisión por venta.", "0% commission per sale."),
+      cta: t("Activar Pro", "Activate Pro"),
       featured: true,
     },
   ];
@@ -309,23 +329,29 @@ function Precios() {
     <section id="precios" className="border-t border-border/60 bg-card/40">
       <div className="mx-auto max-w-5xl px-4 py-20 md:py-28">
         <SectionHeader
-          eyebrow="Precios"
-          title="EMPIEZA CON DATABLE SIN ARRIESGAR TU CAPITAL."
-          desc="Empieza a vender sin pagar mensualidad ni invertir dinero para poner tu tienda en marcha."
+          eyebrow={t("Precios", "Pricing")}
+          title={t("EMPIEZA CON DATABLE SIN ARRIESGAR TU CAPITAL.", "START WITH DATABLE WITHOUT RISKING YOUR CAPITAL.")}
+          desc={t(
+            "Empieza a vender sin pagar mensualidad ni invertir dinero para poner tu tienda en marcha.",
+            "Start selling without paying a monthly fee or investing money to launch your store."
+          )}
         />
 
         <div className="mx-auto mt-10 max-w-3xl space-y-4 text-center">
           <p className="font-display text-2xl font-bold text-foreground md:text-3xl">
-            Tú vendes. Nosotros crecemos contigo.
+            {t("Tú vendes. Nosotros crecemos contigo.", "You sell. We grow with you.")}
           </p>
           <p className="text-base text-muted-foreground">
-            Mientras utilizas esta modalidad, Datable recibe el 10% de cada venta.
+            {t("Mientras utilizas esta modalidad, Datable recibe el 10% de cada venta.", "While using this mode, Datable receives 10% of every sale.")}
           </p>
           <p className="text-base text-muted-foreground">
-            Cuando quieras conservar el 100% de tus ventas, puedes pasar a una mensualidad de $499 MXN y dejar de pagar comisión por venta.
+            {t(
+              "Cuando quieras conservar el 100% de tus ventas, puedes pasar a una mensualidad de $499 MXN y dejar de pagar comisión por venta.",
+              "When you want to keep 100% of your sales, you can switch to a $499 MXN monthly plan and stop paying a commission per sale."
+            )}
           </p>
           <p className="font-display text-lg font-semibold text-foreground">
-            Empieza hoy. Vende primero. Decide después.
+            {t("Empieza hoy. Vende primero. Decide después.", "Start today. Sell first. Decide later.")}
           </p>
         </div>
 
@@ -342,14 +368,14 @@ function Precios() {
             >
               {p.featured && (
                 <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent-foreground">
-                  Más elegido
+                  {t("Más elegido", "Most popular")}
                 </span>
               )}
               <h3 className="font-display text-2xl font-bold">{p.name}</h3>
               <div className="mt-5 flex items-baseline gap-1">
                 <span className="font-display text-5xl font-extrabold">{p.price}</span>
                 <span className={p.featured ? "opacity-80" : "text-muted-foreground"}>
-                  MXN / mes
+                  MXN / {t("mes", "mo")}
                 </span>
               </div>
               <p className={"mt-5 text-sm " + (p.featured ? "opacity-80" : "text-muted-foreground")}>
@@ -368,7 +394,10 @@ function Precios() {
         </div>
 
         <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-muted-foreground">
-          *La modalidad de $499 MXN al mes elimina la comisión del 10% por venta. Puedes elegir la modalidad que más te convenga.
+          {t(
+            "*La modalidad de $499 MXN al mes elimina la comisión del 10% por venta. Puedes elegir la modalidad que más te convenga.",
+            "*The $499 MXN monthly mode removes the 10% commission per sale. You can choose whichever mode suits you best."
+          )}
         </p>
       </div>
     </section>
@@ -378,17 +407,69 @@ function Precios() {
 /* ---------- FAQ ---------- */
 
 function FAQ() {
+  const t = useT();
   const [open, setOpen] = useState<number | null>(0);
+  const faqs = [
+    {
+      q: t("¿Qué recibo exactamente?", "What exactly do I get?"),
+      a: t(
+        "Una tienda digital ya estructurada: catálogo de productos disponibles, reglas comerciales preparadas, herramientas para administrar tus ventas y la operación conectada para que los pedidos lleguen a tus clientes.",
+        "An already-structured digital store: a catalog of available products, prepared commercial rules, tools to manage your sales, and a connected operation so orders reach your customers."
+      ),
+    },
+    {
+      q: t("¿Tengo que contratar o gestionar algo por mi cuenta?", "Do I have to hire or manage anything myself?"),
+      a: t(
+        "No. Datable integra la operación necesaria para que puedas vender sin encargarte de la infraestructura que hay detrás.",
+        "No. Datable integrates the operation needed so you can sell without handling the infrastructure behind it."
+      ),
+    },
+    {
+      q: t("¿Quién se encarga de preparar y enviar los pedidos?", "Who handles preparing and shipping orders?"),
+      a: t(
+        "Datable coordina la operación necesaria para que el pedido llegue hasta tu cliente. Tú te concentras en vender.",
+        "Datable coordinates the operation needed for the order to reach your customer. You focus on selling."
+      ),
+    },
+    {
+      q: t("¿Necesito saber programar o diseñar?", "Do I need to know how to code or design?"),
+      a: t(
+        "No. Eliges una estructura disponible, la personalizas dentro de las opciones que ofrece y agregas tu identidad.",
+        "No. You choose an available structure, customize it within its options, and add your brand identity."
+      ),
+    },
+    {
+      q: t("¿Puedo cambiar los productos y los precios?", "Can I change the products and prices?"),
+      a: t(
+        "Trabajas con el catálogo y las reglas que ya vienen preparadas. Dentro de las opciones disponibles puedes definir tu margen de ganancia.",
+        "You work with the catalog and rules that come already prepared. Within the available options you can set your profit margin."
+      ),
+    },
+    {
+      q: t("¿Cuánto se queda DªTªBLe de cada venta?", "How much does DªTªBLe keep from each sale?"),
+      a: t(
+        "10% si vendes en la modalidad gratuita y 0% si activas Pro. El resto es tuyo.",
+        "10% if you sell on the free mode and 0% if you activate Pro. The rest is yours."
+      ),
+    },
+    {
+      q: t("¿Puedo cancelar cuando quiera?", "Can I cancel anytime?"),
+      a: t(
+        "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver.",
+        "Yes, with no penalty. Your store stays paused for 30 days in case you want to come back."
+      ),
+    },
+  ];
   return (
     <section id="faq" className="border-t border-border/60">
       <div className="mx-auto max-w-3xl px-4 py-20 md:py-28">
         <SectionHeader
-          eyebrow="Preguntas frecuentes"
-          title="Lo que todos preguntan."
+          eyebrow={t("Preguntas frecuentes", "Frequently asked questions")}
+          title={t("Lo que todos preguntan.", "What everyone asks.")}
           desc=""
         />
         <div className="mt-10 divide-y divide-border/60 rounded-2xl border border-border/60 bg-card">
-          {HOME_FAQS.map((f, i) => {
+          {faqs.map((f, i) => {
             const isOpen = open === i;
             return (
               <button
@@ -421,21 +502,22 @@ function FAQ() {
 /* ---------- CTA final ---------- */
 
 function CTAFinal() {
+  const t = useT();
   return (
     <section id="cta" className="relative overflow-hidden border-t border-border/60 bg-primary text-primary-foreground">
       <div className="grid-noise absolute inset-0 opacity-20" aria-hidden />
       <div className="relative mx-auto max-w-4xl px-4 py-20 text-center md:py-28">
         <Sparkles className="mx-auto mb-5 size-7" />
         <h2 className="font-display text-3xl font-extrabold leading-tight sm:text-5xl">
-          Crea tu tienda con Datable.
+          {t("Crea tu tienda con Datable.", "Create your store with Datable.")}
         </h2>
         <p className="mt-4 text-base opacity-90 md:text-lg">
-          Recibe una estructura comercial preparada. Personalízala. Véndela.
+          {t("Recibe una estructura comercial preparada. Personalízala. Véndela.", "Get a ready-made commercial structure. Customize it. Sell it.")}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" variant="secondary" className="shine-on-hover">
             <Link to="/crear">
-              Crear mi tienda <ArrowRight className="ml-1" />
+              {t("Crear mi tienda", "Create my store")} <ArrowRight className="ml-1" />
             </Link>
           </Button>
           <Button
@@ -444,7 +526,7 @@ function CTAFinal() {
             variant="outline"
             className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
           >
-            <a href="#precios">Ver precios</a>
+            <a href="#precios">{t("Ver precios", "See pricing")}</a>
           </Button>
         </div>
       </div>
@@ -455,6 +537,7 @@ function CTAFinal() {
 /* ---------- Footer ---------- */
 
 function Footer() {
+  const t = useT();
   return (
     <footer className="border-t border-border/60 bg-card">
       <div className="mx-auto max-w-6xl px-4 py-12">
@@ -462,30 +545,33 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Activos digitales productivos: estructuras comerciales preparadas para vender. Hecho con ♥ en México.
+              {t(
+                "Activos digitales productivos: estructuras comerciales preparadas para vender. Hecho con ♥ en México.",
+                "Productive digital assets: commercial structures ready to sell. Made with ♥ in Mexico."
+              )}
             </p>
           </div>
           <FooterCol
-            title="Producto"
+            title={t("Producto", "Product")}
             links={[
-              { label: "Qué es", href: "#que-es-activo" },
-              { label: "Precios", href: "#precios" },
-              { label: "Para quién", href: "#para-quien" },
+              { label: t("Qué es", "What it is"), href: "#que-es-activo" },
+              { label: t("Precios", "Pricing"), href: "#precios" },
+              { label: t("Para quién", "Who it's for"), href: "#para-quien" },
             ]}
           />
           <FooterCol
-            title="Empresa"
+            title={t("Empresa", "Company")}
             links={[
               { label: "FAQ", href: "#faq" },
-              { label: "Términos", href: "#" },
-              { label: "Privacidad", href: "#" },
-              { label: "Contacto", href: "#" },
+              { label: t("Términos", "Terms"), href: "#" },
+              { label: t("Privacidad", "Privacy"), href: "#" },
+              { label: t("Contacto", "Contact"), href: "#" },
             ]}
           />
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-xs text-muted-foreground md:flex-row">
-          <span>© {new Date().getFullYear()} DªTªBLe. Todos los derechos reservados.</span>
-          <span>Hecho en México</span>
+          <span>© {new Date().getFullYear()} DªTªBLe. {t("Todos los derechos reservados.", "All rights reserved.")}</span>
+          <span>{t("Hecho en México", "Made in Mexico")}</span>
         </div>
       </div>
     </footer>

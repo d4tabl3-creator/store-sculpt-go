@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { createProductMockup, getCatalogProduct, getProductPlacements } from "@/lib/catalog.functions";
+import { useT } from "@/lib/i18n";
 
 export type StudioResult = {
   productId: number;
@@ -58,6 +59,7 @@ export function DesignStudio({
   onOpenChange: (v: boolean) => void;
   onSave: (r: StudioResult) => void;
 }) {
+  const t = useT();
   const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [variants, setVariants] = useState<Variant[]>([]);
@@ -95,7 +97,7 @@ export function DesignStudio({
         setPlacements(pl);
         if (pl.length) setPlacement(pl[0].id);
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "No se pudo abrir el estudio");
+        toast.error(err instanceof Error ? err.message : t("No se pudo abrir el estudio", "Could not open the studio"));
       } finally {
         setLoading(false);
       }
@@ -119,18 +121,18 @@ export function DesignStudio({
     setUploading(true);
     try {
       const user = (await supabase.auth.getUser()).data.user;
-      if (!user) throw new Error("Inicia sesión otra vez");
+      if (!user) throw new Error(t("Inicia sesión otra vez", "Please sign in again"));
       const ext = file.name.split(".").pop()?.toLowerCase() || "png";
       const path = `${user.id}/disenos/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("disenos").upload(path, file, { contentType: file.type });
       if (error) throw new Error(error.message);
       const signed = await supabase.storage.from("disenos").createSignedUrl(path, 60 * 60 * 24 * 3650);
-      if (!signed.data?.signedUrl) throw new Error("No se pudo preparar tu diseño");
+      if (!signed.data?.signedUrl) throw new Error(t("No se pudo preparar tu diseño", "Could not prepare your design"));
       setDesignUrl(signed.data.signedUrl);
       setDesignPreview(URL.createObjectURL(file));
       setMockup(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No se pudo subir el diseño");
+      toast.error(err instanceof Error ? err.message : t("No se pudo subir el diseño", "Could not upload the design"));
     } finally {
       setUploading(false);
     }
@@ -152,10 +154,10 @@ export function DesignStudio({
         },
       })) as Array<{ placement: string; url: string }>;
       const hit = res.find((m) => m.placement === placement) || res[0];
-      if (!hit) throw new Error("No se pudo generar la vista previa");
+      if (!hit) throw new Error(t("No se pudo generar la vista previa", "Could not generate the preview"));
       setMockup(hit.url);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No se pudo generar la vista previa");
+      toast.error(err instanceof Error ? err.message : t("No se pudo generar la vista previa", "Could not generate the preview"));
     } finally {
       setRendering(false);
     }
@@ -181,12 +183,12 @@ export function DesignStudio({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">Estudio de diseño · {productTitle}</DialogTitle>
+          <DialogTitle className="font-display text-xl">{t("Estudio de diseño", "Design studio")} · {productTitle}</DialogTitle>
         </DialogHeader>
 
         {loading ? (
           <div className="flex items-center gap-2 py-12 text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" /> Abriendo estudio…
+            <Loader2 className="size-4 animate-spin" /> {t("Abriendo estudio…", "Opening studio…")}
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
@@ -201,7 +203,7 @@ export function DesignStudio({
                 {!mockup && designPreview && (
                   <img
                     src={designPreview}
-                    alt="Tu diseño"
+                    alt={t("Tu diseño", "Your design")}
                     className="pointer-events-none absolute left-1/2 -translate-x-1/2 object-contain opacity-90"
                     style={{ width: `${scale * 55}%`, top: `${18 + offsetY * 50}%` }}
                   />
@@ -209,7 +211,7 @@ export function DesignStudio({
                 {rendering && (
                   <div className="absolute inset-0 grid place-items-center bg-background/70 text-sm font-bold">
                     <span className="flex items-center gap-2">
-                      <Loader2 className="size-4 animate-spin" /> Generando vista real…
+                      <Loader2 className="size-4 animate-spin" /> {t("Generando vista real…", "Generating real preview…")}
                     </span>
                   </div>
                 )}
@@ -217,15 +219,15 @@ export function DesignStudio({
               {current && (
                 <div className="mt-3 rounded-xl border border-border bg-card p-3 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Precio de venta sugerido</span>
+                    <span className="text-muted-foreground">{t("Precio de venta sugerido", "Suggested selling price")}</span>
                     <span className="font-bold">{money(current.priceCents)} MXN</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Costo de producción y envío</span>
+                    <span className="text-muted-foreground">{t("Costo de producción y envío", "Production and shipping cost")}</span>
                     <span>{money(current.costCents)} MXN</span>
                   </div>
                   <div className="mt-1 flex justify-between border-t border-border pt-1 font-bold text-primary">
-                    <span>Tu ganancia por venta</span>
+                    <span>{t("Tu ganancia por venta", "Your profit per sale")}</span>
                     <span>
                       {money(current.marginCents)} ({current.marginPct}%)
                     </span>
@@ -237,13 +239,13 @@ export function DesignStudio({
             {/* Controles */}
             <div className="grid gap-4">
               <div>
-                <Label htmlFor="pname">Nombre del producto en tu tienda</Label>
+                <Label htmlFor="pname">{t("Nombre del producto en tu tienda", "Product name in your store")}</Label>
                 <Input id="pname" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
 
               {colors.length > 0 && (
                 <div>
-                  <Label>Color</Label>
+                  <Label>{t("Color", "Color")}</Label>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {colors.map(([c, v]) => (
                       <button
@@ -264,7 +266,7 @@ export function DesignStudio({
 
               {sizes.some((v) => v.size) && (
                 <div>
-                  <Label>Talla / medida</Label>
+                  <Label>{t("Talla / medida", "Size")}</Label>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {sizes.map((v) => (
                       <button
@@ -288,7 +290,7 @@ export function DesignStudio({
               {placements.length > 0 ? (
                 <>
                   <div>
-                    <Label>¿Dónde va tu diseño?</Label>
+                    <Label>{t("¿Dónde va tu diseño?", "Where does your design go?")}</Label>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {placements.map((p) => (
                         <button
@@ -308,7 +310,7 @@ export function DesignStudio({
                   </div>
 
                   <div>
-                    <Label>Tu diseño (PNG con fondo transparente, mínimo 1500 px)</Label>
+                    <Label>{t("Tu diseño (PNG con fondo transparente, mínimo 1500 px)", "Your design (PNG with transparent background, minimum 1500 px)")}</Label>
                     <input
                       ref={fileRef}
                       type="file"
@@ -321,14 +323,14 @@ export function DesignStudio({
                     />
                     <Button variant="outline" className="mt-2 w-full" onClick={() => fileRef.current?.click()} disabled={uploading}>
                       {uploading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Upload className="mr-2 size-4" />}
-                      {designUrl ? "Cambiar diseño" : "Subir diseño"}
+                      {designUrl ? t("Cambiar diseño", "Change design") : t("Subir diseño", "Upload design")}
                     </Button>
                   </div>
 
                   {designUrl && (
                     <>
                       <div>
-                        <Label>Tamaño del diseño</Label>
+                        <Label>{t("Tamaño del diseño", "Design size")}</Label>
                         <Slider
                           className="mt-3"
                           value={[scale]}
@@ -342,7 +344,7 @@ export function DesignStudio({
                         />
                       </div>
                       <div>
-                        <Label>Altura del diseño</Label>
+                        <Label>{t("Altura del diseño", "Design height")}</Label>
                         <Slider
                           className="mt-3"
                           value={[offsetY]}
@@ -357,19 +359,19 @@ export function DesignStudio({
                       </div>
                       <Button onClick={render} disabled={rendering} className="shine-on-hover">
                         {rendering ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Wand2 className="mr-2 size-4" />}
-                        Ver cómo queda de verdad
+                        {t("Ver cómo queda de verdad", "See how it really looks")}
                       </Button>
                     </>
                   )}
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Este producto se vende tal cual, sin personalización de diseño.
+                  {t("Este producto se vende tal cual, sin personalización de diseño.", "This product is sold as-is, without design customization.")}
                 </p>
               )}
 
               <Button onClick={save} className="shadow-cta">
-                Agregar a mi tienda
+                {t("Agregar a mi tienda", "Add to my store")}
               </Button>
             </div>
           </div>

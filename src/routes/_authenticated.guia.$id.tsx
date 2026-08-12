@@ -4,6 +4,7 @@ import { ArrowLeft, Download, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GuideChecklist } from "@/components/GuideChecklist";
 import { getGuideState, setGuideStep } from "@/lib/guides.functions";
+import { useT } from "@/lib/i18n";
 import type { GuideState } from "@/lib/guides/types";
 
 export const Route = createFileRoute("/_authenticated/guia/$id")({
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/guia/$id")({
 });
 
 function GuidePage() {
+  const t = useT();
   const { id } = Route.useParams();
   const [state, setState] = useState<GuideState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ function GuidePage() {
       <main className="mx-auto max-w-3xl px-4 py-10">
         <Button asChild variant="ghost" size="sm" className="mb-4">
           <Link to="/dashboard">
-            <ArrowLeft className="mr-1 size-4" /> Volver al panel
+            <ArrowLeft className="mr-1 size-4" /> {t("Volver al panel", "Back to dashboard")}
           </Link>
         </Button>
 
@@ -55,13 +57,13 @@ function GuidePage() {
             <Loader2 className="size-6 animate-spin text-primary" />
           </div>
         ) : !state ? (
-          <p className="text-muted-foreground">No encontramos este activo.</p>
+          <p className="text-muted-foreground">{t("No encontramos este activo.", "We couldn't find this asset.")}</p>
         ) : (
           <>
             <div className="rounded-2xl border border-border bg-card p-6 shadow-pop">
               <div className="flex items-center gap-2 text-primary">
                 <Sparkles className="size-4" />
-                <span className="text-xs font-bold uppercase tracking-wide">Acompañamiento</span>
+                <span className="text-xs font-bold uppercase tracking-wide">{t("Acompañamiento", "Guidance")}</span>
               </div>
               <h1 className="mt-2 font-display text-3xl font-extrabold">{state.title}</h1>
               <p className="mt-2 text-muted-foreground">{state.intro}</p>
@@ -70,13 +72,13 @@ function GuidePage() {
               </div>
               <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
                 <span>
-                  {state.completedCount} de {state.totalCount} pasos
+                  {t(`${state.completedCount} de ${state.totalCount} pasos`, `${state.completedCount} of ${state.totalCount} steps`)}
                 </span>
                 <a
                   href={`/api/public/guia/${state.guideId}.md`}
                   className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                 >
-                  <Download className="size-3.5" /> Descargar guía
+                  <Download className="size-3.5" /> {t("Descargar guía", "Download guide")}
                 </a>
               </div>
             </div>

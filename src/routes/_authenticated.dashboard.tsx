@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
 import { getGuideState } from "@/lib/guides.functions";
 import { GuideChecklist } from "@/components/GuideChecklist";
+import { useT } from "@/lib/i18n";
 import type { GuideState } from "@/lib/guides/types";
 
 
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
+  const t = useT();
   const navigate = useNavigate();
   const [stores, setStores] = useState<StoreRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +70,7 @@ function Dashboard() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    toast.success("Sesión cerrada");
+    toast.success(t("Sesión cerrada", "Signed out"));
     navigate({ to: "/" });
   }
 
@@ -83,11 +85,11 @@ function Dashboard() {
             {plan?.plan ? (
               <Badge variant="secondary" className="mr-2 uppercase">{plan.plan}</Badge>
             ) : (
-              <Button size="sm" variant="outline" asChild><Link to="/planes"><CreditCard className="mr-1 size-3.5" />Elegir plan</Link></Button>
+              <Button size="sm" variant="outline" asChild><Link to="/planes"><CreditCard className="mr-1 size-3.5" />{t("Elegir plan", "Choose plan")}</Link></Button>
             )}
-            <Button variant="ghost" size="sm" asChild><Link to="/cuenta"><Settings className="mr-1 size-4" />Cuenta</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/cuenta"><Settings className="mr-1 size-4" />{t("Cuenta", "Account")}</Link></Button>
             {isAdmin && <Button variant="ghost" size="sm" asChild><Link to="/admin"><ShieldCheck className="mr-1 size-4" />Admin</Link></Button>}
-            <Button variant="ghost" size="sm" onClick={handleSignOut}><LogOut className="mr-1 size-4" />Salir</Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}><LogOut className="mr-1 size-4" />{t("Salir", "Sign out")}</Button>
           </div>
         </div>
       </header>
@@ -95,14 +97,14 @@ function Dashboard() {
       <main className="mx-auto max-w-6xl px-4 py-10">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="font-display text-3xl font-extrabold">Mis tiendas</h1>
+            <h1 className="font-display text-3xl font-extrabold">{t("Mis tiendas", "My stores")}</h1>
             <p className="text-muted-foreground">
-              Vende. Recibe pedidos. Edita lo que necesites.
+              {t("Vende. Recibe pedidos. Edita lo que necesites.", "Sell. Receive orders. Edit whatever you need.")}
             </p>
           </div>
           <Button asChild className="shine-on-hover shadow-cta">
             <Link to="/crear">
-              <Plus className="mr-1 size-4" /> Nueva tienda
+              <Plus className="mr-1 size-4" /> {t("Nueva tienda", "New store")}
             </Link>
           </Button>
         </div>
@@ -112,10 +114,10 @@ function Dashboard() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-primary">
                 <Compass className="size-4" />
-                <span className="text-xs font-bold uppercase tracking-wide">¿Qué hago ahora?</span>
+                <span className="text-xs font-bold uppercase tracking-wide">{t("¿Qué hago ahora?", "What should I do now?")}</span>
               </div>
               <span className="text-sm text-muted-foreground">
-                {guide.state.completedCount} de {guide.state.totalCount} pasos
+                {t(`${guide.state.completedCount} de ${guide.state.totalCount} pasos`, `${guide.state.completedCount} of ${guide.state.totalCount} steps`)}
               </span>
             </div>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -125,7 +127,7 @@ function Dashboard() {
               <GuideChecklist storeId={guide.storeId} state={guide.state} compact />
             </div>
             <Button asChild variant="outline" size="sm" className="mt-3">
-              <Link to="/guia/$id" params={{ id: guide.storeId }}>Ver guía completa</Link>
+              <Link to="/guia/$id" params={{ id: guide.storeId }}>{t("Ver guía completa", "View full guide")}</Link>
             </Button>
           </div>
         )}
@@ -133,14 +135,14 @@ function Dashboard() {
 
 
         {loading ? (
-          <div className="mt-10 text-center text-muted-foreground">Cargando…</div>
+          <div className="mt-10 text-center text-muted-foreground">{t("Cargando…", "Loading…")}</div>
         ) : stores.length === 0 ? (
           <div className="mt-10 rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center">
             <Store className="mx-auto size-10 text-muted-foreground" />
-            <h2 className="mt-3 font-display text-xl font-bold">Aún no tienes tiendas</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Crea la primera en menos de 5 minutos.</p>
+            <h2 className="mt-3 font-display text-xl font-bold">{t("Aún no tienes tiendas", "You don't have any stores yet")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("Crea la primera en menos de 5 minutos.", "Create your first one in under 5 minutes.")}</p>
             <Button asChild className="mt-5">
-              <Link to="/crear">Crear mi primera tienda</Link>
+              <Link to="/crear">{t("Crear mi primera tienda", "Create my first store")}</Link>
             </Button>
           </div>
         ) : (
@@ -151,7 +153,7 @@ function Dashboard() {
                   <div className="size-10 rounded-lg" style={{ background: st.primary_color }} />
                   <div className="flex items-center gap-1.5">
                     <Badge variant={st.status === "published" ? "default" : "secondary"}>
-                      {st.status === "published" ? "Publicada" : "Borrador"}
+                      {st.status === "published" ? t("Publicada", "Published") : t("Borrador", "Draft")}
                     </Badge>
                     <Badge variant="outline">{st.niche}</Badge>
                   </div>
@@ -162,26 +164,26 @@ function Dashboard() {
                   <div className="flex items-center gap-1.5">
                     <ShoppingBag className="size-4 text-primary" />
                     <span className="font-bold">{st.order_count}</span>
-                    <span className="text-muted-foreground">pedidos</span>
+                    <span className="text-muted-foreground">{t("pedidos", "orders")}</span>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   {st.status === "published" ? (
                     <Button asChild size="sm" variant="outline">
                       <Link to="/t/$slug" params={{ slug: st.slug }} target="_blank">
-                        <ExternalLink className="mr-1 size-3.5" /> Ver
+                        <ExternalLink className="mr-1 size-3.5" /> {t("Ver", "View")}
                       </Link>
                     </Button>
                   ) : (
                     <Button asChild size="sm" variant="outline">
                       <Link to="/tienda/$id" params={{ id: st.id }}>
-                        <Edit3 className="mr-1 size-3.5" /> Publicar
+                        <Edit3 className="mr-1 size-3.5" /> {t("Publicar", "Publish")}
                       </Link>
                     </Button>
                   )}
                   <Button asChild size="sm">
                     <Link to="/tienda/$id" params={{ id: st.id }}>
-                      <Edit3 className="mr-1 size-3.5" /> Editar
+                      <Edit3 className="mr-1 size-3.5" /> {t("Editar", "Edit")}
                     </Link>
                   </Button>
                 </div>

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Check, Circle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/lib/i18n";
 import type { GuideState } from "@/lib/guides/types";
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 
 /** Lista de pasos del acompañamiento. Reutilizable por cualquier tipo de activo. */
 export function GuideChecklist({ storeId, state, busyStepId, onToggle, compact }: Props) {
+  const t = useT();
   const steps = compact ? state.steps.filter((s) => !s.completed).slice(0, 1) : state.steps;
 
   return (
@@ -41,16 +43,16 @@ export function GuideChecklist({ storeId, state, busyStepId, onToggle, compact }
                     {compact ? "" : `${i + 1}. `}
                     {step.title}
                   </h3>
-                  {isCurrent && <Badge>Tu paso actual</Badge>}
+                  {isCurrent && <Badge>{t("Tu paso actual", "Your current step")}</Badge>}
                   {step.auto && (
                     <Badge variant="outline" className="text-[10px] uppercase">
-                      Automático
+                      {t("Automático", "Automatic")}
                     </Badge>
                   )}
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">{step.body}</p>
                 {step.done && (
-                  <p className="mt-1 text-xs text-muted-foreground">Sabrás que terminó cuando: {step.done}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("Sabrás que terminó cuando: ", "You'll know it's done when: ")}{step.done}</p>
                 )}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {step.action && (
@@ -68,7 +70,7 @@ export function GuideChecklist({ storeId, state, busyStepId, onToggle, compact }
                       onClick={() => onToggle(step.id, !step.completed)}
                     >
                       {busyStepId === step.id && <Loader2 className="mr-1 size-3.5 animate-spin" />}
-                      {step.completed ? "Marcar como pendiente" : "Ya lo hice"}
+                      {step.completed ? t("Marcar como pendiente", "Mark as pending") : t("Ya lo hice", "Already done")}
                     </Button>
                   )}
                 </div>
