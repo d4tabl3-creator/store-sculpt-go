@@ -38,20 +38,19 @@ async function resolveOrCreateCustomer(
 }
 
 // ---------- createPlanCheckout ----------
+// Solo el plan Pro requiere pago. La modalidad Gratis no genera checkout.
 export const createPlanCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
     (data: { plan: PlanId; returnUrl: string; environment: StripeEnv }) => {
-      if (data.plan !== "starter" && data.plan !== "pro")
-        throw new Error("Plan inválido");
+      if (data.plan !== "pro") throw new Error("Solo el plan Pro requiere pago");
       return data;
     },
   )
   .handler(async ({ data, context }): Promise<OkOrError<{ clientSecret: string }>> => {
     try {
       const stripe = createStripeClient(data.environment);
-      const priceId = data.plan === "pro" ? "pro_monthly" : "starter_monthly";
-      const prices = await stripe.prices.list({ lookup_keys: [priceId] });
+      const prices = await stripe.prices.list({ lookup_keys: ["pro_monthly"] });
       if (!prices.data.length) throw new Error("Price not found");
 
       const email = context.claims?.email as string | undefined;

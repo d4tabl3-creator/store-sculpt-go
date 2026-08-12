@@ -104,7 +104,7 @@ function StoreManage() {
     }
     if (nextStatus === "published" && !hasPlan) {
       const ok = confirm(
-        "Vas a publicar sin plan mensual. Aplicará 20% de comisión por venta (en lugar de 10%).\n\n¿Continuar?",
+        "Vas a publicar sin plan mensual. Aplicará 10% de comisión por venta.\n\n¿Continuar?",
       );
       if (!ok) return;
     }
