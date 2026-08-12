@@ -293,14 +293,14 @@ function Precios() {
     {
       name: "GRATIS",
       price: "$0",
-      commission: "10% de comisión por venta para Datable.",
+      commission: "10% de comisión por venta.",
       cta: "Empezar gratis",
       featured: false,
     },
     {
       name: "PRO",
       price: "$499",
-      commission: "0% de comisión por venta para Datable.",
+      commission: "0% de comisión por venta.",
       cta: "Activar Pro",
       featured: true,
     },
@@ -310,9 +310,24 @@ function Precios() {
       <div className="mx-auto max-w-5xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow="Precios"
-          title="Elige cómo quieres pagar Datable."
-          desc="Sin mensualidad y compartiendo una parte de tus ventas, o con una mensualidad fija y conservando el 100%."
+          title="EMPIEZA CON DATABLE SIN ARRIESGAR TU CAPITAL."
+          desc="Empieza a vender sin pagar mensualidad ni invertir dinero para poner tu tienda en marcha."
         />
+
+        <div className="mx-auto mt-10 max-w-3xl space-y-4 text-center">
+          <p className="font-display text-2xl font-bold text-foreground md:text-3xl">
+            Tú vendes. Nosotros crecemos contigo.
+          </p>
+          <p className="text-base text-muted-foreground">
+            Mientras utilizas esta modalidad, Datable recibe el 10% de cada venta.
+          </p>
+          <p className="text-base text-muted-foreground">
+            Cuando quieras conservar el 100% de tus ventas, puedes pasar a una mensualidad de $499 MXN y dejar de pagar comisión por venta.
+          </p>
+          <p className="font-display text-lg font-semibold text-foreground">
+            Empieza hoy. Vende primero. Decide después.
+          </p>
+        </div>
 
         <div className="mt-12 grid gap-5 md:grid-cols-2">
           {plans.map((p) => (
@@ -352,8 +367,8 @@ function Precios() {
           ))}
         </div>
 
-        <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-muted-foreground">
-          Tú eliges cómo quieres pagar Datable: sin mensualidad y compartiendo una pequeña parte de tus ventas, o con una mensualidad fija y conservando el 100% de tus ventas.
+        <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-muted-foreground">
+          *La modalidad de $499 MXN al mes elimina la comisión del 10% por venta. Puedes elegir la modalidad que más te convenga.
         </p>
       </div>
     </section>
