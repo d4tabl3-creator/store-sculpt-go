@@ -102,9 +102,10 @@ function DemoLayout() {
                       <Sparkles className="size-10 text-primary" />
                       <h3 className="font-display text-2xl">Hasta aquí llega la demo</h3>
                       <p className="text-sm text-muted-foreground">
-                        En una tienda real este botón cobra con tarjeta y manda la orden al
-                        proveedor, que produce y envía al cliente. Tú solo recibes tu dinero.
+                        En tu tienda real este botón cobra el pedido y Datable coordina la
+                        operación para que llegue hasta tu cliente. Tú solo recibes tu dinero.
                       </p>
+
                       <Button
                         className="w-full"
                         onClick={() => {

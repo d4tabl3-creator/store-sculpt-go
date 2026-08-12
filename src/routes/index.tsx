@@ -1,32 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Boxes,
-  Brain,
   Check,
   CheckCircle2,
   ChevronRight,
   Coffee,
-  CreditCard,
   Frame,
-
-  Layers,
-  LineChart,
-  MessageCircle,
-  Package,
-  Palette,
-  Rocket,
-  Settings2,
   Shirt,
-  ShoppingBag,
   Sofa,
-
   Sparkles,
-  Store,
-  Truck,
-  Wand2,
-  X,
-  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,27 +16,52 @@ import { Badge } from "@/components/ui/badge";
 
 const HOME_URL = "https://store-sculpt-go.lovable.app/";
 const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
-const HOME_DESC = "Construimos para ti activos digitales diseñados para generar ingresos: tienda automatizada, proveedor conectado y pagos activos. Sin renta, sin inventario, sin código.";
+const HOME_TITLE = "DªTªBLe — Activos digitales productivos";
+const HOME_DESC = "Recibe una tienda digital ya estructurada, con catálogo y reglas comerciales preparadas. Personalízala dentro de las opciones disponibles, define tu margen y vende.";
 
 const HOME_FAQS = [
-  { q: "¿En cuánto tiempo tengo mi tienda vendiendo?", a: "Tu vitrina — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC." },
-  { q: "¿Necesito saber programar o diseñar?", a: "No. Eliges entre opciones. Nosotros nos encargamos de proveedores, pagos, envíos, diseño y la inteligencia detrás." },
-  { q: "¿Qué pasa con los productos? ¿Yo los tengo?", a: "No es necesario. Trabajamos con proveedores bajo demanda y productores locales. Cuando alguien compra, ellos producen y envían directo al cliente." },
-  { q: "¿Cuánto se queda DªTªBLe de cada venta?", a: "20% si publicas gratis, 10% si activas un plan mensual (Starter o Pro). El resto es tuyo. Sin letras chiquitas." },
-  { q: "¿Puedo cancelar cuando quiera?", a: "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver." },
-  { q: "Soy artesano y solo quiero que vendan mi producto, ¿puedo?", a: "Sí. Tenemos un área específica para productores que solo aportan producto, sin abrir tienda propia." },
+  {
+    q: "¿Qué recibo exactamente?",
+    a: "Una tienda digital ya estructurada: catálogo de productos disponibles, reglas comerciales preparadas, herramientas para administrar tus ventas y la operación conectada para que los pedidos lleguen a tus clientes.",
+  },
+  {
+    q: "¿Tengo que contratar o gestionar algo por mi cuenta?",
+    a: "No. Datable integra la operación necesaria para que puedas vender sin encargarte de la infraestructura que hay detrás.",
+  },
+  {
+    q: "¿Quién se encarga de preparar y enviar los pedidos?",
+    a: "Datable coordina la operación necesaria para que el pedido llegue hasta tu cliente. Tú te concentras en vender.",
+  },
+  {
+    q: "¿Necesito saber programar o diseñar?",
+    a: "No. Eliges una estructura disponible, la personalizas dentro de las opciones que ofrece y agregas tu identidad.",
+  },
+  {
+    q: "¿Puedo cambiar los productos y los precios?",
+    a: "Trabajas con el catálogo y las reglas que ya vienen preparadas. Dentro de las opciones disponibles puedes definir tu margen de ganancia.",
+  },
+  {
+    q: "¿Cuánto se queda DªTªBLe de cada venta?",
+    a: "20% si publicas sin plan mensual y 10% si activas un plan. El resto es tuyo.",
+  },
+  {
+    q: "¿Puedo cancelar cuando quiera?",
+    a: "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver.",
+  },
 ];
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
+      { title: HOME_TITLE },
       { name: "description", content: HOME_DESC },
-      { property: "og:title", content: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: HOME_TITLE },
       { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: HOME_URL },
       { property: "og:image", content: HOME_OG_IMAGE },
-      { name: "twitter:title", content: "DªTªBLe — Activos digitales diseñados para generar ingresos" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: HOME_TITLE },
       { name: "twitter:description", content: HOME_DESC },
       { name: "twitter:image", content: HOME_OG_IMAGE },
     ],
@@ -108,11 +115,9 @@ function Nav() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
-          <a href="#plantillas" className="hover:text-foreground">Plantillas</a>
-          <a href="#como-funciona" className="hover:text-foreground">Cómo funciona</a>
-
+          <a href="#que-es-activo" className="hover:text-foreground">Qué es</a>
+          <a href="#plantillas" className="hover:text-foreground">Activos disponibles</a>
           <a href="#para-quien" className="hover:text-foreground">Para quién</a>
-          <a href="#ia" className="hover:text-foreground">IA</a>
           <a href="#precios" className="hover:text-foreground">Precios</a>
           <a href="#faq" className="hover:text-foreground">FAQ</a>
         </nav>
@@ -143,35 +148,33 @@ function Hero() {
             <Sparkles className="size-3.5" /> Activo digital productivo
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Construimos para ti{" "}
+            Datable crea y entrega{" "}
             <span className="bg-linear-to-r from-primary to-action bg-clip-text text-transparent">
-              activos digitales
-            </span>{" "}
-            diseñados para generar ingresos.
+              activos digitales productivos
+            </span>
+            .
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            Sin renta, sin inventario, sin comprar mercancía por adelantado. Un{" "}
-            <strong className="text-foreground">activo digital productivo</strong> escala a la velocidad del internet:
-            crece con tu esfuerzo y sigue trabajando cuando tú no estás. Tú traes la marca; nosotros ponemos
-            proveedor, pagos e infraestructura.
+            Hoy ese activo es una tienda digital de productos personalizados, ya estructurada y lista
+            para operar. Eliges una estructura disponible, la haces tuya dentro de sus opciones y la
+            pones a vender.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg" className="shine-on-hover shadow-cta">
               <Link to="/crear">
-                Quiero el mío <ArrowRight className="ml-1" />
+                Crear mi tienda <ArrowRight className="ml-1" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="#plantillas">Probar una plantilla</a>
+              <a href="#plantillas">Ver activos disponibles</a>
             </Button>
-
           </div>
           <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
             {[
-              "0 renta · 0 inventario · 0 código",
-              "Diseñado para generar ingresos, no likes",
-              "Crecimiento exponencial, no lineal",
-              "Tú pones la marca; nosotros la maquinaria",
+              "No es una página en blanco",
+              "Catálogo y estructura ya preparados",
+              "Tu identidad aplicada a la tienda",
+              "Tú vendes; Datable conecta la operación",
             ].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" /> {f}
@@ -184,25 +187,26 @@ function Hero() {
   );
 }
 
-
 /* ---------- Qué es un activo digital productivo ---------- */
 
 const ACTIVO_RECEIVES = [
   "Una tienda digital ya estructurada.",
   "Un catálogo de productos disponibles.",
-  "Precios y reglas ya definidos.",
+  "Una estructura comercial preparada para vender.",
   "Personalización dentro de las opciones disponibles.",
+  "Tu identidad aplicada a la tienda.",
   "Herramientas para administrar tu tienda y tus ventas.",
-  "La operación del proveedor conectada al proceso.",
+  "Una operación conectada para que tus pedidos lleguen a tus clientes sin que tengas que encargarte de la logística.",
 ];
 
 const ACTIVO_WORKFLOW = [
-  "Eliges una estructura disponible.",
+  "Eliges un activo disponible.",
+  "Lo personalizas dentro de las opciones disponibles.",
   "Haz que tu tienda lleve tu identidad.",
-  "Empieza a vender con productos ya preparados para tu tienda.",
-  "Decide cuánto quieres ganar con cada venta.",
+  "Tienes productos preparados para vender.",
+  "Defines tu margen dentro de las opciones disponibles.",
   "Publicas y vendes.",
-  "Tú vendes. Nosotros nos encargamos de que el pedido llegue hasta la puerta de tu cliente.",
+  "Datable coordina la operación necesaria para que el pedido llegue hasta tu cliente.",
 ];
 
 function QueEsActivo() {
@@ -244,89 +248,12 @@ function QueEsActivo() {
         <div className="mt-12 border-t border-border/60 pt-8">
           <h3 className="font-display text-xl font-bold text-foreground">¿Qué es un activo digital productivo?</h3>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-            Es una tienda digital ya estructurada para cumplir una función comercial. En lugar de construir desde cero el catálogo, las reglas, la tecnología y la operación necesaria para vender, recibes una estructura preparada que puedes personalizar y administrar.
+            Es una estructura digital que ya tiene organizado lo necesario para cumplir una función
+            comercial. En la etapa actual, ese activo es una tienda digital preparada para vender
+            productos personalizados: no tienes que construir desde cero el catálogo, la estructura
+            comercial, la tecnología ni la operación. Recibes una estructura preparada y la haces tuya
+            dentro de las opciones disponibles.
           </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Cómo funciona — 4 ventanillas ---------- */
-
-const VENTANILLAS = [
-  {
-    n: 1,
-    icon: Boxes,
-    title: "¿Qué vas a vender?",
-    sub: "El rubro",
-    desc: "Elige entre 10 macro-rubros. Nuestra IA cruza tendencias y márgenes promedio para sugerirte el camino.",
-    chips: ["Moda", "Belleza", "Comida", "Deportiva", "Hogar"],
-  },
-  {
-    n: 2,
-    icon: Package,
-    title: "Elige tu combo",
-    sub: "Kit de lanzamiento",
-    desc: "Productos pre-negociados con proveedores reales. Tú ajustas precio y subes una foto — la IA mejora el resto.",
-    chips: ["10 productos", "3 proveedores", "Margen sugerido"],
-  },
-  {
-    n: 3,
-    icon: Palette,
-    title: "¿Cómo te ves?",
-    sub: "Fachada y marca",
-    desc: "Sube tu logo: lo vectorizamos y generamos tu paleta. Eliges una de 3 pieles y ya tienes identidad.",
-    chips: ["3 templates", "Logo auto", "Paleta IA"],
-  },
-  {
-    n: 4,
-    icon: CreditCard,
-    title: "¿Cómo cobras y envías?",
-    sub: "Pagos y logística",
-    desc: "Pasarela de pago y envíos resueltos con una sola pregunta. Tú eliges, nosotros conectamos todo por debajo.",
-    chips: ["Tarjeta", "Transferencia", "Paquetería", "Recoge en tienda"],
-  },
-];
-
-function ComoFunciona() {
-  return (
-    <section id="como-funciona" className="border-t border-border/60 bg-card/40">
-      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-        <SectionHeader
-          eyebrow="Cómo funciona"
-          title="4 ventanillas. Vitrina digital automatizada hoy, ventas reales en 24–48 h."
-          desc="Un flujo guiado, ventanilla por ventanilla. Tú aportas datos básicos (correo, CLABE, cuenta con el proveedor); nosotros integramos todo."
-        />
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {VENTANILLAS.map((v) => (
-            <div
-              key={v.n}
-              className="group relative rounded-2xl border border-border/60 bg-background p-6 transition-all hover:shadow-pop hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-between">
-                <span className="grid size-9 place-items-center rounded-xl bg-primary font-display text-sm font-bold text-primary-foreground">
-                  {v.n}
-                </span>
-                <v.icon className="size-5 text-primary opacity-70 transition-opacity group-hover:opacity-100" />
-              </div>
-              <div className="mt-5">
-                <div className="text-xs font-medium uppercase tracking-wider text-primary">{v.sub}</div>
-                <h3 className="mt-1 font-display text-lg font-bold text-foreground">{v.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{v.desc}</p>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {v.chips.map((c) => (
-                  <span
-                    key={c}
-                    className="rounded-full bg-primary-soft px-2.5 py-0.5 text-[11px] font-medium text-primary"
-                  >
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </section>
@@ -336,258 +263,37 @@ function ComoFunciona() {
 /* ---------- Para quién ---------- */
 
 function ParaQuien() {
-  const groups = [
-    {
-      icon: Rocket,
-      title: "Emprendedores sin capital",
-      items: [
-        "Te estás quedando sin trabajo y necesitas un ingreso ya.",
-        "Siempre quisiste emprender pero no sabes por dónde empezar.",
-        "No tienes para pagar diseñadores ni programadores.",
-        "Quieres un ingreso extra desde casa.",
-      ],
-    },
-    {
-      icon: Store,
-      title: "Artesanos y productores",
-      items: [
-        "Haces bolsas, joyería, café, comida — pero no sabes nada digital.",
-        "Tienes producto y logística, pero no tienes canal digital.",
-        "Quieres que otros vendan tu producto en sus tiendas.",
-        "Necesitas envíos resueltos sin contratar paqueterías.",
-      ],
-    },
+  const items = [
+    "Quieres empezar a vender sin construir toda la infraestructura digital desde cero.",
+    "No quieres encargarte de la parte técnica ni de la logística.",
+    "Prefieres partir de una estructura que ya funciona y hacerla tuya.",
+    "Quieres administrar tus ventas desde un solo lugar.",
   ];
   return (
     <section id="para-quien" className="border-t border-border/60">
-      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
+      <div className="mx-auto max-w-3xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow="Para quién es"
-          title="Para ti, que quieres vender — no estudiar tecnología."
-          desc="DªTªBLe es un ecosistema híbrido: una mitad para quien quiere una tienda, la otra para quien tiene producto."
+          title="Para ti, que quieres vender — no construirlo todo."
+          desc="Datable es para quien quiere comenzar con una estructura comercial ya preparada y concentrarse en vender."
         />
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {groups.map((g) => (
-            <div
-              key={g.title}
-              className="rounded-2xl border border-border/60 bg-card p-7 shadow-soft"
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+          {items.map((it) => (
+            <li
+              key={it}
+              className="flex gap-3 rounded-2xl border border-border/60 bg-card p-5 text-sm text-foreground shadow-soft"
             >
-              <div className="flex items-center gap-3">
-                <span className="grid size-11 place-items-center rounded-xl bg-primary-soft">
-                  <g.icon className="size-5 text-primary" />
-                </span>
-                <h3 className="font-display text-xl font-bold text-foreground">{g.title}</h3>
-              </div>
-              <ul className="mt-5 space-y-3">
-                {g.items.map((it) => (
-                  <li key={it} className="flex gap-3 text-sm text-foreground">
-                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <span>{it}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Entrega instantánea ---------- */
-
-function MomentoMcDonalds() {
-  const beats = [
-    {
-      icon: Layers,
-      title: "El Orquestador",
-      desc: "Se levanta una instancia aislada de tu tienda en nuestra nube.",
-    },
-    {
-      icon: Wand2,
-      title: "El Cargador IA",
-      desc: "Nuestros bots traen stock, imágenes y descripciones de tus proveedores.",
-    },
-    {
-      icon: Settings2,
-      title: "El Configurador",
-      desc: "Activamos tu pasarela de pago y conectamos las APIs de envíos.",
-    },
-    {
-      icon: Rocket,
-      title: "El Builder",
-      desc: "Compilamos el front-end con tu skin, tu logo y tu paleta.",
-    },
-  ];
-  return (
-    <section className="border-t border-border/60 bg-secondary text-secondary-foreground">
-      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-        <div className="max-w-2xl">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-            Entrega en dos tiempos
-          </div>
-          <h2 className="mt-3 font-display text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">
-            Hoy: tu vitrina. En 24–48 h: vendes de verdad.
-          </h2>
-          <p className="mt-4 text-base opacity-80">
-            No te vendemos humo de "listo en 2 minutos". Publicamos tu vitrina el mismo día con productos
-            demo o tarjetas de regalo digitales. Después, con los datos que tú aportas, enlazamos tu cuenta
-            de proveedor, activamos tus pagos y dejamos el catálogo real vendiendo en 24 a 48 horas hábiles.
-          </p>
-        </div>
-
-        <ol className="mt-12 grid gap-6 md:grid-cols-4">
-          {beats.map((b, i) => (
-            <li key={b.title} className="relative">
-              <div className="rounded-2xl bg-background/5 p-5 ring-1 ring-white/10">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-9 place-items-center rounded-lg bg-primary font-display text-sm font-bold text-primary-foreground">
-                    {i + 1}
-                  </span>
-                  <b.icon className="size-5 text-accent" />
-                </div>
-                <h3 className="mt-4 font-display text-lg font-bold">{b.title}</h3>
-                <p className="mt-1.5 text-sm opacity-75">{b.desc}</p>
-              </div>
-              {i < beats.length - 1 && (
-                <ChevronRight className="absolute top-1/2 -right-3 hidden size-5 -translate-y-1/2 text-accent md:block" />
-              )}
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span>{it}</span>
             </li>
           ))}
-        </ol>
-
-        <div className="mt-12 rounded-2xl border border-white/10 bg-background/5 p-6 md:flex md:items-center md:justify-between">
-          <div>
-            <div className="text-xs uppercase tracking-wider text-accent">Recibes en tu correo</div>
-            <p className="mt-2 font-display text-lg font-bold">
-              tutienda.datable.com.mx + Panel de admin con 3 botones gigantes.
-            </p>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2 md:mt-0">
-            {["Vender", "Ver pedidos", "Editar"].map((b) => (
-              <span
-                key={b}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-              >
-                {b}
-              </span>
-            ))}
-          </div>
-        </div>
+        </ul>
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          Datable está construyendo un ecosistema de activos y capacidades conectadas. Lo que puedes
+          usar hoy es la tienda digital de productos personalizados.
+        </p>
       </div>
     </section>
-  );
-}
-
-/* ---------- IA Fantasma ---------- */
-
-function IAFantasma() {
-  const ias = [
-    {
-      icon: LineChart,
-      title: "Stock predictivo",
-      desc: "Te avisa qué producto se va a acabar en 3 días y le pide más a tu proveedor por ti.",
-    },
-    {
-      icon: Zap,
-      title: "Precios dinámicos",
-      desc: "Vigila a la competencia y te sugiere bajar precio, subirlo o activar envío gratis.",
-    },
-    {
-      icon: MessageCircle,
-      title: "Atención al cliente",
-      desc: "Chatbot que responde el 80% de las dudas: '¿dónde está mi pedido?', cambios, devoluciones.",
-    },
-  ];
-  return (
-    <section id="ia" className="border-t border-border/60">
-      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-        <SectionHeader
-          eyebrow="IA fantasma"
-          title="Tu gerente de tienda — sin nómina."
-          desc="DªTªBLe no es solo software. En segundo plano, una IA toma decisiones por ti las 24 horas."
-        />
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {ias.map((it) => (
-            <div
-              key={it.title}
-              className="group rounded-2xl border border-border/60 bg-card p-7 transition-all hover:shadow-pop hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-between">
-                <span className="grid size-11 place-items-center rounded-xl bg-linear-to-br from-primary to-action">
-                  <it.icon className="size-5 text-primary-foreground" />
-                </span>
-                <Brain className="size-4 text-muted-foreground opacity-50 group-hover:opacity-100" />
-              </div>
-              <h3 className="mt-5 font-display text-lg font-bold text-foreground">{it.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{it.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Comparativa ---------- */
-
-function Comparativa() {
-  const rows = [
-    ["Flujo guiado ventanilla por ventanilla", true, false, false],
-    ["Vitrina publicada el mismo día", true, false, false],
-    ["Sin conocimientos técnicos", true, false, false],
-    ["Proveedores ya integrados", true, false, false],
-    ["Logística ya negociada", true, false, false],
-    ["Pagos listos al instante", true, "partial", false],
-    ["Panel admin con 3 botones", true, false, false],
-    ["IA que decide por ti", true, false, false],
-  ] as const;
-  return (
-    <section className="border-t border-border/60 bg-card/40">
-      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-        <SectionHeader
-          eyebrow="Comparativa"
-          title="DªTªBLe vs. todo lo demás."
-          desc="Otras herramientas te dan piezas. Nosotros te entregamos el negocio terminado."
-        />
-        <div className="mt-10 overflow-x-auto rounded-2xl border border-border/60 bg-card">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead>
-              <tr className="border-b border-border/60 text-left">
-                <th className="px-5 py-4 font-semibold text-foreground">Característica</th>
-                <th className="px-5 py-4 text-center font-display font-bold text-primary">DªTªBLe</th>
-                <th className="px-5 py-4 text-center font-medium text-muted-foreground">Constructores DIY</th>
-                <th className="px-5 py-4 text-center font-medium text-muted-foreground">Tienda tradicional</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(([label, a, b, c]) => (
-                <tr key={label as string} className="border-b border-border/40 last:border-0">
-                  <td className="px-5 py-4 text-foreground">{label}</td>
-                  <Cell v={a} />
-                  <Cell v={b} />
-                  <Cell v={c} />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Cell({ v }: { v: boolean | "partial" }) {
-  return (
-    <td className="px-5 py-4 text-center">
-      {v === true ? (
-        <Check className="mx-auto size-5 text-primary" />
-      ) : v === "partial" ? (
-        <span className="text-xs font-medium text-accent">Parcial</span>
-      ) : (
-        <X className="mx-auto size-4 text-muted-foreground opacity-50" />
-      )}
-    </td>
   );
 }
 
@@ -596,60 +302,55 @@ function Cell({ v }: { v: boolean | "partial" }) {
 function Precios() {
   const plans = [
     {
-      name: "Gratis",
+      name: "Sin plan",
       price: "$0",
       commission: "20%",
-      desc: "Publica y cobra sin mensualidad. Nosotros cobramos 20% por venta.",
+      desc: "Publica tu tienda sin mensualidad. Datable cobra 20% por venta.",
       features: [
         "1 tienda publicada",
-        "Checkout con Stripe activo",
+        "Cobros en línea activos",
         "Panel de pedidos",
-        "Vista previa privada mientras armas",
-        "Sin tarjeta para empezar",
+        "Vista previa privada mientras la armas",
       ],
-      cta: "Empezar gratis",
+      cta: "Empezar sin plan",
       featured: false,
-      free: true,
     },
     {
       name: "Starter",
       price: "$299",
       commission: "10%",
-      desc: "Baja la comisión a la mitad. Ideal si ya vendes.",
+      desc: "Baja la comisión a la mitad.",
       features: [
         "1 tienda publicada",
-        "10% de comisión (en lugar de 20%)",
-        "Checkout con Stripe activo",
-        "Panel de pedidos + pagos automáticos",
+        "10% de comisión por venta",
+        "Cobros en línea activos",
+        "Panel de pedidos",
         "Cancela cuando quieras",
       ],
       cta: "Activar Starter",
       featured: false,
-      free: false,
     },
     {
       name: "Pro",
       price: "$499",
       commission: "10%",
-      desc: "Varias tiendas + soporte prioritario.",
+      desc: "Varias tiendas y soporte prioritario.",
       features: [
         "Tiendas ilimitadas",
         "Todo lo de Starter",
-        "Dominio propio (próximamente)",
         "Soporte prioritario",
       ],
       cta: "Quiero Pro",
       featured: true,
-      free: false,
     },
   ];
   return (
-    <section id="precios" className="border-t border-border/60">
+    <section id="precios" className="border-t border-border/60 bg-card/40">
       <div className="mx-auto max-w-5xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow="Precios"
-          title="Publica gratis. Paga menos comisión si suscribes."
-          desc="Sin mensualidad: 20% por venta. Con plan: 10% por venta. Tú eliges cuándo te conviene bajar la comisión."
+          title="Publica sin mensualidad o paga menos comisión."
+          desc="Sin plan: 20% por venta. Con plan: 10% por venta."
         />
 
         <div className="mt-12 grid gap-5 md:grid-cols-3">
@@ -717,107 +418,7 @@ function Precios() {
   );
 }
 
-/* ---------- Marketplace de proveedores ---------- */
-
-function Marketplace() {
-  return (
-    <section className="border-t border-border/60 bg-card/40">
-      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-        <div className="grid items-center gap-12 md:grid-cols-2">
-          <div>
-            <Badge className="bg-accent-soft text-accent-foreground border-0">
-              <Truck className="mr-1 size-3" /> Ecosistema híbrido
-            </Badge>
-            <h2 className="mt-4 font-display text-3xl font-extrabold leading-tight text-foreground sm:text-4xl">
-              ¿Tienes producto pero no canal? Súbelo a nuestro ecosistema.
-            </h2>
-            <p className="mt-4 text-base text-muted-foreground">
-              Si produces algo con tus manos — bolsas, café, joyería, comida, ropa — y ya tienes
-              logística cubierta, sube tu catálogo a DªTªBLe. Otros usuarios lo van a montar en sus
-              tiendas y tú solo te encargas de producir.
-            </p>
-            <ul className="mt-6 space-y-3 text-sm text-foreground">
-              {[
-                "Sin abrir tu propia tienda",
-                "Split de pagos automático",
-                "Envíos integrados con paquetería",
-                "Tú produces. Otros venden.",
-              ].map((it) => (
-                <li key={it} className="flex items-center gap-2">
-                  <CheckCircle2 className="size-4 text-primary" /> {it}
-                </li>
-              ))}
-            </ul>
-            <Button asChild size="lg" variant="outline" className="mt-7">
-              <Link to="/auth">
-                Quiero ser proveedor <ArrowRight className="ml-1" />
-              </Link>
-            </Button>
-          </div>
-
-          <div className="relative">
-            <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-linear-to-tr from-action/20 to-primary/20 blur-2xl" />
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { name: "Bolsas tejidas", city: "Costa", tag: "Artesanal" },
-                { name: "Café de altura", city: "Sierra", tag: "Gourmet" },
-                { name: "Joyería de plata", city: "Centro", tag: "Plata 925" },
-                { name: "Destilado agave", city: "Sur", tag: "Selección" },
-              ].map((p, i) => (
-                <div
-                  key={p.name}
-                  className={
-                    "rounded-2xl border border-border/60 bg-card p-5 shadow-soft " +
-                    (i % 2 === 1 ? "translate-y-4" : "")
-                  }
-                >
-                  <div className="grid h-20 place-items-center rounded-lg bg-linear-to-br from-primary-soft to-action-soft">
-                    <ShoppingBag className="size-7 text-primary" />
-                  </div>
-                  <div className="mt-3 text-sm font-semibold text-foreground">{p.name}</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">{p.city} · {p.tag}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ---------- FAQ ---------- */
-
-const FAQS = [
-  {
-    q: "¿En cuánto tiempo tengo mi tienda vendiendo?",
-    a: "Tu vitrina digital automatizada — con productos demo o tarjetas de regalo digitales — queda publicada el mismo día en menos de 10 minutos. Para vender productos físicos reales enlazamos tu cuenta con el proveedor bajo demanda (por ejemplo Printify o similar), activamos tus pagos y verificamos tus datos: eso normalmente toma 24 a 48 horas hábiles y necesita que tú nos compartas correo, CLABE y (si aplica) RFC.",
-  },
-  {
-    q: "¿Qué necesitas de mí para conectar al proveedor?",
-    a: "Correo electrónico para abrir tu cuenta con el proveedor bajo demanda (te guiamos paso a paso; si ya la tienes, mejor). CLABE para depositarte tus ventas. Opcional: RFC y régimen fiscal si quieres factura. Sin eso podemos dejar tu vitrina viva con tarjetas de regalo, pero no despachar producto físico.",
-  },
-  {
-    q: "¿Necesito saber programar o diseñar?",
-    a: "No. Eliges entre opciones. Nosotros nos encargamos de proveedores, pagos, envíos, diseño y la inteligencia detrás.",
-  },
-  {
-    q: "¿Qué pasa con los productos? ¿Yo los tengo?",
-    a: "No es necesario. Trabajamos con proveedores bajo demanda y productores locales. Cuando alguien compra, ellos producen y envían directo al cliente.",
-  },
-  {
-    q: "¿Cuánto se queda DªTªBLe de cada venta?",
-    a: "20% si publicas gratis, 10% si activas un plan mensual. El resto del margen es tuyo. Sin letras chiquitas.",
-  },
-  {
-    q: "¿Puedo cancelar cuando quiera?",
-    a: "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver.",
-  },
-  {
-    q: "Soy artesano y solo quiero que vendan mi producto, ¿puedo?",
-    a: "Sí. Tenemos un área específica para productores que solo aportan producto, sin abrir tienda propia.",
-  },
-];
 
 function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
@@ -830,7 +431,7 @@ function FAQ() {
           desc=""
         />
         <div className="mt-10 divide-y divide-border/60 rounded-2xl border border-border/60 bg-card">
-          {FAQS.map((f, i) => {
+          {HOME_FAQS.map((f, i) => {
             const isOpen = open === i;
             return (
               <button
@@ -869,14 +470,14 @@ function CTAFinal() {
       <div className="relative mx-auto max-w-4xl px-4 py-20 text-center md:py-28">
         <Sparkles className="mx-auto mb-5 size-7" />
         <h2 className="font-display text-3xl font-extrabold leading-tight sm:text-5xl">
-          Tu tienda te está esperando.
+          Crea tu tienda con Datable.
         </h2>
         <p className="mt-4 text-base opacity-90 md:text-lg">
-          Vitrina digital automatizada hoy. Ventas reales en 24–48 h. Cero excusas para no empezar.
+          Recibe una estructura comercial preparada. Personalízala. Véndela.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" variant="secondary" className="shine-on-hover">
-            <Link to="/">
+            <Link to="/crear">
               Crear mi tienda <ArrowRight className="ml-1" />
             </Link>
           </Button>
@@ -904,16 +505,16 @@ function Footer() {
           <div className="md:col-span-2">
             <Logo />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Franchise-as-a-Service. Vitrina digital automatizada hoy, tienda vendiendo en 24–48 h. Hecho con ♥ en México.
+              Activos digitales productivos: estructuras comerciales preparadas para vender. Hecho con ♥ en México.
             </p>
           </div>
           <FooterCol
             title="Producto"
             links={[
-              { label: "Cómo funciona", href: "#como-funciona" },
+              { label: "Qué es", href: "#que-es-activo" },
+              { label: "Activos disponibles", href: "#plantillas" },
               { label: "Precios", href: "#precios" },
-              { label: "IA", href: "#ia" },
-              { label: "Proveedores", href: "#para-quien" },
+              { label: "Para quién", href: "#para-quien" },
             ]}
           />
           <FooterCol
@@ -978,10 +579,10 @@ function SectionHeader({
   );
 }
 
-/* ---------- Plantillas (demo en vivo) ---------- */
+/* ---------- Activos disponibles (demo en vivo) ---------- */
 
 const DEMO_TEMPLATES = [
-  { name: "Ropa y streetwear", desc: "Playeras, hoodies y gorras con tallas y colores reales.", cat: "playeras", Icon: Shirt },
+  { name: "Ropa y streetwear", desc: "Playeras, hoodies y gorras con tallas y colores disponibles.", cat: "playeras", Icon: Shirt },
   { name: "Arte y pósters", desc: "Láminas, canvas y cuadros listos para enmarcar.", cat: "arte", Icon: Frame },
   { name: "Regalos y tazas", desc: "Tazas, botellas y detalles personalizados.", cat: "tazas", Icon: Coffee },
   { name: "Hogar y accesorios", desc: "Cojines, tote bags, fundas y más.", cat: "accesorios", Icon: Sofa },
@@ -989,12 +590,12 @@ const DEMO_TEMPLATES = [
 
 function DemoVitrina() {
   return (
-    <section id="plantillas" className="border-t border-border/60 bg-card/40">
+    <section id="plantillas" className="border-t border-border/60">
       <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
         <SectionHeader
-          eyebrow="Plantillas · pruébalas ahora"
-          title="Entra a una plantilla y úsala como si ya fuera tuya"
-          desc="Esto es exactamente lo que se te entrega: catálogo real, categorías, tallas y colores, carrito y pago. Navega, agrega productos y llega hasta el checkout. Ahí termina la demo y empieza tu tienda real."
+          eyebrow="Activos disponibles"
+          title="Conoce por dentro una estructura disponible"
+          desc="Cada plantilla es un activo ya estructurado. Entra, recorre su catálogo, revisa categorías y opciones, y llega hasta el paso de pago para ver cómo funciona antes de personalizarla."
         />
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {DEMO_TEMPLATES.map((t) => (
@@ -1002,7 +603,7 @@ function DemoVitrina() {
               key={t.cat}
               to="/demo"
               search={{ cat: t.cat }}
-              className="group relative rounded-2xl border border-border bg-background p-6 transition hover:-translate-y-1 hover:border-primary hover:shadow-pop"
+              className="group relative rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-1 hover:border-primary hover:shadow-pop"
             >
               <span className="absolute right-4 top-4 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
                 Demo
@@ -1011,7 +612,7 @@ function DemoVitrina() {
               <h3 className="mt-4 font-display text-lg">{t.name}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>
               <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                Probar plantilla <ChevronRight className="size-4 transition group-hover:translate-x-1" />
+                Ver este activo <ChevronRight className="size-4 transition group-hover:translate-x-1" />
               </span>
             </Link>
           ))}
@@ -1021,7 +622,7 @@ function DemoVitrina() {
             <Link to="/demo">Entrar a la tienda demo <ArrowRight className="ml-1" /></Link>
           </Button>
           <p className="mt-3 text-xs text-muted-foreground">
-            La demo llega hasta el paso de pago: ahí te mostramos qué pasa después en una tienda real.
+            La demo llega hasta el paso de pago para que veas cómo opera la estructura.
           </p>
         </div>
       </div>
@@ -1039,14 +640,8 @@ function Landing() {
         <Hero />
         <QueEsActivo />
         <DemoVitrina />
-        <ComoFunciona />
-
         <ParaQuien />
-        <MomentoMcDonalds />
-        <IAFantasma />
-        <Comparativa />
         <Precios />
-        <Marketplace />
         <FAQ />
         <CTAFinal />
       </main>
