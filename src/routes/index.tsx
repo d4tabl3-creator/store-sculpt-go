@@ -198,10 +198,10 @@ const ACTIVO_RECEIVES = [
 
 const ACTIVO_WORKFLOW = [
   "Eliges una estructura disponible.",
-  "Personalizas tu tienda.",
+  "Haz que tu tienda lleve tu identidad.",
   "Agregas tu identidad.",
-  "Tienes productos listos para vender, con precios ya establecidos.",
-  "Defines tu margen de ganancia dentro de las opciones disponibles.",
+  "Empieza a vender con productos ya preparados para tu tienda.",
+  "Decide cuánto quieres ganar con cada venta.",
   "Publicas y vendes.",
   "Tú vendes. Nosotros nos encargamos de que el pedido llegue hasta la puerta de tu cliente.",
 ];
