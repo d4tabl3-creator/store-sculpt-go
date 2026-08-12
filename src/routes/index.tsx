@@ -4,10 +4,6 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
-  Coffee,
-  Frame,
-  Shirt,
-  Sofa,
   Sparkles,
 } from "lucide-react";
 import { useState } from "react";
