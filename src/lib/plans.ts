@@ -17,18 +17,18 @@ export const PLANS: Array<{
   {
     id: "starter",
     priceId: "starter_monthly",
-    name: "Starter",
-    priceLabel: "$299 MXN / mes",
-    monthlyMxn: 299,
+    name: "Gratis",
+    priceLabel: "$0 MXN / mes",
+    monthlyMxn: 0,
     commissionLabel: "10% por venta",
-    tagline: "Para lanzar hoy mismo.",
-    maxStores: 1,
+    tagline: "Empieza sin invertir.",
+    maxStores: null,
     features: [
-      "1 tienda publicada",
+      "Sin mensualidad",
+      "10% de comisión por venta",
       "Kits pre-armados",
-      "Checkout con Stripe integrado",
+      "Checkout integrado",
       "Panel de pedidos",
-      "Datos bancarios para recibir tu comisión",
     ],
   },
   {
@@ -37,27 +37,27 @@ export const PLANS: Array<{
     name: "Pro",
     priceLabel: "$499 MXN / mes",
     monthlyMxn: 499,
-    commissionLabel: "10% por venta",
-    tagline: "Para vender en serio.",
+    commissionLabel: "0% por venta",
+    tagline: "Conserva el 100% de tus ventas.",
     maxStores: null,
     featured: true,
     features: [
-      "Tiendas ilimitadas",
-      "Todo lo de Starter",
-      "Dominio propio (próximamente)",
+      "$499 MXN al mes",
+      "0% de comisión por venta",
+      "Todo lo de Gratis",
       "Prioridad de soporte",
     ],
   },
 ];
 
-export const PLATFORM_COMMISSION_BPS = 1000; // 10% base (planes de pago)
-export const FREE_COMMISSION_BPS = 2000; // 20% para tiendas publicadas sin plan
+export const PLATFORM_COMMISSION_BPS = 0; // 0% para plan Pro
+export const FREE_COMMISSION_BPS = 1000; // 10% para la modalidad gratuita
 export const FREE_DRAFT_STORE_LIMIT = 1; // Sin plan puedes armar 1 tienda
 
 export function planLimit(plan: PlanId | null): number | null {
   if (plan === "pro") return null;
-  if (plan === "starter") return 1;
-  // Sin plan: puedes crear 1 tienda (publicable con comisión mayor)
+  if (plan === "starter") return null;
+  // Sin plan: puedes crear 1 tienda (publicable con comisión del 10%)
   return FREE_DRAFT_STORE_LIMIT;
 }
 
@@ -67,12 +67,11 @@ export function canPublish(_plan: PlanId | null): boolean {
 }
 
 export function commissionBpsFor(plan: PlanId | null): number {
-  if (plan === "starter" || plan === "pro") return PLATFORM_COMMISSION_BPS;
+  if (plan === "pro") return PLATFORM_COMMISSION_BPS;
+  // starter (modalidad gratuita) y sin plan comparten 10%
   return FREE_COMMISSION_BPS;
 }
 
 export function commissionLabelFor(plan: PlanId | null): string {
-  return plan ? "10% por venta" : "20% por venta (sin plan)";
+  return plan === "pro" ? "0% por venta" : "10% por venta";
 }
-
-

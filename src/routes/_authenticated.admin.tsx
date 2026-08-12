@@ -100,7 +100,7 @@ function Admin() {
                 <div><Label>Código</Label><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="DEMO-XXXX" /></div>
                 <div><Label>Plan</Label>
                   <select className="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm" value={form.plan} onChange={(e) => setForm({ ...form, plan: e.target.value as PlanId })}>
-                    <option value="starter">Starter</option><option value="pro">Pro</option>
+                    <option value="starter">Gratis</option><option value="pro">Pro</option>
                   </select>
                 </div>
                 <div><Label>Días válidos</Label><Input type="number" value={form.days_valid} onChange={(e) => setForm({ ...form, days_valid: Number(e.target.value) })} /></div>

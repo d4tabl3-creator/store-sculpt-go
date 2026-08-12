@@ -96,8 +96,8 @@ function WizardPage() {
         if ((count || 0) >= limit) {
           toast.error(
             plan.plan
-              ? `Tu plan ${plan.plan.toUpperCase()} permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`
-              : `Sin plan solo puedes tener 1 tienda. Activa Starter o Pro para crear más.`,
+              ? `Tu plan actual permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`
+              : `Sin plan solo puedes tener 1 tienda. Activa Pro para crear más.`,
           );
           navigate({ to: plan.plan ? "/planes" : "/dashboard" });
           return;
