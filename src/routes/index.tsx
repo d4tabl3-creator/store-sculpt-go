@@ -292,45 +292,17 @@ function ParaQuien() {
 function Precios() {
   const plans = [
     {
-      name: "Sin plan",
+      name: "GRATIS",
       price: "$0",
-      commission: "20%",
-      desc: "Publica tu tienda sin mensualidad. Datable cobra 20% por venta.",
-      features: [
-        "1 tienda publicada",
-        "Cobros en línea activos",
-        "Panel de pedidos",
-        "Vista previa privada mientras la armas",
-      ],
-      cta: "Empezar sin plan",
+      commission: "10% de comisión por venta para Datable.",
+      cta: "Empezar gratis",
       featured: false,
     },
     {
-      name: "Starter",
-      price: "$299",
-      commission: "10%",
-      desc: "Baja la comisión a la mitad.",
-      features: [
-        "1 tienda publicada",
-        "10% de comisión por venta",
-        "Cobros en línea activos",
-        "Panel de pedidos",
-        "Cancela cuando quieras",
-      ],
-      cta: "Activar Starter",
-      featured: false,
-    },
-    {
-      name: "Pro",
+      name: "PRO",
       price: "$499",
-      commission: "10%",
-      desc: "Varias tiendas y soporte prioritario.",
-      features: [
-        "Tiendas ilimitadas",
-        "Todo lo de Starter",
-        "Soporte prioritario",
-      ],
-      cta: "Quiero Pro",
+      commission: "0% de comisión por venta para Datable.",
+      cta: "Activar Pro",
       featured: true,
     },
   ];
@@ -339,11 +311,11 @@ function Precios() {
       <div className="mx-auto max-w-5xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow="Precios"
-          title="Publica sin mensualidad o paga menos comisión."
-          desc="Sin plan: 20% por venta. Con plan: 10% por venta."
+          title="Elige cómo quieres pagar Datable."
+          desc="Sin mensualidad y compartiendo una parte de tus ventas, o con una mensualidad fija y conservando el 100%."
         />
 
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
           {plans.map((p) => (
             <div
               key={p.name}
@@ -359,39 +331,16 @@ function Precios() {
                   Más elegido
                 </span>
               )}
-              <div className="flex items-baseline justify-between">
-                <h3 className="font-display text-2xl font-bold">{p.name}</h3>
-                <span
-                  className={
-                    "text-xs font-medium " +
-                    (p.featured ? "opacity-80" : "text-muted-foreground")
-                  }
-                >
-                  {p.commission} por venta
-                </span>
-              </div>
-              <p className={"mt-1 text-sm " + (p.featured ? "opacity-80" : "text-muted-foreground")}>
-                {p.desc}
-              </p>
+              <h3 className="font-display text-2xl font-bold">{p.name}</h3>
               <div className="mt-5 flex items-baseline gap-1">
                 <span className="font-display text-5xl font-extrabold">{p.price}</span>
                 <span className={p.featured ? "opacity-80" : "text-muted-foreground"}>
                   MXN / mes
                 </span>
               </div>
-              <ul className="mt-6 space-y-2.5 text-sm">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <Check
-                      className={
-                        "mt-0.5 size-4 shrink-0 " +
-                        (p.featured ? "text-accent" : "text-primary")
-                      }
-                    />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className={"mt-5 text-sm " + (p.featured ? "opacity-80" : "text-muted-foreground")}>
+                {p.commission}
+              </p>
               <Button
                 asChild
                 size="lg"
@@ -403,6 +352,10 @@ function Precios() {
             </div>
           ))}
         </div>
+
+        <p className="mx-auto mt-10 max-w-2xl text-center text-sm text-muted-foreground">
+          Tú eliges cómo quieres pagar Datable: sin mensualidad y compartiendo una pequeña parte de tus ventas, o con una mensualidad fija y conservando el 100% de tus ventas.
+        </p>
       </div>
     </section>
   );
