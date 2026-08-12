@@ -507,7 +507,6 @@ function Footer() {
             title="Producto"
             links={[
               { label: "Qué es", href: "#que-es-activo" },
-              { label: "Activos disponibles", href: "#plantillas" },
               { label: "Precios", href: "#precios" },
               { label: "Para quién", href: "#para-quien" },
             ]}
