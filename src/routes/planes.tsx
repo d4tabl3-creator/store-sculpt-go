@@ -16,7 +16,7 @@ import { createPlanCheckout, getMyPlan, redeemDemoCoupon } from "@/lib/plans.fun
 export const Route = createFileRoute("/planes")({
   head: () => {
     const url = "https://store-sculpt-go.lovable.app/planes";
-    const desc = "Elige tu plan Starter o Pro y activa tu tienda hoy. Con cupón de demo puedes probar gratis.";
+    const desc = "Empieza gratis con Datable y paga 10% por venta, o activa Pro por $499 MXN al mes y conserva el 100% de tus ventas.";
     return {
       meta: [
         { title: "Planes y precios — DªTªBLe" },
@@ -98,7 +98,7 @@ function PlansPage() {
               <div>
                 <div className="text-sm text-muted-foreground">Plan actual</div>
                 <div className="font-display text-xl font-bold">
-                  {current.plan === "pro" ? "Pro" : "Starter"} <Badge variant="secondary" className="ml-2">{current.source === "coupon" ? "Cupón" : "Suscripción"}</Badge>
+                  {current.plan === "pro" ? "Pro" : "Gratis"} <Badge variant="secondary" className="ml-2">{current.source === "coupon" ? "Cupón" : "Suscripción"}</Badge>
                 </div>
                 {current.current_period_end && (
                   <div className="text-xs text-muted-foreground">
@@ -124,8 +124,8 @@ function PlansPage() {
           </div>
         ) : (
           <>
-            <h1 className="font-display text-3xl font-extrabold">Elige tu plan</h1>
-            <p className="text-muted-foreground">Sin permanencia, cancela cuando quieras.</p>
+            <h1 className="font-display text-3xl font-extrabold">Empieza gratis, crece sin riesgo</h1>
+            <p className="text-muted-foreground">Sin permanencia. Cambia de modalidad cuando quieras.</p>
 
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               {PLANS.map((p) => (
@@ -150,17 +150,33 @@ function PlansPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    size="lg"
-                    variant={p.featured ? "secondary" : "default"}
-                    className="mt-7 w-full"
-                    onClick={() => setSelected(p.id)}
-                    disabled={current?.plan === p.id}
-                  >
-                    {current?.plan === p.id ? "Plan actual" : (
-                      <><Sparkles className="mr-2 size-4" /> Activar {p.name}</>
-                    )}
-                  </Button>
+                  {p.id === "starter" ? (
+                    <Button
+                      size="lg"
+                      variant={p.featured ? "secondary" : "default"}
+                      className="mt-7 w-full"
+                      asChild
+                      disabled={current?.plan === p.id}
+                    >
+                      {current?.plan === p.id ? (
+                        <span>Plan actual</span>
+                      ) : (
+                        <Link to="/crear"><Sparkles className="mr-2 size-4" /> Crear tienda gratis</Link>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      variant={p.featured ? "secondary" : "default"}
+                      className="mt-7 w-full"
+                      onClick={() => setSelected(p.id)}
+                      disabled={current?.plan === p.id}
+                    >
+                      {current?.plan === p.id ? "Plan actual" : (
+                        <><Sparkles className="mr-2 size-4" /> Activar {p.name}</>
+                      )}
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
