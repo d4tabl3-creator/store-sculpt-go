@@ -6,12 +6,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { DEMO_CATEGORIES, formatMxn } from "@/lib/demo-catalog";
 import { DEMO_THEMES, themeStyle } from "@/lib/demo-themes";
 import { setDemoQty, useDemoCart } from "@/lib/demo-cart";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/demo")({
   component: DemoLayout,
 });
 
 function DemoLayout() {
+  const t = useT();
   const cart = useDemoCart();
   const [open, setOpen] = useState(false);
   const [wall, setWall] = useState(false);
@@ -26,7 +28,7 @@ function DemoLayout() {
       {/* Barra de control DªTªBLe (fuera de la tienda) */}
       <div className="flex flex-wrap items-center justify-center gap-3 border-b border-border bg-card px-4 py-2 text-center text-[11px] font-semibold text-muted-foreground sm:text-xs">
         <span>
-          Vista previa de una tienda de cliente · el diseño es 100% tuyo
+          {t("Vista previa de una tienda de cliente · el diseño es 100% tuyo", "Preview of a customer store · the design is 100% yours")}
         </span>
         <div className="flex items-center gap-1 rounded-full bg-muted p-1">
           {DEMO_THEMES.map((t) => (
@@ -40,7 +42,7 @@ function DemoLayout() {
           ))}
         </div>
         <Link to="/auth" className="underline underline-offset-2 hover:text-foreground">
-          Crear la mía
+          {t("Crear la mía", "Create mine")}
         </Link>
       </div>
 
@@ -94,16 +96,15 @@ function DemoLayout() {
                   className="flex w-full flex-col bg-background text-foreground sm:max-w-md"
                 >
                   <SheetHeader>
-                    <SheetTitle>Tu bolsa</SheetTitle>
+                    <SheetTitle>{t("Tu bolsa", "Your bag")}</SheetTitle>
                   </SheetHeader>
 
                   {wall ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
                       <Sparkles className="size-10 text-primary" />
-                      <h3 className="font-display text-2xl">Hasta aquí llega la demo</h3>
+                      <h3 className="font-display text-2xl">{t("Hasta aquí llega la demo", "This is as far as the demo goes")}</h3>
                       <p className="text-sm text-muted-foreground">
-                        En tu tienda real este botón cobra el pedido y Datable coordina la
-                        operación para que llegue hasta tu cliente. Tú solo recibes tu dinero.
+                        {t("En tu tienda real este botón cobra el pedido y Datable coordina la operación para que llegue hasta tu cliente. Tú solo recibes tu dinero.", "In your real store this button charges the order and Datable coordinates the operation so it reaches your customer. You just receive your money.")}
                       </p>
 
                       <Button
@@ -113,10 +114,10 @@ function DemoLayout() {
                           navigate({ to: "/auth" });
                         }}
                       >
-                        Crear mi tienda real <ArrowRight className="ml-1 size-4" />
+                        {t("Crear mi tienda real", "Create my real store")} <ArrowRight className="ml-1 size-4" />
                       </Button>
                       <Button variant="ghost" onClick={() => setWall(false)}>
-                        Seguir explorando
+                        {t("Seguir explorando", "Keep exploring")}
                       </Button>
                     </div>
                   ) : (
@@ -124,7 +125,7 @@ function DemoLayout() {
                       <div className="flex-1 overflow-y-auto py-4">
                         {cart.length === 0 ? (
                           <p className="text-center text-sm text-muted-foreground">
-                            Tu bolsa está vacía.
+                            {t("Tu bolsa está vacía.", "Your bag is empty.")}
                           </p>
                         ) : (
                           <div className="space-y-3">
@@ -150,14 +151,14 @@ function DemoLayout() {
                       {cart.length > 0 && (
                         <div className="border-t border-border pt-4">
                           <div className="flex justify-between text-lg font-bold">
-                            <span>Subtotal</span>
+                            <span>{t("Subtotal", "Subtotal")}</span>
                             <span>{formatMxn(subtotal)}</span>
                           </div>
                           <Button className="mt-4 w-full" onClick={() => setWall(true)}>
-                            Pagar
+                            {t("Pagar", "Pay")}
                           </Button>
                           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                            En la demo no se cobra nada.
+                            {t("En la demo no se cobra nada.", "Nothing is charged in the demo.")}
                           </p>
                         </div>
                       )}
@@ -175,10 +176,10 @@ function DemoLayout() {
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 text-center">
             <div className="font-display text-xl">{theme.brand}</div>
             <p className="text-xs text-muted-foreground">
-              Envíos a todo México · Devoluciones 30 días · Pago seguro con tarjeta
+              {t("Envíos a todo México · Devoluciones 30 días · Pago seguro con tarjeta", "Shipping nationwide · 30-day returns · Secure card payment")}
             </p>
             <Link to="/auth" className="mt-4 text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground">
-              Esta tienda funciona con DªTªBLe — crea la tuya
+              {t("Esta tienda funciona con DªTªBLe — crea la tuya", "This store runs on DªTªBLe — create yours")}
             </Link>
           </div>
         </footer>

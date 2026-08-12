@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { useT } from "@/lib/i18n";
 
 const AUTH_URL = "https://store-sculpt-go.lovable.app/auth";
 const AUTH_DESC = "Entra o crea tu cuenta DªTªBLe para armar tu tienda online en 4 pasos.";
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
+  const t = useT();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -44,15 +46,21 @@ function AuthPage() {
     const raw = err instanceof Error ? err.message : String(err ?? "");
     const m = raw.toLowerCase();
     if (m.includes("pwned") || m.includes("compromised") || m.includes("data breach"))
-      return "Esa contraseña aparece en filtraciones públicas de internet, así que no es segura. Escribe una distinta: mínimo 8 caracteres, con mayúscula, minúscula, un número y un símbolo (ejemplo: Tienda#2026mx). Evita nombres, fechas o palabras comunes.";
+      return t(
+        "Esa contraseña aparece en filtraciones públicas de internet, así que no es segura. Escribe una distinta: mínimo 8 caracteres, con mayúscula, minúscula, un número y un símbolo (ejemplo: Tienda#2026mx). Evita nombres, fechas o palabras comunes.",
+        "That password appears in public internet data breaches, so it isn't safe. Choose a different one: at least 8 characters, with uppercase, lowercase, a number and a symbol (example: Store#2026us). Avoid names, dates or common words.",
+      );
     if (m.includes("weak") || m.includes("password should") || m.includes("at least"))
-      return "La contraseña es demasiado débil. Usa al menos 8 caracteres combinando mayúscula, minúscula, número y un símbolo (ejemplo: Tienda#2026mx).";
+      return t(
+        "La contraseña es demasiado débil. Usa al menos 8 caracteres combinando mayúscula, minúscula, número y un símbolo (ejemplo: Tienda#2026mx).",
+        "The password is too weak. Use at least 8 characters combining uppercase, lowercase, a number and a symbol (example: Store#2026us).",
+      );
     if (m.includes("already registered") || m.includes("user already"))
-      return "Ese correo ya tiene cuenta. Inicia sesión con tu contraseña.";
-    if (m.includes("invalid login")) return "Correo o contraseña incorrectos.";
-    if (m.includes("email not confirmed")) return "Confirma tu correo con el enlace que te enviamos.";
-    if (m.includes("rate limit")) return "Demasiados intentos. Espera un minuto e inténtalo de nuevo.";
-    return raw || "Ocurrió un error. Inténtalo de nuevo.";
+      return t("Ese correo ya tiene cuenta. Inicia sesión con tu contraseña.", "That email already has an account. Sign in with your password.");
+    if (m.includes("invalid login")) return t("Correo o contraseña incorrectos.", "Incorrect email or password.");
+    if (m.includes("email not confirmed")) return t("Confirma tu correo con el enlace que te enviamos.", "Confirm your email with the link we sent you.");
+    if (m.includes("rate limit")) return t("Demasiados intentos. Espera un minuto e inténtalo de nuevo.", "Too many attempts. Wait a minute and try again.");
+    return raw || t("Ocurrió un error. Inténtalo de nuevo.", "Something went wrong. Please try again.");
   }
 
   async function handleEmail(e: React.FormEvent) {
@@ -72,7 +80,7 @@ function AuthPage() {
         if (data.session) {
           navigate({ to: "/crear" });
         } else {
-          toast.success("Cuenta creada. Revisa tu correo para confirmarla.");
+          toast.success(t("Cuenta creada. Revisa tu correo para confirmarla.", "Account created. Check your email to confirm it."));
           setMode("signin");
         }
       } else {
@@ -94,16 +102,16 @@ function AuthPage() {
           D<span className="text-primary">ª</span>T<span className="text-primary">ª</span>BLe
         </Link>
         <h1 className="mt-6 text-center font-display text-2xl font-bold">
-          {mode === "signin" ? "Entrar" : "Crear cuenta"}
+          {mode === "signin" ? t("Entrar", "Sign in") : t("Crear cuenta", "Create account")}
         </h1>
         <p className="mt-1 text-center text-sm text-muted-foreground">
-          {mode === "signin" ? "Accede a tu panel de tiendas" : "Empieza tu tienda en 10 minutos"}
+          {mode === "signin" ? t("Accede a tu panel de tiendas", "Access your store dashboard") : t("Empieza tu tienda en 10 minutos", "Start your store in 10 minutes")}
         </p>
 
         <form onSubmit={handleEmail} className="mt-6 space-y-3">
           {mode === "signup" && (
             <div>
-              <Label htmlFor="fullName">Nombre</Label>
+              <Label htmlFor="fullName">{t("Nombre", "Name")}</Label>
               <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
             </div>
           )}
@@ -112,17 +120,17 @@ function AuthPage() {
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div>
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">{t("Contraseña", "Password")}</Label>
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
             {mode === "signup" && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Mínimo 8 caracteres. Evita palabras comunes (ej. usa Tienda#2026mx).
+                {t("Mínimo 8 caracteres. Evita palabras comunes (ej. usa Tienda#2026mx).", "At least 8 characters. Avoid common words (e.g. use Store#2026us).")}
               </p>
             )}
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Cargando…" : mode === "signin" ? "Entrar" : "Crear cuenta"}
+            {loading ? t("Cargando…", "Loading…") : mode === "signin" ? t("Entrar", "Sign in") : t("Crear cuenta", "Create account")}
           </Button>
         </form>
 
@@ -131,7 +139,7 @@ function AuthPage() {
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
           className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
         >
-          {mode === "signin" ? "¿No tienes cuenta? Crear una" : "¿Ya tienes cuenta? Entrar"}
+          {mode === "signin" ? t("¿No tienes cuenta? Crear una", "Don't have an account? Create one") : t("¿Ya tienes cuenta? Entrar", "Already have an account? Sign in")}
         </button>
       </div>
     </div>

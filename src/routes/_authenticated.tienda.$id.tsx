@@ -12,6 +12,7 @@ import { getMyPlan } from "@/lib/plans.functions";
 import { syncProduct, getCommerceHealth } from "@/lib/commerce.functions";
 import { commissionLabelFor } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/tienda/$id")({
   head: () => ({ meta: [{ title: "Editar tienda — DªTªBLe" }] }),
@@ -47,6 +48,7 @@ type Order = {
 };
 
 function StoreManage() {
+  const t = useT();
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const [store, setStore] = useState<Store | null>(null);
@@ -93,18 +95,21 @@ function StoreManage() {
     }
     setSaving(false);
     if (error) toast.error(error.message);
-    else toast.success("Cambios guardados");
+    else toast.success(t("Cambios guardados", "Changes saved"));
   }
   async function togglePublish() {
     if (!store) return;
     const nextStatus = store.status === "published" ? "draft" : "published";
     if (nextStatus === "published" && !paymentEmail) {
-      toast.error("Configura primero un email de notificaciones (pestaña Configuración).");
+      toast.error(t("Configura primero un email de notificaciones (pestaña Configuración).", "First set a notification email (Settings tab)."));
       return;
     }
     if (nextStatus === "published" && !hasPlan) {
       const ok = confirm(
-        "Vas a publicar sin plan mensual. Aplicará 10% de comisión por venta.\n\n¿Continuar?",
+        t(
+          "Vas a publicar sin plan mensual. Aplicará 10% de comisión por venta.\n\n¿Continuar?",
+          "You're about to publish without a monthly plan. A 10% commission per sale will apply.\n\nContinue?",
+        ),
       );
       if (!ok) return;
     }
@@ -113,7 +118,7 @@ function StoreManage() {
     setPublishing(false);
     if (error) { toast.error(error.message); return; }
     setStore({ ...store, status: nextStatus });
-    toast.success(nextStatus === "published" ? "¡Tienda publicada! Ya recibes pedidos." : "Tienda despublicada.");
+    toast.success(nextStatus === "published" ? t("¡Tienda publicada! Ya recibes pedidos.", "Store published! You can now receive orders.") : t("Tienda despublicada.", "Store unpublished."));
   }
 
 
@@ -124,13 +129,13 @@ function StoreManage() {
       .update({ name: p.name, price_cents: p.price_cents, stock: p.stock })
       .eq("id", p.id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Producto actualizado");
+    toast.success(t("Producto actualizado", "Product updated"));
     // Propagar el cambio al conector de infraestructura en segundo plano.
     syncProduct({ data: { storeId: id, productId: p.id } }).catch(() => {});
   }
 
   async function deleteProduct(pid: string) {
-    if (!confirm("¿Eliminar este producto?")) return;
+    if (!confirm(t("¿Eliminar este producto?", "Delete this product?"))) return;
     await supabase.from("store_products").delete().eq("id", pid);
     setProducts(products.filter((x) => x.id !== pid));
   }
@@ -140,24 +145,24 @@ function StoreManage() {
     setOrders(orders.map((o) => (o.id === orderId ? { ...o, status } : o)));
   }
 
-  if (!store) return <div className="grid min-h-screen place-items-center">Cargando…</div>;
+  if (!store) return <div className="grid min-h-screen place-items-center">{t("Cargando…", "Loading…")}</div>;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/60 bg-card">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-4" /> Mis tiendas
+            <ArrowLeft className="size-4" /> {t("Mis tiendas", "My stores")}
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild size="sm" variant="ghost">
-              <Link to="/guia/$id" params={{ id }}>Guía de inicio</Link>
+              <Link to="/guia/$id" params={{ id }}>{t("Guía de inicio", "Getting started guide")}</Link>
             </Button>
 
             {store.status === "published" ? (
               <Button asChild size="sm" variant="outline">
                 <Link to="/t/$slug" params={{ slug: store.slug }} target="_blank">
-                  Ver tienda <ExternalLink className="ml-1 size-3.5" />
+                  {t("Ver tienda", "View store")} <ExternalLink className="ml-1 size-3.5" />
                 </Link>
               </Button>
             ) : null}
@@ -169,9 +174,9 @@ function StoreManage() {
               className={store.status === "published" ? "" : "shine-on-hover shadow-cta"}
             >
               {store.status === "published" ? (
-                <><EyeOff className="mr-1 size-3.5" /> Despublicar</>
+                <><EyeOff className="mr-1 size-3.5" /> {t("Despublicar", "Unpublish")}</>
               ) : (
-                <><Rocket className="mr-1 size-3.5" /> Publicar</>
+                <><Rocket className="mr-1 size-3.5" /> {t("Publicar", "Publish")}</>
               )}
             </Button>
           </div>
@@ -183,32 +188,32 @@ function StoreManage() {
           <div className="mb-6 rounded-2xl border-2 border-dashed border-accent bg-accent-soft/40 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <div className="font-display text-lg font-bold">Tu tienda está en borrador</div>
+                <div className="font-display text-lg font-bold">{t("Tu tienda está en borrador", "Your store is in draft")}</div>
                 <p className="text-sm text-muted-foreground">
                   {hasPlan
-                    ? "Cuando tengas todo listo, presiona Publicar para recibir pedidos reales."
-                    : "Puedes publicar gratis y empezar a cobrar. Aplicará 10% de comisión por venta. Activa Pro para conservar el 100%."}
+                    ? t("Cuando tengas todo listo, presiona Publicar para recibir pedidos reales.", "When you're ready, press Publish to start receiving real orders.")
+                    : t("Puedes publicar gratis y empezar a cobrar. Aplicará 10% de comisión por venta. Activa Pro para conservar el 100%.", "You can publish for free and start selling. A 10% commission per sale will apply. Activate Pro to keep 100%.")}
                 </p>
               </div>
               {!hasPlan && (
                 <Button asChild size="sm" variant="outline">
-                  <Link to="/planes">Bajar a 10% con plan</Link>
+                  <Link to="/planes">{t("Bajar a 10% con plan", "Lower to 10% with a plan")}</Link>
                 </Button>
               )}
             </div>
           </div>
         ) : (
           <div className="mb-6 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-            Comisión actual: <span className="font-semibold text-foreground">{commissionLabelFor(plan)}</span>
+            {t("Comisión actual:", "Current commission:")} <span className="font-semibold text-foreground">{commissionLabelFor(plan)}</span>
             {!hasPlan && (
-              <>{" · "}<Link to="/planes" className="font-semibold text-primary hover:underline">Bajar a 10% con plan →</Link></>
+              <>{" · "}<Link to="/planes" className="font-semibold text-primary hover:underline">{t("Bajar a 10% con plan →", "Lower to 10% with a plan →")}</Link></>
             )}
           </div>
         )}
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-display text-3xl font-extrabold">{store.name}</h1>
           <Badge variant={store.status === "published" ? "default" : "secondary"}>
-            {store.status === "published" ? "Publicada" : "Borrador"}
+            {store.status === "published" ? t("Publicada", "Published") : t("Borrador", "Draft")}
           </Badge>
         </div>
         <p className="text-muted-foreground">/t/{store.slug}</p>
@@ -224,24 +229,24 @@ function StoreManage() {
               }`}
             />
             {health.erroredProducts > 0
-              ? `${health.erroredProducts} producto(s) con error de sincronización`
+              ? t(`${health.erroredProducts} producto(s) con error de sincronización`, `${health.erroredProducts} product(s) with sync error`)
               : health.pendingJobs > 0
-                ? `Sincronizando ${health.pendingJobs} cambio(s)…`
-                : "Bloques verificados y sincronizados"}
+                ? t(`Sincronizando ${health.pendingJobs} cambio(s)…`, `Syncing ${health.pendingJobs} change(s)…`)
+                : t("Bloques verificados y sincronizados", "Blocks verified and synced")}
           </div>
         )}
 
         <Tabs defaultValue="orders" className="mt-6">
           <TabsList>
-            <TabsTrigger value="orders">Pedidos ({orders.length})</TabsTrigger>
-            <TabsTrigger value="products">Productos ({products.length})</TabsTrigger>
-            <TabsTrigger value="settings">Configuración</TabsTrigger>
+            <TabsTrigger value="orders">{t("Pedidos", "Orders")} ({orders.length})</TabsTrigger>
+            <TabsTrigger value="products">{t("Productos", "Products")} ({products.length})</TabsTrigger>
+            <TabsTrigger value="settings">{t("Configuración", "Settings")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders" className="mt-6 space-y-3">
             {orders.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground">
-                Aún no hay pedidos. Comparte la URL de tu tienda para empezar.
+                {t("Aún no hay pedidos. Comparte la URL de tu tienda para empezar.", "No orders yet. Share your store URL to get started.")}
               </div>
             ) : (
               orders.map((o) => (
@@ -266,8 +271,8 @@ function StoreManage() {
                     ))}
                   </div>
                   <div className="mt-3 flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "shipped")}>Marcar enviado</Button>
-                    <Button size="sm" onClick={() => setOrderStatus(o.id, "completed")}>Completar</Button>
+                    <Button size="sm" variant="outline" onClick={() => setOrderStatus(o.id, "shipped")}>{t("Marcar enviado", "Mark shipped")}</Button>
+                    <Button size="sm" onClick={() => setOrderStatus(o.id, "completed")}>{t("Completar", "Complete")}</Button>
                   </div>
                 </div>
               ))
@@ -282,15 +287,15 @@ function StoreManage() {
                   <Input value={p.name} onChange={(e) => setProducts(products.map((x) => (x.id === p.id ? { ...x, name: e.target.value } : x)))} />
                 </div>
                 <div className="w-28">
-                  <Label className="text-xs">Precio ($)</Label>
+                  <Label className="text-xs">{t("Precio ($)", "Price ($)")}</Label>
                   <Input type="number" value={p.price_cents / 100} onChange={(e) => setProducts(products.map((x) => (x.id === p.id ? { ...x, price_cents: Math.round(Number(e.target.value) * 100) } : x)))} />
                 </div>
                 <div className="w-20">
-                  <Label className="text-xs">Stock</Label>
+                  <Label className="text-xs">{t("Stock", "Stock")}</Label>
                   <Input type="number" value={p.stock} onChange={(e) => setProducts(products.map((x) => (x.id === p.id ? { ...x, stock: Number(e.target.value) } : x)))} />
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => updateProduct(p)}>Guardar</Button>
+                  <Button size="sm" onClick={() => updateProduct(p)}>{t("Guardar", "Save")}</Button>
                   <Button size="sm" variant="outline" onClick={() => deleteProduct(p.id)}><Trash2 className="size-3.5" /></Button>
                 </div>
               </div>
@@ -299,21 +304,21 @@ function StoreManage() {
 
           <TabsContent value="settings" className="mt-6 space-y-4 max-w-lg">
             <div>
-              <Label>Nombre</Label>
+              <Label>{t("Nombre", "Name")}</Label>
               <Input value={store.name} onChange={(e) => setStore({ ...store, name: e.target.value })} />
             </div>
             <div>
-              <Label>Email de notificaciones</Label>
+              <Label>{t("Email de notificaciones", "Notification email")}</Label>
               <Input value={paymentEmail} onChange={(e) => setPaymentEmail(e.target.value)} />
             </div>
             <div>
-              <Label>Color primario</Label>
+              <Label>{t("Color primario", "Primary color")}</Label>
               <div className="flex items-center gap-3">
                 <Input type="color" className="w-16 h-10 p-1" value={store.primary_color} onChange={(e) => setStore({ ...store, primary_color: e.target.value })} />
                 <Input value={store.primary_color} onChange={(e) => setStore({ ...store, primary_color: e.target.value })} />
               </div>
             </div>
-            <Button onClick={saveStore} disabled={saving}>Guardar cambios</Button>
+            <Button onClick={saveStore} disabled={saving}>{t("Guardar cambios", "Save changes")}</Button>
           </TabsContent>
         </Tabs>
       </main>
