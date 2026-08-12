@@ -574,57 +574,6 @@ function SectionHeader({
   );
 }
 
-/* ---------- Activos disponibles (demo en vivo) ---------- */
-
-const DEMO_TEMPLATES = [
-  { name: "Ropa y streetwear", desc: "Playeras, hoodies y gorras con tallas y colores disponibles.", cat: "playeras", Icon: Shirt },
-  { name: "Arte y pósters", desc: "Láminas, canvas y cuadros listos para enmarcar.", cat: "arte", Icon: Frame },
-  { name: "Regalos y tazas", desc: "Tazas, botellas y detalles personalizados.", cat: "tazas", Icon: Coffee },
-  { name: "Hogar y accesorios", desc: "Cojines, tote bags, fundas y más.", cat: "accesorios", Icon: Sofa },
-];
-
-function DemoVitrina() {
-  return (
-    <section id="plantillas" className="border-t border-border/60">
-      <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-        <SectionHeader
-          eyebrow="Activos disponibles"
-          title="Conoce por dentro una estructura disponible"
-          desc="Cada plantilla es un activo ya estructurado. Entra, recorre su catálogo, revisa categorías y opciones, y llega hasta el paso de pago para ver cómo funciona antes de personalizarla."
-        />
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {DEMO_TEMPLATES.map((t) => (
-            <Link
-              key={t.cat}
-              to="/demo"
-              search={{ cat: t.cat }}
-              className="group relative rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-1 hover:border-primary hover:shadow-pop"
-            >
-              <span className="absolute right-4 top-4 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                Demo
-              </span>
-              <t.Icon className="size-8 text-primary" />
-              <h3 className="mt-4 font-display text-lg">{t.name}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                Ver este activo <ChevronRight className="size-4 transition group-hover:translate-x-1" />
-              </span>
-            </Link>
-          ))}
-        </div>
-        <div className="mt-10 text-center">
-          <Button asChild size="lg" className="shine-on-hover">
-            <Link to="/demo">Entrar a la tienda demo <ArrowRight className="ml-1" /></Link>
-          </Button>
-          <p className="mt-3 text-xs text-muted-foreground">
-            La demo llega hasta el paso de pago para que veas cómo opera la estructura.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ---------- Page ---------- */
 
 function Landing() {
