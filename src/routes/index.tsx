@@ -259,18 +259,18 @@ function QueEsActivo() {
 
 function ParaQuien() {
   const items = [
-    "Quieres empezar a vender sin construir toda la infraestructura digital desde cero.",
-    "No quieres encargarte de la parte técnica ni de la logística.",
-    "Prefieres partir de una estructura que ya funciona y hacerla tuya.",
-    "Quieres administrar tus ventas desde un solo lugar.",
+    "QUIERES EMPEZAR SIN UNA GRAN INVERSIÓN INICIAL.",
+    "QUIERES VENDER SIN OCUPARTE DE LA PARTE TÉCNICA.",
+    "QUIERES UNA TIENDA QUE YA TENGA LA ESTRUCTURA NECESARIA PARA OPERAR.",
+    "QUIERES ADMINISTRAR TUS VENTAS DESDE UN SOLO LUGAR.",
   ];
   return (
     <section id="para-quien" className="border-t border-border/60">
       <div className="mx-auto max-w-3xl px-4 py-20 md:py-28">
         <SectionHeader
-          eyebrow="Para quién es"
-          title="Para ti, que quieres vender — no construirlo todo."
-          desc="Datable es para quien quiere comenzar con una estructura comercial ya preparada y concentrarse en vender."
+          eyebrow="PARA QUIÉN ES"
+          title="PARA TI, QUE QUIERES VENDER SIN CONSTRUIRLO TODO DESDE CERO."
+          desc="Datable te entrega la estructura digital para comenzar a vender. Tú te concentras en tu tienda, tus clientes y tus ventas."
         />
         <ul className="mt-10 grid gap-4 sm:grid-cols-2">
           {items.map((it) => (
@@ -283,10 +283,6 @@ function ParaQuien() {
             </li>
           ))}
         </ul>
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-          Datable está construyendo un ecosistema de activos y capacidades conectadas. Lo que puedes
-          usar hoy es la tienda digital de productos personalizados.
-        </p>
       </div>
     </section>
   );
