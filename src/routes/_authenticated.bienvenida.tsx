@@ -44,7 +44,7 @@ const STEPS: Step[] = [
     time: "1 min",
     who: "tú",
     desc:
-      "Starter o Pro. Si estás probando, aplica un folio demo y arrancas gratis por tiempo limitado.",
+      "Gratis o Pro. Si estás probando, aplica un folio demo y arrancas gratis por tiempo limitado.",
     cta: { label: "Ver planes", to: "/planes" },
   },
   {

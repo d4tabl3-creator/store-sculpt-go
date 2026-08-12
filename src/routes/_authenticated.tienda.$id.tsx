@@ -186,8 +186,8 @@ function StoreManage() {
                 <div className="font-display text-lg font-bold">Tu tienda está en borrador</div>
                 <p className="text-sm text-muted-foreground">
                   {hasPlan
-                    ? "Cuando tengas todo listo, presiona Publicar para recibir pedidos reales (10% de comisión)."
-                    : "Puedes publicar gratis y empezar a cobrar con 20% de comisión, o activar un plan mensual y pagar solo 10%."}
+                    ? "Cuando tengas todo listo, presiona Publicar para recibir pedidos reales."
+                    : "Puedes publicar gratis y empezar a cobrar. Aplicará 10% de comisión por venta. Activa Pro para conservar el 100%."}
                 </p>
               </div>
               {!hasPlan && (

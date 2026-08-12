@@ -37,7 +37,7 @@ const HOME_FAQS = [
   },
   {
     q: "¿Cuánto se queda DªTªBLe de cada venta?",
-    a: "20% si publicas sin plan mensual y 10% si activas un plan. El resto es tuyo.",
+    a: "10% si vendes en la modalidad gratuita y 0% si activas Pro. El resto es tuyo.",
   },
   {
     q: "¿Puedo cancelar cuando quiera?",
