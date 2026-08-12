@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { cancelMyPlan, getMyPlan } from "@/lib/plans.functions";
 import { deleteMyAccount, getMyCommissionSummary, updateMyBankInfo } from "@/lib/account.functions";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/cuenta")({
   head: () => ({ meta: [{ title: "Mi cuenta — DªTªBLe" }] }),
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/cuenta")({
 });
 
 function AccountPage() {
+  const t = useT();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [profile, setProfile] = useState({ bank_name: "", clabe: "", beneficiary_name: "", tax_id: "" });
@@ -53,15 +55,15 @@ function AccountPage() {
     setSavingBank(true);
     const res = await updateMyBankInfo({ data: profile });
     setSavingBank(false);
-    if ("error" in res) toast.error(res.error); else toast.success("Datos bancarios guardados");
+    if ("error" in res) toast.error(res.error); else toast.success(t("Datos bancarios guardados", "Bank details saved"));
   }
 
   async function changePassword() {
-    if (newPassword.length < 8) return toast.error("Mínimo 8 caracteres");
+    if (newPassword.length < 8) return toast.error(t("Mínimo 8 caracteres", "Minimum 8 characters"));
     setChangingPass(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setChangingPass(false);
-    if (error) toast.error(error.message); else { toast.success("Contraseña actualizada"); setNewPassword(""); }
+    if (error) toast.error(error.message); else { toast.success(t("Contraseña actualizada", "Password updated")); setNewPassword(""); }
   }
 
   async function cancel() {
@@ -69,7 +71,7 @@ function AccountPage() {
     const res = await cancelMyPlan({ data: { environment: getStripeEnvironment() } });
     setCanceling(false);
     if ("error" in res) toast.error(res.error);
-    else { toast.success("Plan cancelado"); setPlan(await getMyPlan()); }
+    else { toast.success(t("Plan cancelado", "Plan canceled")); setPlan(await getMyPlan()); }
   }
 
   async function removeAccount() {
@@ -77,7 +79,7 @@ function AccountPage() {
     const res = await deleteMyAccount();
     if ("error" in res) { toast.error(res.error); setDeleting(false); return; }
     await supabase.auth.signOut();
-    toast.success("Cuenta eliminada");
+    toast.success(t("Cuenta eliminada", "Account deleted"));
     navigate({ to: "/" });
   }
 
@@ -86,81 +88,81 @@ function AccountPage() {
       <header className="border-b border-border/60 bg-card">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-4" /> Panel
+            <ArrowLeft className="size-4" /> {t("Panel", "Dashboard")}
           </Link>
-          <div className="font-display text-xl font-extrabold">Mi cuenta</div>
+          <div className="font-display text-xl font-extrabold">{t("Mi cuenta", "My account")}</div>
           <div className="w-16" />
         </div>
       </header>
 
       <main className="mx-auto max-w-4xl space-y-6 px-4 py-8">
         <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="font-display text-xl font-bold">Suscripción</h2>
+          <h2 className="font-display text-xl font-bold">{t("Suscripción", "Subscription")}</h2>
           {plan?.plan ? (
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <Badge variant="secondary" className="uppercase">{plan.plan}</Badge>
                 <span className="ml-2 text-sm text-muted-foreground">
-                  Fuente: {plan.source === "coupon" ? "Cupón demo" : "Stripe"}
+                  {t("Fuente: ", "Source: ")}{plan.source === "coupon" ? t("Cupón demo", "Demo coupon") : "Stripe"}
                 </span>
                 {plan.current_period_end && (
                   <div className="mt-1 text-xs text-muted-foreground">
-                    {plan.cancel_at_period_end ? "Termina" : "Renueva"} el {new Date(plan.current_period_end).toLocaleDateString()}
+                    {plan.cancel_at_period_end ? t("Termina", "Ends") : t("Renueva", "Renews")} {t("el", "on")} {new Date(plan.current_period_end).toLocaleDateString()}
                   </div>
                 )}
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" asChild><Link to="/planes">Cambiar</Link></Button>
+                <Button variant="outline" asChild><Link to="/planes">{t("Cambiar", "Change")}</Link></Button>
                 {!plan.cancel_at_period_end && plan.status !== "canceled" && (
                   <Button variant="destructive" onClick={cancel} disabled={canceling}>
-                    {canceling && <Loader2 className="mr-2 size-4 animate-spin" />} Cancelar
+                    {canceling && <Loader2 className="mr-2 size-4 animate-spin" />} {t("Cancelar", "Cancel")}
                   </Button>
                 )}
               </div>
             </div>
           ) : (
             <div className="mt-3 flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">No tienes suscripción activa.</p>
-              <Button asChild><Link to="/planes">Ver planes</Link></Button>
+              <p className="text-sm text-muted-foreground">{t("No tienes suscripción activa.", "You don't have an active subscription.")}</p>
+              <Button asChild><Link to="/planes">{t("Ver planes", "View plans")}</Link></Button>
             </div>
           )}
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="font-display text-xl font-bold">Comisiones y depósitos</h2>
-          <p className="text-sm text-muted-foreground">Recibimos los pagos y te depositamos tu porcentaje a la CLABE registrada.</p>
+          <h2 className="font-display text-xl font-bold">{t("Comisiones y depósitos", "Commissions and payouts")}</h2>
+          <p className="text-sm text-muted-foreground">{t("Recibimos los pagos y te depositamos tu porcentaje a la CLABE registrada.", "We receive the payments and deposit your percentage to your registered bank account.")}</p>
           <div className="mt-4 grid grid-cols-2 gap-4">
             <div className="rounded-xl border border-border p-4">
-              <div className="text-xs text-muted-foreground">Pendiente por pagar</div>
+              <div className="text-xs text-muted-foreground">{t("Pendiente por pagar", "Pending payout")}</div>
               <div className="font-display text-2xl font-extrabold">${((commissions?.pending_cents || 0) / 100).toFixed(2)} MXN</div>
             </div>
             <div className="rounded-xl border border-border p-4">
-              <div className="text-xs text-muted-foreground">Ya pagado</div>
+              <div className="text-xs text-muted-foreground">{t("Ya pagado", "Already paid")}</div>
               <div className="font-display text-2xl font-extrabold">${((commissions?.paid_cents || 0) / 100).toFixed(2)} MXN</div>
             </div>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <div><Label>Banco</Label><Input value={profile.bank_name} onChange={(e) => setProfile({ ...profile, bank_name: e.target.value })} placeholder="BBVA / Santander / …" /></div>
-            <div><Label>CLABE (18 dígitos)</Label><Input value={profile.clabe} onChange={(e) => setProfile({ ...profile, clabe: e.target.value.replace(/\D/g, "").slice(0, 18) })} inputMode="numeric" /></div>
-            <div><Label>Beneficiario</Label><Input value={profile.beneficiary_name} onChange={(e) => setProfile({ ...profile, beneficiary_name: e.target.value })} placeholder="Como aparece en el banco" /></div>
-            <div><Label>RFC (opcional)</Label><Input value={profile.tax_id} onChange={(e) => setProfile({ ...profile, tax_id: e.target.value.toUpperCase() })} /></div>
+            <div><Label>{t("Banco", "Bank")}</Label><Input value={profile.bank_name} onChange={(e) => setProfile({ ...profile, bank_name: e.target.value })} placeholder={t("BBVA / Santander / …", "BBVA / Santander / …")} /></div>
+            <div><Label>{t("CLABE (18 dígitos)", "Bank account (18 digits)")}</Label><Input value={profile.clabe} onChange={(e) => setProfile({ ...profile, clabe: e.target.value.replace(/\D/g, "").slice(0, 18) })} inputMode="numeric" /></div>
+            <div><Label>{t("Beneficiario", "Beneficiary")}</Label><Input value={profile.beneficiary_name} onChange={(e) => setProfile({ ...profile, beneficiary_name: e.target.value })} placeholder={t("Como aparece en el banco", "As it appears at the bank")} /></div>
+            <div><Label>{t("RFC (opcional)", "Tax ID (optional)")}</Label><Input value={profile.tax_id} onChange={(e) => setProfile({ ...profile, tax_id: e.target.value.toUpperCase() })} /></div>
           </div>
           <Button className="mt-4" onClick={saveBank} disabled={savingBank}>
-            {savingBank ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />} Guardar datos bancarios
+            {savingBank ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Save className="mr-2 size-4" />} {t("Guardar datos bancarios", "Save bank details")}
           </Button>
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="font-display text-xl font-bold">Seguridad</h2>
+          <h2 className="font-display text-xl font-bold">{t("Seguridad", "Security")}</h2>
           <div className="mt-3">
             <Label>Email</Label><Input value={email} readOnly disabled />
           </div>
           <div className="mt-3">
-            <Label htmlFor="np">Nueva contraseña</Label>
+            <Label htmlFor="np">{t("Nueva contraseña", "New password")}</Label>
             <div className="flex gap-2">
-              <Input id="np" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" />
+              <Input id="np" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t("Mínimo 8 caracteres", "Minimum 8 characters")} />
               <Button onClick={changePassword} disabled={changingPass || !newPassword}>
-                {changingPass && <Loader2 className="mr-2 size-4 animate-spin" />} Cambiar
+                {changingPass && <Loader2 className="mr-2 size-4 animate-spin" />} {t("Cambiar", "Change")}
               </Button>
             </div>
           </div>
@@ -170,24 +172,24 @@ function AccountPage() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 size-5 text-destructive" />
             <div className="flex-1">
-              <h2 className="font-display text-xl font-bold text-destructive">Zona de peligro</h2>
-              <p className="text-sm text-muted-foreground">Borrar tu cuenta elimina tus tiendas y pedidos. No se puede revertir.</p>
+              <h2 className="font-display text-xl font-bold text-destructive">{t("Zona de peligro", "Danger zone")}</h2>
+              <p className="text-sm text-muted-foreground">{t("Borrar tu cuenta elimina tus tiendas y pedidos. No se puede revertir.", "Deleting your account removes your stores and orders. This can't be undone.")}</p>
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive"><Trash2 className="mr-2 size-4" /> Eliminar cuenta</Button>
+                <Button variant="destructive"><Trash2 className="mr-2 size-4" /> {t("Eliminar cuenta", "Delete account")}</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>¿Eliminar tu cuenta?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("¿Eliminar tu cuenta?", "Delete your account?")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Se borrarán tiendas, productos y pedidos asociados. Esto es permanente.
+                    {t("Se borrarán tiendas, productos y pedidos asociados. Esto es permanente.", "Associated stores, products and orders will be deleted. This is permanent.")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogCancel>{t("Cancelar", "Cancel")}</AlertDialogCancel>
                   <AlertDialogAction onClick={removeAccount} disabled={deleting}>
-                    {deleting && <Loader2 className="mr-2 size-4 animate-spin" />} Sí, borrar todo
+                    {deleting && <Loader2 className="mr-2 size-4 animate-spin" />} {t("Sí, borrar todo", "Yes, delete everything")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
