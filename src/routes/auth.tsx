@@ -44,8 +44,10 @@ function AuthPage() {
   function mensajeError(err: unknown): string {
     const raw = err instanceof Error ? err.message : String(err ?? "");
     const m = raw.toLowerCase();
-    if (m.includes("weak") || m.includes("pwned"))
-      return "Esa contraseña es muy común y fue filtrada en internet. Usa una de 8+ caracteres con mayúsculas, números y un símbolo (ej. Tienda#2026mx).";
+    if (m.includes("pwned") || m.includes("compromised") || m.includes("data breach"))
+      return "Esa contraseña aparece en filtraciones públicas de internet, así que no es segura. Escribe una distinta: mínimo 8 caracteres, con mayúscula, minúscula, un número y un símbolo (ejemplo: Tienda#2026mx). Evita nombres, fechas o palabras comunes.";
+    if (m.includes("weak") || m.includes("password should") || m.includes("at least"))
+      return "La contraseña es demasiado débil. Usa al menos 8 caracteres combinando mayúscula, minúscula, número y un símbolo (ejemplo: Tienda#2026mx).";
     if (m.includes("already registered") || m.includes("user already"))
       return "Ese correo ya tiene cuenta. Entra con “Continuar con Google” o inicia sesión con tu contraseña.";
     if (m.includes("invalid login")) return "Correo o contraseña incorrectos.";
