@@ -381,13 +381,24 @@ export const printfulProvider: CommerceProvider = {
     if (!storeId) throw new OrchestratorError("Tienda Printful no disponible", "printful", false);
 
     if (product.externalProductId) {
-      const syncProduct = await printful<{ id: number; sync_variants: Array<{ id: number; external_id: string }> }>(`/store/products/${product.externalProductId}?store_id=${storeId}`);
+      const detail = await printful<{
+        id?: number;
+        sync_product?: { id: number };
+        sync_variants?: Array<{ id: number }>;
+      }>(`/store/products/${product.externalProductId}?store_id=${storeId}`);
+      const syncProductId = Number(detail?.sync_product?.id ?? detail?.id ?? product.externalProductId);
+      const externalVariantId = await resolveSyncVariantId(
+        storeId,
+        syncProductId,
+        detail?.sync_variants ?? null,
+      );
       return {
-        externalProductId: String(syncProduct.id),
-        externalVariantId: String(syncProduct.sync_variants[0]?.id || syncProduct.id),
+        externalProductId: String(syncProductId),
+        externalVariantId,
         externalInventoryItemId: null,
       };
     }
+
 
     // El producto debe traer su variante real de catálogo. Sin ella no se
     // fabrica nada: es preferible marcarlo para revisión que enviar a producir
