@@ -195,13 +195,12 @@ const ACTIVO_RECEIVES = [
 ];
 
 const ACTIVO_WORKFLOW = [
-  "Eliges un activo disponible.",
-  "Lo personalizas dentro de las opciones disponibles.",
-  "Haz que tu tienda lleve tu identidad.",
-  "Tienes productos preparados para vender.",
-  "Defines tu margen dentro de las opciones disponibles.",
-  "Publicas y vendes.",
-  "Datable coordina la operación necesaria para que el pedido llegue hasta tu cliente.",
+  "COMIENZA CON UNA TIENDA LISTA PARA VENDER.",
+  "DALE A TU TIENDA TU IDENTIDAD.",
+  "TIENES PRODUCTOS PREPARADOS PARA VENDER.",
+  "DECIDE CUÁNTO QUIERES GANAR CON CADA VENTA.",
+  "PUBLICA Y VENDE.",
+  "NOSOTROS COORDINAMOS TODO LO NECESARIO PARA QUE EL PEDIDO LLEGUE A TU CLIENTE.",
 ];
 
 function QueEsActivo() {
