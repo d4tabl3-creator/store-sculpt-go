@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Check, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getOrderStatus } from "@/lib/payments.functions";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/checkout/return")({
   validateSearch: (search: Record<string, unknown>): { session_id?: string; slug?: string; order?: string } => ({
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/checkout/return")({
 });
 
 function CheckoutReturn() {
+  const t = useT();
   const { session_id, slug, order } = Route.useSearch();
   const [status, setStatus] = useState<string | null>(null);
 
@@ -45,19 +47,19 @@ function CheckoutReturn() {
           {failed ? <X className="size-8 text-destructive" /> : paid ? <Check className="size-8 text-success" /> : <Clock className="size-8 animate-pulse text-muted-foreground" />}
         </div>
         <h1 className="mt-6 font-display text-3xl font-extrabold">
-          {failed ? "Pago rechazado" : paid ? "¡Pago recibido!" : "Confirmando pago…"}
+          {failed ? t("Pago rechazado", "Payment declined") : paid ? t("¡Pago recibido!", "Payment received!") : t("Confirmando pago…", "Confirming payment…")}
         </h1>
         <p className="mt-2 text-muted-foreground">
           {failed
-            ? "Tu banco rechazó el cobro. Puedes intentar con otra tarjeta."
+            ? t("Tu banco rechazó el cobro. Puedes intentar con otra tarjeta.", "Your bank declined the charge. You can try another card.")
             : paid
-              ? "Gracias por tu compra. El vendedor recibió tu pedido y te contactará."
-              : "Estamos validando con Stripe. No cierres esta ventana."}
+              ? t("Gracias por tu compra. El vendedor recibió tu pedido y te contactará.", "Thanks for your purchase. The seller received your order and will contact you.")
+              : t("Estamos validando con Stripe. No cierres esta ventana.", "We're confirming with Stripe. Don't close this window.")}
         </p>
-        {session_id && <p className="mt-3 text-xs text-muted-foreground">Ref: {session_id.slice(-12)}</p>}
+        {session_id && <p className="mt-3 text-xs text-muted-foreground">{t("Ref:", "Ref:")} {session_id.slice(-12)}</p>}
         <div className="mt-6">
           <Button asChild>
-            {slug ? <Link to="/t/$slug" params={{ slug }}>Volver a la tienda</Link> : <Link to="/">Ir al inicio</Link>}
+            {slug ? <Link to="/t/$slug" params={{ slug }}>{t("Volver a la tienda", "Back to store")}</Link> : <Link to="/">{t("Ir al inicio", "Go home")}</Link>}
           </Button>
         </div>
       </div>

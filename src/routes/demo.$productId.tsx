@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatMxn } from "@/lib/demo-catalog";
 import { addToDemoCart } from "@/lib/demo-cart";
 import { getDemoProduct } from "@/lib/demo.functions";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/demo/$productId")({
   head: () => ({
@@ -32,6 +33,7 @@ function sizeRank(size: string | null): number {
 }
 
 function DemoProductPage() {
+  const t = useT();
 
   const { productId } = Route.useParams();
   const { data, isLoading, isError } = useQuery({
@@ -87,8 +89,8 @@ function DemoProductPage() {
   if (isError || !data || !current) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-20 text-center">
-        <h1 className="font-display text-2xl">Producto no disponible</h1>
-        <Button asChild className="mt-4"><Link to="/demo">Volver a la tienda demo</Link></Button>
+        <h1 className="font-display text-2xl">{t("Producto no disponible", "Product not available")}</h1>
+        <Button asChild className="mt-4"><Link to="/demo">{t("Volver a la tienda demo", "Back to the demo store")}</Link></Button>
       </main>
     );
   }
@@ -96,7 +98,7 @@ function DemoProductPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <Link to="/demo" className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" /> Seguir comprando
+        <ArrowLeft className="size-4" /> {t("Seguir comprando", "Keep shopping")}
       </Link>
 
       <div className="grid gap-10 md:grid-cols-2">
@@ -112,17 +114,17 @@ function DemoProductPage() {
           <div className="mt-3 font-display text-3xl text-primary">{formatMxn(current.priceCents)}</div>
           <div className="mt-1 text-xs font-semibold uppercase tracking-widest">
             {current.inStock ? (
-              <span className="text-success">Disponible</span>
+              <span className="text-success">{t("Disponible", "Available")}</span>
             ) : (
-              <span className="text-muted-foreground">Agotado en esta variante</span>
+              <span className="text-muted-foreground">{t("Agotado en esta variante", "Out of stock in this variant")}</span>
             )}
           </div>
           <div className="mt-4 rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
-            <div className="mb-1 font-semibold uppercase tracking-widest">Solo para ti (no lo ve tu cliente)</div>
+            <div className="mb-1 font-semibold uppercase tracking-widest">{t("Solo para ti (no lo ve tu cliente)", "Just for you (your customer doesn't see this)")}</div>
             <div className="flex flex-wrap gap-x-4 gap-y-1">
-              <span>Costo base: <strong className="text-foreground">{formatMxn(current.costCents)}</strong></span>
-              <span>Tu ganancia: <strong className="text-foreground">{formatMxn(current.marginCents)}</strong></span>
-              <span>Margen: <strong className="text-foreground">{current.marginPct}%</strong></span>
+              <span>{t("Costo base:", "Base cost:")} <strong className="text-foreground">{formatMxn(current.costCents)}</strong></span>
+              <span>{t("Tu ganancia:", "Your profit:")} <strong className="text-foreground">{formatMxn(current.marginCents)}</strong></span>
+              <span>{t("Margen:", "Margin:")} <strong className="text-foreground">{current.marginPct}%</strong></span>
             </div>
           </div>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{data.product.description}</p>
@@ -130,7 +132,7 @@ function DemoProductPage() {
 
           {colors.length > 1 && (
             <div className="mt-6">
-              <div className="text-sm font-semibold">Color: <span className="text-muted-foreground">{color}</span></div>
+              <div className="text-sm font-semibold">{t("Color:", "Color:")} <span className="text-muted-foreground">{color}</span></div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {colors.map((c) => {
                   const available = variants.some((v) => v.color === c.color && v.inStock);
@@ -138,7 +140,7 @@ function DemoProductPage() {
                     <button
                       key={c.color}
                       onClick={() => { setColor(c.color); setSize(null); }}
-                      title={available ? c.color : `${c.color} · agotado`}
+                      title={available ? c.color : t(`${c.color} · agotado`, `${c.color} · out of stock`)}
                       className={`size-8 rounded-full border-2 transition ${color === c.color ? "border-primary scale-110" : "border-border"} ${available ? "" : "opacity-30"}`}
                       style={{ background: c.code || "#ccc" }}
                     />
@@ -150,14 +152,14 @@ function DemoProductPage() {
 
           {sizes.some((v) => v.size) && (
             <div className="mt-6">
-              <div className="text-sm font-semibold">Talla</div>
+              <div className="text-sm font-semibold">{t("Talla", "Size")}</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sizes.filter((v) => v.size).map((v) => (
                   <button
                     key={v.id}
                     disabled={!v.inStock}
                     onClick={() => setSize(v.size)}
-                    title={v.inStock ? v.size ?? "" : "Agotado"}
+                    title={v.inStock ? v.size ?? "" : t("Agotado", "Out of stock")}
                     className={`min-w-12 rounded-lg border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:line-through disabled:opacity-40 ${current.id === v.id ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted"}`}
                   >
                     {v.size}
@@ -180,17 +182,17 @@ function DemoProductPage() {
                 image: current.image || data.product.image,
                 priceCents: current.priceCents,
               });
-              toast.success("Agregado al carrito");
+              toast.success(t("Agregado al carrito", "Added to cart"));
             }}
           >
-            {current.inStock ? "Agregar al carrito" : "Agotado"}
+            {current.inStock ? t("Agregar al carrito", "Add to cart") : t("Agotado", "Out of stock")}
           </Button>
 
 
           <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><Truck className="size-4 text-primary" /> Se produce y envía cuando alguien compra</li>
-            <li className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" /> Pago con tarjeta procesado de forma segura</li>
-            <li className="flex items-center gap-2"><Check className="size-4 text-primary" /> Sin inventario ni dinero adelantado</li>
+            <li className="flex items-center gap-2"><Truck className="size-4 text-primary" /> {t("Se produce y envía cuando alguien compra", "Made and shipped when someone buys")}</li>
+            <li className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" /> {t("Pago con tarjeta procesado de forma segura", "Card payment processed securely")}</li>
+            <li className="flex items-center gap-2"><Check className="size-4 text-primary" /> {t("Sin inventario ni dinero adelantado", "No inventory or upfront money")}</li>
           </ul>
         </div>
       </div>

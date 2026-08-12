@@ -12,6 +12,7 @@ import { EmbeddedStripe } from "@/components/EmbeddedStripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { createPlanCheckout, getMyPlan, redeemDemoCoupon } from "@/lib/plans.functions";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/planes")({
   head: () => {
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/planes")({
 });
 
 function PlansPage() {
+  const t = useT();
   const navigate = useNavigate();
   const [checkingPlan, setCheckingPlan] = useState(true);
   const [current, setCurrent] = useState<Awaited<ReturnType<typeof getMyPlan>> | null>(null);
@@ -52,7 +54,7 @@ function PlansPage() {
   }, [navigate]);
 
   const fetchClientSecret = useCallback(async (): Promise<string> => {
-    if (!selected) throw new Error("Sin plan seleccionado");
+    if (!selected) throw new Error(t("Sin plan seleccionado", "No plan selected"));
     const res = await createPlanCheckout({
       data: {
         plan: selected,
@@ -61,21 +63,26 @@ function PlansPage() {
       },
     });
     if ("error" in res) throw new Error(res.error);
-    if (!res.clientSecret) throw new Error("Stripe no devolvió clientSecret");
+    if (!res.clientSecret) throw new Error(t("Stripe no devolvió clientSecret", "Stripe did not return a clientSecret"));
     return res.clientSecret;
-  }, [selected]);
+  }, [selected, t]);
 
   async function redeem() {
     setRedeeming(true);
     const res = await redeemDemoCoupon({ data: { code } });
     setRedeeming(false);
     if ("error" in res) { toast.error(res.error); return; }
-    toast.success(`Plan ${res.plan.toUpperCase()} activo hasta ${new Date(res.expires).toLocaleDateString()}`);
+    toast.success(
+      t(
+        `Plan ${res.plan.toUpperCase()} activo hasta ${new Date(res.expires).toLocaleDateString()}`,
+        `${res.plan.toUpperCase()} plan active until ${new Date(res.expires).toLocaleDateString()}`
+      )
+    );
     navigate({ to: "/crear" });
   }
 
   if (checkingPlan) {
-    return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">Cargando…</div>;
+    return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">{t("Cargando…", "Loading…")}</div>;
   }
 
   return (
@@ -84,9 +91,9 @@ function PlansPage() {
       <header className="border-b border-border/60 bg-card">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-4" /> Volver
+            <ArrowLeft className="size-4" /> {t("Volver", "Back")}
           </Link>
-          <div className="font-display text-xl font-extrabold">Planes</div>
+          <div className="font-display text-xl font-extrabold">{t("Planes", "Plans")}</div>
           <div className="w-16" />
         </div>
       </header>
@@ -96,17 +103,17 @@ function PlansPage() {
           <div className="mb-6 rounded-2xl border border-primary bg-primary-soft p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <div className="text-sm text-muted-foreground">Plan actual</div>
+                <div className="text-sm text-muted-foreground">{t("Plan actual", "Current plan")}</div>
                 <div className="font-display text-xl font-bold">
-                  {current.plan === "pro" ? "Pro" : "Gratis"} <Badge variant="secondary" className="ml-2">{current.source === "coupon" ? "Cupón" : "Suscripción"}</Badge>
+                  {current.plan === "pro" ? "Pro" : t("Gratis", "Free")} <Badge variant="secondary" className="ml-2">{current.source === "coupon" ? t("Cupón", "Coupon") : t("Suscripción", "Subscription")}</Badge>
                 </div>
                 {current.current_period_end && (
                   <div className="text-xs text-muted-foreground">
-                    {current.cancel_at_period_end ? "Termina" : "Renueva"} el {new Date(current.current_period_end).toLocaleDateString()}
+                    {current.cancel_at_period_end ? t("Termina", "Ends") : t("Renueva", "Renews")} {t("el", "on")} {new Date(current.current_period_end).toLocaleDateString()}
                   </div>
                 )}
               </div>
-              <Button variant="outline" asChild><Link to="/cuenta">Gestionar</Link></Button>
+              <Button variant="outline" asChild><Link to="/cuenta">{t("Gestionar", "Manage")}</Link></Button>
             </div>
           </div>
         )}
@@ -115,23 +122,23 @@ function PlansPage() {
           <div className="rounded-3xl border border-border bg-card p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <div className="text-xs uppercase text-muted-foreground">Suscripción</div>
+                <div className="text-xs uppercase text-muted-foreground">{t("Suscripción", "Subscription")}</div>
                 <div className="font-display text-2xl font-bold">DªTªBLe {PLANS.find((p) => p.id === selected)?.name}</div>
               </div>
-              <Button variant="ghost" onClick={() => setSelected(null)}>Cambiar plan</Button>
+              <Button variant="ghost" onClick={() => setSelected(null)}>{t("Cambiar plan", "Change plan")}</Button>
             </div>
             <EmbeddedStripe fetchClientSecret={fetchClientSecret} minHeight={600} />
           </div>
         ) : (
           <>
-            <h1 className="font-display text-3xl font-extrabold">Empieza gratis, crece sin riesgo</h1>
-            <p className="text-muted-foreground">Sin permanencia. Cambia de modalidad cuando quieras.</p>
+            <h1 className="font-display text-3xl font-extrabold">{t("Empieza gratis, crece sin riesgo", "Start free, grow risk-free")}</h1>
+            <p className="text-muted-foreground">{t("Sin permanencia. Cambia de modalidad cuando quieras.", "No commitment. Switch modes whenever you want.")}</p>
 
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               {PLANS.map((p) => (
                 <div key={p.id} className={"relative rounded-3xl border p-7 transition-all " + (p.featured ? "border-primary bg-linear-to-br from-primary to-action text-primary-foreground shadow-pop" : "border-border bg-card")}>
                   {p.featured && (
-                    <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent-foreground">Más elegido</span>
+                    <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-accent-foreground">{t("Más elegido", "Most popular")}</span>
                   )}
                   <div className="flex items-baseline justify-between">
                     <h3 className="font-display text-2xl font-bold">{p.name}</h3>
@@ -140,7 +147,7 @@ function PlansPage() {
                   <p className={"mt-1 text-sm " + (p.featured ? "opacity-80" : "text-muted-foreground")}>{p.tagline}</p>
                   <div className="mt-5 flex items-baseline gap-1">
                     <span className="font-display text-5xl font-extrabold">${p.monthlyMxn}</span>
-                    <span className={p.featured ? "opacity-80" : "text-muted-foreground"}>MXN / mes</span>
+                    <span className={p.featured ? "opacity-80" : "text-muted-foreground"}>MXN / {t("mes", "mo")}</span>
                   </div>
                   <ul className="mt-6 space-y-2 text-sm">
                     {p.features.map((f) => (
@@ -159,9 +166,9 @@ function PlansPage() {
                       disabled={current?.plan === p.id}
                     >
                       {current?.plan === p.id ? (
-                        <span>Plan actual</span>
+                        <span>{t("Plan actual", "Current plan")}</span>
                       ) : (
-                        <Link to="/crear"><Sparkles className="mr-2 size-4" /> Crear tienda gratis</Link>
+                        <Link to="/crear"><Sparkles className="mr-2 size-4" /> {t("Crear tienda gratis", "Create free store")}</Link>
                       )}
                     </Button>
                   ) : (
@@ -172,8 +179,8 @@ function PlansPage() {
                       onClick={() => setSelected(p.id)}
                       disabled={current?.plan === p.id}
                     >
-                      {current?.plan === p.id ? "Plan actual" : (
-                        <><Sparkles className="mr-2 size-4" /> Activar {p.name}</>
+                      {current?.plan === p.id ? t("Plan actual", "Current plan") : (
+                        <><Sparkles className="mr-2 size-4" /> {t("Activar", "Activate")} {p.name}</>
                       )}
                     </Button>
                   )}
@@ -184,15 +191,15 @@ function PlansPage() {
             <div className="mt-10 rounded-2xl border border-dashed border-accent bg-accent-soft/40 p-5">
               <div className="flex items-center gap-2">
                 <Ticket className="size-4 text-accent-foreground" />
-                <span className="text-sm font-bold text-accent-foreground">¿Tienes un cupón de demo?</span>
+                <span className="text-sm font-bold text-accent-foreground">{t("¿Tienes un cupón de demo?", "Have a demo coupon?")}</span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Input placeholder="DEMO-XXXX" value={code} onChange={(e) => setCode(e.target.value)} className="max-w-xs uppercase" />
                 <Button onClick={redeem} disabled={redeeming || !code}>
-                  {redeeming && <Loader2 className="mr-2 size-4 animate-spin" />} Canjear
+                  {redeeming && <Loader2 className="mr-2 size-4 animate-spin" />} {t("Canjear", "Redeem")}
                 </Button>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">Activa un plan gratuito durante los días indicados en el cupón.</p>
+              <p className="mt-2 text-xs text-muted-foreground">{t("Activa un plan gratuito durante los días indicados en el cupón.", "Activates a free plan for the number of days shown on the coupon.")}</p>
             </div>
           </>
         )}
