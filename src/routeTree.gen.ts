@@ -23,7 +23,6 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCuentaRouteImport } from './routes/_authenticated.cuenta'
 import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.crear'
-import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authenticated.bienvenida'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
@@ -106,11 +105,6 @@ const AuthenticatedCrearRoute = AuthenticatedCrearRouteImport.update({
   path: '/crear',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedBienvenidaRoute = AuthenticatedBienvenidaRouteImport.update({
-  id: '/bienvenida',
-  path: '/bienvenida',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -185,7 +179,6 @@ export interface FileRoutesByFullPath {
   '/planes': typeof PlanesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/crear': typeof AuthenticatedCrearRoute
   '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -212,7 +205,6 @@ export interface FileRoutesByTo {
   '/planes': typeof PlanesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/crear': typeof AuthenticatedCrearRoute
   '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -242,7 +234,6 @@ export interface FileRoutesById {
   '/planes': typeof PlanesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/_authenticated/crear': typeof AuthenticatedCrearRoute
   '/_authenticated/cuenta': typeof AuthenticatedCuentaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -272,7 +263,6 @@ export interface FileRouteTypes {
     | '/planes'
     | '/sitemap.xml'
     | '/admin'
-    | '/bienvenida'
     | '/crear'
     | '/cuenta'
     | '/dashboard'
@@ -299,7 +289,6 @@ export interface FileRouteTypes {
     | '/planes'
     | '/sitemap.xml'
     | '/admin'
-    | '/bienvenida'
     | '/crear'
     | '/cuenta'
     | '/dashboard'
@@ -328,7 +317,6 @@ export interface FileRouteTypes {
     | '/planes'
     | '/sitemap.xml'
     | '/_authenticated/admin'
-    | '/_authenticated/bienvenida'
     | '/_authenticated/crear'
     | '/_authenticated/cuenta'
     | '/_authenticated/dashboard'
@@ -470,13 +458,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCrearRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/bienvenida': {
-      id: '/_authenticated/bienvenida'
-      path: '/bienvenida'
-      fullPath: '/bienvenida'
-      preLoaderRoute: typeof AuthenticatedBienvenidaRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -566,7 +547,6 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedBienvenidaRoute: typeof AuthenticatedBienvenidaRoute
   AuthenticatedCrearRoute: typeof AuthenticatedCrearRoute
   AuthenticatedCuentaRoute: typeof AuthenticatedCuentaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -577,7 +557,6 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedBienvenidaRoute: AuthenticatedBienvenidaRoute,
   AuthenticatedCrearRoute: AuthenticatedCrearRoute,
   AuthenticatedCuentaRoute: AuthenticatedCuentaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,

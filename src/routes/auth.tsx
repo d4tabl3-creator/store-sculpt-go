@@ -63,13 +63,13 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/bienvenida`,
+            emailRedirectTo: `${window.location.origin}/crear`,
             data: { full_name: fullName },
           },
         });
         if (error) throw error;
         if (data.session) {
-          navigate({ to: "/bienvenida" });
+          navigate({ to: "/crear" });
         } else {
           toast.success("Cuenta creada. Revisa tu correo para confirmarla.");
           setMode("signin");
