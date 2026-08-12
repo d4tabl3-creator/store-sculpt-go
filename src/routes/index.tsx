@@ -583,7 +583,6 @@ function Landing() {
       <main>
         <Hero />
         <QueEsActivo />
-        <DemoVitrina />
         <ParaQuien />
         <Precios />
         <FAQ />
