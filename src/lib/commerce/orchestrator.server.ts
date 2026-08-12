@@ -207,8 +207,18 @@ export async function runProvisioning(storeId: string): Promise<void> {
       .select("id, name, description, price_cents, image_url, stock")
       .eq("store_id", storeId)
       .order("sort_order");
+
+    // Un producto que falla NO tumba la tienda: se marca ese producto y se
+    // continúa con los demás. La tienda queda "incompleta", nunca degradada.
+    const failedProducts: Array<{ id: string; name: string; message: string }> = [];
     for (const p of products || []) {
-      await syncProductToProvider(binding, p.id as string);
+      try {
+        await syncProductToProvider(binding, p.id as string);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Error de sincronización";
+        failedProducts.push({ id: p.id as string, name: (p.name as string) ?? "", message });
+        await log(storeId, provider.id, "product.sync_failed", "error", { productId: p.id, message });
+      }
     }
 
     await setStep(storeId, "webhooks");
@@ -222,29 +232,33 @@ export async function runProvisioning(storeId: string): Promise<void> {
     await setStep(storeId, "ready");
     await supabaseAdmin
       .from("commerce_store_bindings")
-      .update({ last_synced_at: new Date().toISOString() })
+      .update({
+        last_synced_at: new Date().toISOString(),
+        provisioning_error: failedProducts.length
+          ? `Tienda incompleta: ${failedProducts.length} producto(s) pendiente(s) de sincronizar con el proveedor.`
+          : null,
+      })
       .eq("store_id", storeId);
-    await log(storeId, provider.id, "provision.ready", "info");
+    await log(
+      storeId,
+      provider.id,
+      failedProducts.length ? "provision.ready_incomplete" : "provision.ready",
+      failedProducts.length ? "warn" : "info",
+      failedProducts.length ? { failedProducts } : undefined,
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error desconocido";
     const retriable = err instanceof OrchestratorError ? err.retriable : true;
     await log(storeId, provider.id, "provision.failed", "error", { message, retriable });
 
-    // Degradación garantizada: si el conector externo no puede, el motor
-    // nativo asume la tienda para que el cliente nunca se quede varado.
-    if (provider.id !== "internal") {
-      await supabaseAdmin
-        .from("commerce_store_bindings")
-        .update({ provider: "internal", provisioning_error: null })
-        .eq("store_id", storeId);
-      await log(storeId, "internal", "provision.fallback_internal", "warn", { message });
-      await runProvisioning(storeId);
-      return;
-    }
+    // Sin degradación automática: si el conector externo falla, la tienda
+    // permanece vinculada a ese conector y el error queda registrado.
+    // Cambiar de proveedor requiere autorización explícita.
     await setStep(storeId, "failed", message);
     throw err;
   }
 }
+
 
 // ---------------------------------------------------------------------------
 // Productos / inventario / pedidos

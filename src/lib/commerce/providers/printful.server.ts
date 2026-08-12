@@ -137,7 +137,7 @@ async function createSyncProductVariants(
   variantId: number,
   file: { type: string; id?: number; url?: string },
 ) {
-  return printful<{ id: number; external_id: string; sync_variants: Array<{ id: number; external_id: string }> }>(
+  return printful<{ id: number; external_id?: string; sync_variants?: Array<{ id: number; external_id?: string }> }>(
     `/store/products?store_id=${storeId}`,
     {
       method: "POST",
@@ -154,6 +154,37 @@ async function createSyncProductVariants(
       }),
     },
   );
+}
+
+/**
+ * La respuesta de creación del proveedor no siempre incluye `sync_variants`.
+ * Nunca asumimos `sync_variants[0]`: si no viene, releemos el producto recién
+ * creado y tomamos su variante real. Jamás se inventa un id de variante.
+ */
+async function resolveSyncVariantId(
+  storeId: number,
+  syncProductId: number,
+  fromCreate?: Array<{ id: number }> | null,
+): Promise<string> {
+  const direct = Array.isArray(fromCreate) ? fromCreate[0]?.id : undefined;
+  if (direct) return String(direct);
+
+  const detail = await printful<{
+    sync_product?: { id: number };
+    sync_variants?: Array<{ id: number }>;
+    id?: number;
+  }>(`/store/products/${syncProductId}?store_id=${storeId}`);
+
+  const variants = Array.isArray(detail?.sync_variants) ? detail.sync_variants : [];
+  const id = variants[0]?.id;
+  if (!id) {
+    throw new OrchestratorError(
+      `El proveedor creó el producto ${syncProductId} pero no devolvió ninguna variante sincronizada.`,
+      "printful",
+      true,
+    );
+  }
+  return String(id);
 }
 
 async function createSyncProduct(
@@ -182,13 +213,19 @@ async function createSyncProduct(
   }
 
   const created = await createSyncProductVariants(storeId, product, variantId, file as { type: string; id?: number; url?: string });
+  const createdId = Number(created?.id);
+  if (!Number.isFinite(createdId) || createdId <= 0) {
+    throw new OrchestratorError("El proveedor no devolvió el id del producto creado", "printful", true);
+  }
+  const externalVariantId = await resolveSyncVariantId(storeId, createdId, created?.sync_variants ?? null);
   return {
-    id: created.id,
-    external_product_id: String(created.id),
-    external_variant_id: String(created.sync_variants[0]?.id || created.id),
+    id: createdId,
+    external_product_id: String(createdId),
+    external_variant_id: externalVariantId,
     external_file_id: externalFileId,
   };
 }
+
 
 export const printfulProvider: CommerceProvider = {
   id: "printful",
@@ -344,13 +381,24 @@ export const printfulProvider: CommerceProvider = {
     if (!storeId) throw new OrchestratorError("Tienda Printful no disponible", "printful", false);
 
     if (product.externalProductId) {
-      const syncProduct = await printful<{ id: number; sync_variants: Array<{ id: number; external_id: string }> }>(`/store/products/${product.externalProductId}?store_id=${storeId}`);
+      const detail = await printful<{
+        id?: number;
+        sync_product?: { id: number };
+        sync_variants?: Array<{ id: number }>;
+      }>(`/store/products/${product.externalProductId}?store_id=${storeId}`);
+      const syncProductId = Number(detail?.sync_product?.id ?? detail?.id ?? product.externalProductId);
+      const externalVariantId = await resolveSyncVariantId(
+        storeId,
+        syncProductId,
+        detail?.sync_variants ?? null,
+      );
       return {
-        externalProductId: String(syncProduct.id),
-        externalVariantId: String(syncProduct.sync_variants[0]?.id || syncProduct.id),
+        externalProductId: String(syncProductId),
+        externalVariantId,
         externalInventoryItemId: null,
       };
     }
+
 
     // El producto debe traer su variante real de catálogo. Sin ella no se
     // fabrica nada: es preferible marcarlo para revisión que enviar a producir
