@@ -161,7 +161,7 @@ function Hero() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="#plantillas">Ver activos disponibles</a>
+              <a href="#precios">Ver precios</a>
             </Button>
           </div>
           <ul className="mt-7 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
