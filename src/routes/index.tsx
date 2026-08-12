@@ -198,12 +198,12 @@ const ACTIVO_RECEIVES = [
 
 const ACTIVO_WORKFLOW = [
   "Eliges una estructura disponible.",
-  "La personalizas dentro de las opciones permitidas.",
+  "Personalizas tu tienda.",
   "Agregas tu identidad.",
-  "Los productos y precios base permanecen definidos por el sistema.",
-  "El sistema establece una comisión base para tu operación y, cuando está habilitado, puedes agregar una comisión adicional.",
+  "Tienes productos listos para vender, con precios ya establecidos.",
+  "Defines tu margen de ganancia dentro de las opciones disponibles.",
   "Publicas y vendes.",
-  "El proveedor ejecuta la parte operativa correspondiente.",
+  "Tú vendes. Nosotros nos encargamos de que el pedido llegue hasta la puerta de tu cliente.",
 ];
 
 function QueEsActivo() {
