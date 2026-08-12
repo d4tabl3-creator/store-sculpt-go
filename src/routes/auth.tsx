@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 
 const AUTH_URL = "https://store-sculpt-go.lovable.app/auth";
 const AUTH_DESC = "Entra o crea tu cuenta DªTªBLe para armar tu tienda online en 4 pasos.";
@@ -49,7 +48,7 @@ function AuthPage() {
     if (m.includes("weak") || m.includes("password should") || m.includes("at least"))
       return "La contraseña es demasiado débil. Usa al menos 8 caracteres combinando mayúscula, minúscula, número y un símbolo (ejemplo: Tienda#2026mx).";
     if (m.includes("already registered") || m.includes("user already"))
-      return "Ese correo ya tiene cuenta. Entra con “Continuar con Google” o inicia sesión con tu contraseña.";
+      return "Ese correo ya tiene cuenta. Inicia sesión con tu contraseña.";
     if (m.includes("invalid login")) return "Correo o contraseña incorrectos.";
     if (m.includes("email not confirmed")) return "Confirma tu correo con el enlace que te enviamos.";
     if (m.includes("rate limit")) return "Demasiados intentos. Espera un minuto e inténtalo de nuevo.";
@@ -88,23 +87,6 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result?.error) {
-        toast.error(mensajeError(result.error));
-        return;
-      }
-      if (result?.redirected) return;
-      navigate({ to: "/dashboard" });
-    } catch (err) {
-      toast.error(mensajeError(err));
-    }
-  }
-
-
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4">
       <div className="w-full max-w-md rounded-3xl border border-border/60 bg-card p-8 shadow-xl">
@@ -118,15 +100,7 @@ function AuthPage() {
           {mode === "signin" ? "Accede a tu panel de tiendas" : "Empieza tu tienda en 10 minutos"}
         </p>
 
-        <Button variant="outline" className="mt-6 w-full" onClick={handleGoogle}>
-          Continuar con Google
-        </Button>
-
-        <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="h-px flex-1 bg-border" /> o con email <div className="h-px flex-1 bg-border" />
-        </div>
-
-        <form onSubmit={handleEmail} className="space-y-3">
+        <form onSubmit={handleEmail} className="mt-6 space-y-3">
           {mode === "signup" && (
             <div>
               <Label htmlFor="fullName">Nombre</Label>
