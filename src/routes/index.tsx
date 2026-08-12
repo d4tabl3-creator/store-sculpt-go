@@ -112,7 +112,6 @@ function Nav() {
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
           <a href="#que-es-activo" className="hover:text-foreground">Qué es</a>
-          <a href="#plantillas" className="hover:text-foreground">Activos disponibles</a>
           <a href="#para-quien" className="hover:text-foreground">Para quién</a>
           <a href="#precios" className="hover:text-foreground">Precios</a>
           <a href="#faq" className="hover:text-foreground">FAQ</a>
