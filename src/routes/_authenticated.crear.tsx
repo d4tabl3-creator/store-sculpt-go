@@ -28,7 +28,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/crear")({
   head: () => ({ meta: [{ title: "Crear producto — DªTªBLe" }] }),
-  component: CreateProductPage;
+  component: CreateProductPage,
 });
 
 type Stage = "catalog" | "customize" | "mockups" | "info" | "price" | "publish";
