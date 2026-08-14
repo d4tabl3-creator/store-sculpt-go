@@ -77,6 +77,8 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         productId: number;
         variantId?: number;
         name?: string;
+        description?: string;
+        priceCents?: number;
         designUrl?: string;
         mockupUrl?: string;
         placement?: string;
