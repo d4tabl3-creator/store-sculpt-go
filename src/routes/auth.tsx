@@ -124,13 +124,17 @@ function AuthPage() {
           D<span className="text-primary">ª</span>T<span className="text-primary">ª</span>BLe
         </Link>
         <h1 className="mt-6 text-center font-display text-2xl font-bold">
-          {mode === "signin" ? t("Entrar", "Sign in") : t("Crear cuenta", "Create account")}
+          {mode === "signin" ? t("Entrar", "Sign in") : mode === "signup" ? t("Crear cuenta", "Create account") : t("Restablecer contraseña", "Reset password")}
         </h1>
         <p className="mt-1 text-center text-sm text-muted-foreground">
-          {mode === "signin" ? t("Accede a tu panel de tiendas", "Access your store dashboard") : t("Empieza tu tienda en 10 minutos", "Start your store in 10 minutes")}
+          {mode === "signin"
+            ? t("Accede a tu panel de tiendas", "Access your store dashboard")
+            : mode === "signup"
+              ? t("Empieza tu tienda en 10 minutos", "Start your store in 10 minutes")
+              : t("Te enviaremos un enlace a tu correo", "We'll send a link to your email")}
         </p>
 
-        <form onSubmit={handleEmail} className="mt-6 space-y-3">
+        <form onSubmit={mode === "reset" ? handleReset : handleEmail} className="mt-6 space-y-3">
           {mode === "signup" && (
             <div>
               <Label htmlFor="fullName">{t("Nombre", "Name")}</Label>
