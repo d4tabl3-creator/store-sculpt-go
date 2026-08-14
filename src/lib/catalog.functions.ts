@@ -77,6 +77,8 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         productId: number;
         variantId?: number;
         name?: string;
+        description?: string;
+        priceCents?: number;
         designUrl?: string;
         mockupUrl?: string;
         placement?: string;
@@ -138,8 +140,9 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       rows.push({
         store_id: data.storeId,
         name: item.name?.trim() || product.title,
-        description: product.description,
-        price_cents: variant.priceCents,
+        description: item.description?.trim() || product.description,
+        price_cents:
+          typeof item.priceCents === "number" && item.priceCents > 0 ? Math.round(item.priceCents) : variant.priceCents,
         image_url: mockup || variant.image || product.image,
         mockup_url: mockup,
         design_url: item.designUrl ?? null,
