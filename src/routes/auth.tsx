@@ -63,6 +63,28 @@ function AuthPage() {
     return raw || t("Ocurrió un error. Inténtalo de nuevo.", "Something went wrong. Please try again.");
   }
 
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      if (error) throw error;
+      toast.success(
+        t(
+          "Te enviamos un correo con el enlace para restablecer tu contraseña.",
+          "We sent you an email with the link to reset your password.",
+        ),
+      );
+      setMode("signin");
+    } catch (err) {
+      toast.error(mensajeError(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
