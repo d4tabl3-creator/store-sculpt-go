@@ -145,27 +145,47 @@ function AuthPage() {
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
-          <div>
-            <Label htmlFor="password">{t("Contraseña", "Password")}</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
-            {mode === "signup" && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("Mínimo 8 caracteres. Evita palabras comunes (ej. usa Tienda#2026mx).", "At least 8 characters. Avoid common words (e.g. use Store#2026us).")}
-              </p>
-            )}
-          </div>
+          {mode !== "reset" && (
+            <div>
+              <Label htmlFor="password">{t("Contraseña", "Password")}</Label>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+              {mode === "signup" && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t("Mínimo 8 caracteres. Evita palabras comunes (ej. usa Tienda#2026mx).", "At least 8 characters. Avoid common words (e.g. use Store#2026us).")}
+                </p>
+              )}
+            </div>
+          )}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? t("Cargando…", "Loading…") : mode === "signin" ? t("Entrar", "Sign in") : t("Crear cuenta", "Create account")}
+            {loading
+              ? t("Cargando…", "Loading…")
+              : mode === "signin"
+                ? t("Entrar", "Sign in")
+                : mode === "signup"
+                  ? t("Crear cuenta", "Create account")
+                  : t("Enviar enlace", "Send link")}
           </Button>
         </form>
+
+        {mode === "signin" && (
+          <button
+            type="button"
+            onClick={() => setMode("reset")}
+            className="mt-3 w-full text-center text-sm text-muted-foreground hover:text-foreground"
+          >
+            {t("¿Olvidaste tu contraseña?", "Forgot your password?")}
+          </button>
+        )}
 
         <button
           type="button"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
           className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
         >
-          {mode === "signin" ? t("¿No tienes cuenta? Crear una", "Don't have an account? Create one") : t("¿Ya tienes cuenta? Entrar", "Already have an account? Sign in")}
+          {mode === "signin"
+            ? t("¿No tienes cuenta? Crear una", "Don't have an account? Create one")
+            : t("¿Ya tienes cuenta? Entrar", "Already have an account? Sign in")}
         </button>
       </div>
     </div>
