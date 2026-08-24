@@ -246,6 +246,8 @@ function AuthPage() {
             ? t("¿No tienes cuenta? Crear una", "Don't have an account? Create one")
             : t("¿Ya tienes cuenta? Entrar", "Already have an account? Sign in")}
         </button>
+        )}
+
       </div>
     </div>
   );
