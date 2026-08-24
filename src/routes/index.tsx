@@ -12,39 +12,40 @@ import { useT } from "@/lib/i18n";
 
 const HOME_URL = "https://store-sculpt-go.lovable.app/";
 const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
-const HOME_TITLE = "DªTªBLe — Activos digitales productivos";
-const HOME_DESC = "Recibe una tienda digital ya estructurada, con catálogo y reglas comerciales preparadas. Personalízala dentro de las opciones disponibles, define tu margen y vende.";
+const HOME_TITLE = "DªTªBLe — Crea y vende tus productos personalizados";
+const HOME_DESC = "Diseña tus productos, ponles tu precio y publícalos en tu propia tienda online en minutos. Nosotros producimos y enviamos cada pedido a tu cliente.";
 
 const HOME_FAQS_STATIC = [
   {
-    q: "¿Qué recibo exactamente?",
-    a: "Una tienda digital ya estructurada: catálogo de productos disponibles, reglas comerciales preparadas, herramientas para administrar tus ventas y la operación conectada para que los pedidos lleguen a tus clientes.",
+    q: "¿Qué puedo hacer con Datable?",
+    a: "Eliges un producto del catálogo, subes tu diseño, ves cómo queda en las maquetas, defines tu precio y lo publicas en tu tienda online con enlace propio para empezar a vender.",
   },
   {
-    q: "¿Tengo que contratar o gestionar algo por mi cuenta?",
-    a: "No. Datable integra la operación necesaria para que puedas vender sin encargarte de la infraestructura que hay detrás.",
+    q: "¿Necesito comprar inventario?",
+    a: "No. Cada producto se fabrica cuando alguien te lo compra, así que no inviertes en inventario ni te quedas con producto sin vender.",
   },
   {
-    q: "¿Quién se encarga de preparar y enviar los pedidos?",
-    a: "Datable coordina la operación necesaria para que el pedido llegue hasta tu cliente. Tú te concentras en vender.",
+    q: "¿Quién produce y envía los pedidos?",
+    a: "Datable coordina la producción y el envío de cada pedido hasta tu cliente. Tú te concentras en diseñar y vender.",
   },
   {
     q: "¿Necesito saber programar o diseñar?",
-    a: "No. Eliges una estructura disponible, la personalizas dentro de las opciones que ofrece y agregas tu identidad.",
+    a: "No. El editor te guía paso a paso: producto, diseño, maquetas, información, precio y publicar. Tu tienda queda lista sin escribir una línea de código.",
   },
   {
-    q: "¿Puedo cambiar los productos y los precios?",
-    a: "Trabajas con el catálogo y las reglas que ya vienen preparadas. Dentro de las opciones disponibles puedes definir tu margen de ganancia.",
+    q: "¿Yo decido el precio y mi ganancia?",
+    a: "Sí. Al fijar tu precio de venta ves el costo de producción y envío y tu ganancia por venta antes de publicar.",
   },
   {
     q: "¿Cuánto se queda DªTªBLe de cada venta?",
-    a: "10% si vendes en la modalidad gratuita y 0% si activas Pro. El resto es tuyo.",
+    a: "10% si vendes en la modalidad gratuita y 0% si activas Pro por $499 MXN al mes. El resto es tuyo.",
   },
   {
     q: "¿Puedo cancelar cuando quiera?",
     a: "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver.",
   },
 ];
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
