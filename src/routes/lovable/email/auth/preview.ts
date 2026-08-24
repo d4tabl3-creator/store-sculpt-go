@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "Datable proyect"
+const SITE_NAME = "DªTªBLe"
 const ROOT_DOMAIN = "datable.com.mx"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
