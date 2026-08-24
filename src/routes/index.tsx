@@ -557,7 +557,7 @@ function Footer() {
           <FooterCol
             title={t("Producto", "Product")}
             links={[
-              { label: t("Qué es", "What it is"), href: "#que-es-activo" },
+              { label: t("Cómo funciona", "How it works"), href: "#como-funciona" },
               { label: t("Precios", "Pricing"), href: "#precios" },
               { label: t("Para quién", "Who it's for"), href: "#para-quien" },
             ]}
