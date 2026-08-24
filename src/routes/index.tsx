@@ -138,10 +138,10 @@ function Nav() {
 function Hero() {
   const t = useT();
   const bullets = [
-    t("No es una página en blanco", "It's not a blank page"),
-    t("Catálogo y estructura ya preparados", "Catalog and structure already set up"),
-    t("Tu identidad aplicada a la tienda", "Your brand applied to the store"),
-    t("Tú vendes; Datable conecta la operación", "You sell; Datable handles the operation"),
+    t("Sin comprar inventario", "No inventory to buy"),
+    t("Diseña y ve tus maquetas al instante", "Design and preview your mockups instantly"),
+    t("Tú pones el precio y ves tu ganancia", "You set the price and see your profit"),
+    t("Nosotros producimos y enviamos", "We produce and ship"),
   ];
   return (
     <section className="hero-surface relative overflow-hidden">
@@ -149,19 +149,19 @@ function Hero() {
       <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
         <div>
           <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary-soft px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary">
-            <Sparkles className="size-3.5" /> {t("Activo digital productivo", "A productive digital asset")}
+            <Sparkles className="size-3.5" /> {t("Tu tienda de productos personalizados", "Your custom-product store")}
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            {t("Datable crea y entrega", "Datable creates and delivers")}{" "}
+            {t("Diseña tus productos y", "Design your products and")}{" "}
             <span className="bg-linear-to-r from-primary to-action bg-clip-text text-transparent">
-              {t("activos digitales productivos", "productive digital assets")}
+              {t("véndelos en tu propia tienda", "sell them in your own store")}
             </span>
             .
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
             {t(
-              "Hoy ese activo es una tienda digital de productos personalizados, ya estructurada y lista para operar. Eliges una estructura disponible, la haces tuya dentro de sus opciones y la pones a vender.",
-              "Today that asset is a digital store for personalized products, already structured and ready to run. You choose an available structure, make it yours within its options, and start selling."
+              "Elige un producto, sube tu diseño, ponle precio y publícalo. Tu tienda queda en línea con enlace propio y nosotros producimos y enviamos cada pedido a tu cliente.",
+              "Pick a product, upload your design, set your price and publish. Your store goes live with its own link, and we produce and ship every order to your customer."
             )}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -187,48 +187,48 @@ function Hero() {
   );
 }
 
-/* ---------- Qué es un activo digital productivo ---------- */
+/* ---------- Cómo funciona ---------- */
 
 function QueEsActivo() {
   const t = useT();
   const receives = [
-    t("Una tienda digital ya estructurada.", "An already-structured digital store."),
-    t("Un catálogo de productos disponibles.", "A catalog of available products."),
-    t("Una estructura comercial preparada para vender.", "A commercial structure ready to sell."),
-    t("Personalización dentro de las opciones disponibles.", "Customization within the available options."),
-    t("Tu identidad aplicada a la tienda.", "Your brand identity applied to the store."),
-    t("Herramientas para administrar tu tienda y tus ventas.", "Tools to manage your store and your sales."),
+    t("Un catálogo de productos listos para personalizar.", "A catalog of products ready to customize."),
+    t("Un editor para subir tu diseño y colocarlo en el producto.", "An editor to upload your design and place it on the product."),
+    t("Maquetas realistas para ver cómo queda antes de publicar.", "Realistic mockups to see the result before publishing."),
+    t("Tu tienda online con enlace propio y tu estilo visual.", "Your online store with its own link and your visual style."),
+    t("Precio y ganancia calculados por producto.", "Price and profit calculated per product."),
+    t("Cobro a tus clientes y panel para seguir tus ventas.", "Customer checkout and a panel to track your sales."),
     t(
-      "Una operación conectada para que tus pedidos lleguen a tus clientes sin que tengas que encargarte de la logística.",
-      "A connected operation so your orders reach your customers without you handling the logistics."
+      "Producción y envío coordinados por Datable hasta la puerta de tu cliente.",
+      "Production and shipping coordinated by Datable all the way to your customer's door."
     ),
   ];
   const workflow = [
-    t("COMIENZA CON UNA TIENDA LISTA PARA VENDER.", "START WITH A STORE READY TO SELL."),
-    t("DALE A TU TIENDA TU IDENTIDAD.", "GIVE YOUR STORE YOUR IDENTITY."),
-    t("TIENES PRODUCTOS PREPARADOS PARA VENDER.", "YOU HAVE PRODUCTS READY TO SELL."),
-    t("DECIDE CUÁNTO QUIERES GANAR CON CADA VENTA.", "DECIDE HOW MUCH YOU WANT TO EARN PER SALE."),
-    t("PUBLICA Y VENDE.", "PUBLISH AND SELL."),
+    t("ELIGE QUÉ QUIERES VENDER.", "CHOOSE WHAT YOU WANT TO SELL."),
+    t("SUBE TU DISEÑO Y COLÓCALO EN EL PRODUCTO.", "UPLOAD YOUR DESIGN AND PLACE IT ON THE PRODUCT."),
+    t("REVISA TUS MAQUETAS.", "REVIEW YOUR MOCKUPS."),
+    t("ESCRIBE EL TÍTULO Y LA DESCRIPCIÓN.", "WRITE THE TITLE AND DESCRIPTION."),
+    t("DECIDE TU PRECIO Y VE TU GANANCIA.", "SET YOUR PRICE AND SEE YOUR PROFIT."),
     t(
-      "NOSOTROS COORDINAMOS TODO LO NECESARIO PARA QUE EL PEDIDO LLEGUE A TU CLIENTE.",
-      "WE COORDINATE EVERYTHING NEEDED SO THE ORDER REACHES YOUR CUSTOMER."
+      "PUBLICA EN TU TIENDA Y NOSOTROS PRODUCIMOS Y ENVIAMOS CADA PEDIDO.",
+      "PUBLISH TO YOUR STORE AND WE PRODUCE AND SHIP EVERY ORDER."
     ),
   ];
   return (
-    <section id="que-es-activo" className="border-t border-border/60 bg-card/40">
+    <section id="como-funciona" className="border-t border-border/60 bg-card/40">
       <div className="mx-auto max-w-5xl px-4 py-16 md:py-20">
         <SectionHeader
-          eyebrow={t("Una estructura lista para comenzar", "A structure ready to get started")}
-          title={t("Datable no te da una página en blanco.", "Datable doesn't give you a blank page.")}
+          eyebrow={t("De la idea a la venta", "From idea to sale")}
+          title={t("Tu tienda lista en la misma sesión.", "Your store ready in one sitting.")}
           desc={t(
-            "Te entrega una estructura comercial ya preparada que puedes personalizar dentro de sus opciones.",
-            "It delivers an already-prepared commercial structure that you can customize within its options."
+            "Un solo recorrido: producto, diseño, maquetas, información, precio y publicar.",
+            "One single flow: product, design, mockups, details, price and publish."
           )}
         />
 
         <div className="mt-10 grid gap-8 md:grid-cols-2 md:gap-12">
           <div>
-            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">{t("¿Qué recibes?", "What do you get?")}</h3>
+            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">{t("¿Qué incluye?", "What's included?")}</h3>
             <ul className="mt-5 space-y-3">
               {receives.map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-foreground">
@@ -253,11 +253,11 @@ function QueEsActivo() {
         </div>
 
         <div className="mt-12 border-t border-border/60 pt-8">
-          <h3 className="font-display text-xl font-bold text-foreground">{t("¿Qué es un activo digital productivo?", "What is a productive digital asset?")}</h3>
+          <h3 className="font-display text-xl font-bold text-foreground">{t("¿Y el inventario?", "What about inventory?")}</h3>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
             {t(
-              "Es una estructura digital que ya tiene organizado lo necesario para cumplir una función comercial. En la etapa actual, ese activo es una tienda digital preparada para vender productos personalizados: no tienes que construir desde cero el catálogo, la estructura comercial, la tecnología ni la operación. Recibes una estructura preparada y la haces tuya dentro de las opciones disponibles.",
-              "It's a digital structure that already has everything organized to fulfill a commercial function. At this stage, that asset is a digital store ready to sell personalized products: you don't have to build the catalog, the commercial structure, the technology, or the operation from scratch. You receive a prepared structure and make it yours within the available options."
+              "No necesitas comprarlo. Cada producto se fabrica hasta que alguien te lo compra: tu cliente paga en tu tienda, Datable coordina la producción y el envío, y tú te quedas con tu ganancia. Sin bodega, sin mínimos de compra y sin producto sin vender.",
+              "You don't need to buy it. Each product is made only after someone buys it: your customer pays in your store, Datable coordinates production and shipping, and you keep your profit. No warehouse, no minimum orders and no unsold stock."
             )}
           </p>
         </div>
@@ -265,6 +265,7 @@ function QueEsActivo() {
     </section>
   );
 }
+
 
 /* ---------- Para quién ---------- */
 
