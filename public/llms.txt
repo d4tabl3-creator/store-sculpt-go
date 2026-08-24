@@ -1,10 +1,10 @@
 # DªTªBLe
 
-> Datable crea y entrega activos digitales productivos: estructuras comerciales digitales ya preparadas para vender. Hoy ese activo es una tienda digital de productos personalizados.
+> Datable es la plataforma donde creas y vendes tus propios productos personalizados en tu tienda online, sin comprar inventario.
 
-El cliente elige una estructura disponible, la personaliza dentro de las opciones ofrecidas, agrega su identidad, define su margen dentro de lo permitido y vende. Datable se encarga de la infraestructura y coordina la operación necesaria para que el pedido llegue hasta el cliente final. La tienda pública se publica bajo `/t/{slug}`.
+El usuario elige un producto del catálogo, sube su diseño, revisa las maquetas, escribe la información del producto, define su precio y ganancia y lo publica en su tienda. Datable coordina la producción y el envío de cada pedido hasta el cliente final. La tienda pública se publica bajo `/t/{slug}`.
 
 ## Pages
 
-- [Inicio](/): Qué es Datable, qué es un activo digital productivo, qué recibes, cómo funciona y para quién es.
-- [Planes y precios](/planes): Publica sin mensualidad con 20% de comisión por venta, o activa un plan (Starter o Pro) con 10%.
+- [Inicio](/): Qué puedes vender con Datable, cómo funciona el flujo de creación, para quién es y preguntas frecuentes.
+- [Planes y precios](/planes): Publica sin mensualidad con 10% de comisión por venta, o activa Pro por $499 MXN al mes con 0%.

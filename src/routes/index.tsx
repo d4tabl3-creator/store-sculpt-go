@@ -12,39 +12,40 @@ import { useT } from "@/lib/i18n";
 
 const HOME_URL = "https://store-sculpt-go.lovable.app/";
 const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
-const HOME_TITLE = "DªTªBLe — Activos digitales productivos";
-const HOME_DESC = "Recibe una tienda digital ya estructurada, con catálogo y reglas comerciales preparadas. Personalízala dentro de las opciones disponibles, define tu margen y vende.";
+const HOME_TITLE = "DªTªBLe — Crea y vende tus productos personalizados";
+const HOME_DESC = "Diseña tus productos, ponles tu precio y publícalos en tu propia tienda online en minutos. Nosotros producimos y enviamos cada pedido a tu cliente.";
 
 const HOME_FAQS_STATIC = [
   {
-    q: "¿Qué recibo exactamente?",
-    a: "Una tienda digital ya estructurada: catálogo de productos disponibles, reglas comerciales preparadas, herramientas para administrar tus ventas y la operación conectada para que los pedidos lleguen a tus clientes.",
+    q: "¿Qué puedo hacer con Datable?",
+    a: "Eliges un producto del catálogo, subes tu diseño, ves cómo queda en las maquetas, defines tu precio y lo publicas en tu tienda online con enlace propio para empezar a vender.",
   },
   {
-    q: "¿Tengo que contratar o gestionar algo por mi cuenta?",
-    a: "No. Datable integra la operación necesaria para que puedas vender sin encargarte de la infraestructura que hay detrás.",
+    q: "¿Necesito comprar inventario?",
+    a: "No. Cada producto se fabrica cuando alguien te lo compra, así que no inviertes en inventario ni te quedas con producto sin vender.",
   },
   {
-    q: "¿Quién se encarga de preparar y enviar los pedidos?",
-    a: "Datable coordina la operación necesaria para que el pedido llegue hasta tu cliente. Tú te concentras en vender.",
+    q: "¿Quién produce y envía los pedidos?",
+    a: "Datable coordina la producción y el envío de cada pedido hasta tu cliente. Tú te concentras en diseñar y vender.",
   },
   {
     q: "¿Necesito saber programar o diseñar?",
-    a: "No. Eliges una estructura disponible, la personalizas dentro de las opciones que ofrece y agregas tu identidad.",
+    a: "No. El editor te guía paso a paso: producto, diseño, maquetas, información, precio y publicar. Tu tienda queda lista sin escribir una línea de código.",
   },
   {
-    q: "¿Puedo cambiar los productos y los precios?",
-    a: "Trabajas con el catálogo y las reglas que ya vienen preparadas. Dentro de las opciones disponibles puedes definir tu margen de ganancia.",
+    q: "¿Yo decido el precio y mi ganancia?",
+    a: "Sí. Al fijar tu precio de venta ves el costo de producción y envío y tu ganancia por venta antes de publicar.",
   },
   {
     q: "¿Cuánto se queda DªTªBLe de cada venta?",
-    a: "10% si vendes en la modalidad gratuita y 0% si activas Pro. El resto es tuyo.",
+    a: "10% si vendes en la modalidad gratuita y 0% si activas Pro por $499 MXN al mes. El resto es tuyo.",
   },
   {
     q: "¿Puedo cancelar cuando quiera?",
     a: "Sí, sin penalización. Tu tienda se mantiene en pausa por 30 días por si quieres volver.",
   },
 ];
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -112,7 +113,7 @@ function Nav() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
-          <a href="#que-es-activo" className="hover:text-foreground">{t("Qué es", "What it is")}</a>
+          <a href="#como-funciona" className="hover:text-foreground">{t("Cómo funciona", "How it works")}</a>
           <a href="#para-quien" className="hover:text-foreground">{t("Para quién", "Who it's for")}</a>
           <a href="#precios" className="hover:text-foreground">{t("Precios", "Pricing")}</a>
           <a href="#faq" className="hover:text-foreground">FAQ</a>
@@ -137,10 +138,10 @@ function Nav() {
 function Hero() {
   const t = useT();
   const bullets = [
-    t("No es una página en blanco", "It's not a blank page"),
-    t("Catálogo y estructura ya preparados", "Catalog and structure already set up"),
-    t("Tu identidad aplicada a la tienda", "Your brand applied to the store"),
-    t("Tú vendes; Datable conecta la operación", "You sell; Datable handles the operation"),
+    t("Sin comprar inventario", "No inventory to buy"),
+    t("Diseña y ve tus maquetas al instante", "Design and preview your mockups instantly"),
+    t("Tú pones el precio y ves tu ganancia", "You set the price and see your profit"),
+    t("Nosotros producimos y enviamos", "We produce and ship"),
   ];
   return (
     <section className="hero-surface relative overflow-hidden">
@@ -148,19 +149,19 @@ function Hero() {
       <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
         <div>
           <Badge className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary-soft px-3 py-1.5 text-[13px] font-semibold uppercase tracking-wide text-primary">
-            <Sparkles className="size-3.5" /> {t("Activo digital productivo", "A productive digital asset")}
+            <Sparkles className="size-3.5" /> {t("Tu tienda de productos personalizados", "Your custom-product store")}
           </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            {t("Datable crea y entrega", "Datable creates and delivers")}{" "}
+            {t("Diseña tus productos y", "Design your products and")}{" "}
             <span className="bg-linear-to-r from-primary to-action bg-clip-text text-transparent">
-              {t("activos digitales productivos", "productive digital assets")}
+              {t("véndelos en tu propia tienda", "sell them in your own store")}
             </span>
             .
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
             {t(
-              "Hoy ese activo es una tienda digital de productos personalizados, ya estructurada y lista para operar. Eliges una estructura disponible, la haces tuya dentro de sus opciones y la pones a vender.",
-              "Today that asset is a digital store for personalized products, already structured and ready to run. You choose an available structure, make it yours within its options, and start selling."
+              "Elige un producto, sube tu diseño, ponle precio y publícalo. Tu tienda queda en línea con enlace propio y nosotros producimos y enviamos cada pedido a tu cliente.",
+              "Pick a product, upload your design, set your price and publish. Your store goes live with its own link, and we produce and ship every order to your customer."
             )}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -186,48 +187,48 @@ function Hero() {
   );
 }
 
-/* ---------- Qué es un activo digital productivo ---------- */
+/* ---------- Cómo funciona ---------- */
 
 function QueEsActivo() {
   const t = useT();
   const receives = [
-    t("Una tienda digital ya estructurada.", "An already-structured digital store."),
-    t("Un catálogo de productos disponibles.", "A catalog of available products."),
-    t("Una estructura comercial preparada para vender.", "A commercial structure ready to sell."),
-    t("Personalización dentro de las opciones disponibles.", "Customization within the available options."),
-    t("Tu identidad aplicada a la tienda.", "Your brand identity applied to the store."),
-    t("Herramientas para administrar tu tienda y tus ventas.", "Tools to manage your store and your sales."),
+    t("Un catálogo de productos listos para personalizar.", "A catalog of products ready to customize."),
+    t("Un editor para subir tu diseño y colocarlo en el producto.", "An editor to upload your design and place it on the product."),
+    t("Maquetas realistas para ver cómo queda antes de publicar.", "Realistic mockups to see the result before publishing."),
+    t("Tu tienda online con enlace propio y tu estilo visual.", "Your online store with its own link and your visual style."),
+    t("Precio y ganancia calculados por producto.", "Price and profit calculated per product."),
+    t("Cobro a tus clientes y panel para seguir tus ventas.", "Customer checkout and a panel to track your sales."),
     t(
-      "Una operación conectada para que tus pedidos lleguen a tus clientes sin que tengas que encargarte de la logística.",
-      "A connected operation so your orders reach your customers without you handling the logistics."
+      "Producción y envío coordinados por Datable hasta la puerta de tu cliente.",
+      "Production and shipping coordinated by Datable all the way to your customer's door."
     ),
   ];
   const workflow = [
-    t("COMIENZA CON UNA TIENDA LISTA PARA VENDER.", "START WITH A STORE READY TO SELL."),
-    t("DALE A TU TIENDA TU IDENTIDAD.", "GIVE YOUR STORE YOUR IDENTITY."),
-    t("TIENES PRODUCTOS PREPARADOS PARA VENDER.", "YOU HAVE PRODUCTS READY TO SELL."),
-    t("DECIDE CUÁNTO QUIERES GANAR CON CADA VENTA.", "DECIDE HOW MUCH YOU WANT TO EARN PER SALE."),
-    t("PUBLICA Y VENDE.", "PUBLISH AND SELL."),
+    t("ELIGE QUÉ QUIERES VENDER.", "CHOOSE WHAT YOU WANT TO SELL."),
+    t("SUBE TU DISEÑO Y COLÓCALO EN EL PRODUCTO.", "UPLOAD YOUR DESIGN AND PLACE IT ON THE PRODUCT."),
+    t("REVISA TUS MAQUETAS.", "REVIEW YOUR MOCKUPS."),
+    t("ESCRIBE EL TÍTULO Y LA DESCRIPCIÓN.", "WRITE THE TITLE AND DESCRIPTION."),
+    t("DECIDE TU PRECIO Y VE TU GANANCIA.", "SET YOUR PRICE AND SEE YOUR PROFIT."),
     t(
-      "NOSOTROS COORDINAMOS TODO LO NECESARIO PARA QUE EL PEDIDO LLEGUE A TU CLIENTE.",
-      "WE COORDINATE EVERYTHING NEEDED SO THE ORDER REACHES YOUR CUSTOMER."
+      "PUBLICA EN TU TIENDA Y NOSOTROS PRODUCIMOS Y ENVIAMOS CADA PEDIDO.",
+      "PUBLISH TO YOUR STORE AND WE PRODUCE AND SHIP EVERY ORDER."
     ),
   ];
   return (
-    <section id="que-es-activo" className="border-t border-border/60 bg-card/40">
+    <section id="como-funciona" className="border-t border-border/60 bg-card/40">
       <div className="mx-auto max-w-5xl px-4 py-16 md:py-20">
         <SectionHeader
-          eyebrow={t("Una estructura lista para comenzar", "A structure ready to get started")}
-          title={t("Datable no te da una página en blanco.", "Datable doesn't give you a blank page.")}
+          eyebrow={t("De la idea a la venta", "From idea to sale")}
+          title={t("Tu tienda lista en la misma sesión.", "Your store ready in one sitting.")}
           desc={t(
-            "Te entrega una estructura comercial ya preparada que puedes personalizar dentro de sus opciones.",
-            "It delivers an already-prepared commercial structure that you can customize within its options."
+            "Un solo recorrido: producto, diseño, maquetas, información, precio y publicar.",
+            "One single flow: product, design, mockups, details, price and publish."
           )}
         />
 
         <div className="mt-10 grid gap-8 md:grid-cols-2 md:gap-12">
           <div>
-            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">{t("¿Qué recibes?", "What do you get?")}</h3>
+            <h3 className="font-display text-xl font-bold uppercase tracking-tight text-foreground">{t("¿Qué incluye?", "What's included?")}</h3>
             <ul className="mt-5 space-y-3">
               {receives.map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-foreground">
@@ -252,11 +253,11 @@ function QueEsActivo() {
         </div>
 
         <div className="mt-12 border-t border-border/60 pt-8">
-          <h3 className="font-display text-xl font-bold text-foreground">{t("¿Qué es un activo digital productivo?", "What is a productive digital asset?")}</h3>
+          <h3 className="font-display text-xl font-bold text-foreground">{t("¿Y el inventario?", "What about inventory?")}</h3>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
             {t(
-              "Es una estructura digital que ya tiene organizado lo necesario para cumplir una función comercial. En la etapa actual, ese activo es una tienda digital preparada para vender productos personalizados: no tienes que construir desde cero el catálogo, la estructura comercial, la tecnología ni la operación. Recibes una estructura preparada y la haces tuya dentro de las opciones disponibles.",
-              "It's a digital structure that already has everything organized to fulfill a commercial function. At this stage, that asset is a digital store ready to sell personalized products: you don't have to build the catalog, the commercial structure, the technology, or the operation from scratch. You receive a prepared structure and make it yours within the available options."
+              "No necesitas comprarlo. Cada producto se fabrica hasta que alguien te lo compra: tu cliente paga en tu tienda, Datable coordina la producción y el envío, y tú te quedas con tu ganancia. Sin bodega, sin mínimos de compra y sin producto sin vender.",
+              "You don't need to buy it. Each product is made only after someone buys it: your customer pays in your store, Datable coordinates production and shipping, and you keep your profit. No warehouse, no minimum orders and no unsold stock."
             )}
           </p>
         </div>
@@ -265,30 +266,32 @@ function QueEsActivo() {
   );
 }
 
+
 /* ---------- Para quién ---------- */
 
 function ParaQuien() {
   const t = useT();
   const items = [
-    t("QUIERES EMPEZAR SIN UNA GRAN INVERSIÓN INICIAL.", "YOU WANT TO START WITHOUT A BIG INITIAL INVESTMENT."),
-    t("QUIERES VENDER SIN OCUPARTE DE LA PARTE TÉCNICA.", "YOU WANT TO SELL WITHOUT DEALING WITH THE TECHNICAL SIDE."),
+    t("TIENES UN DISEÑO, UNA MARCA O UNA COMUNIDAD Y QUIERES VENDERLE PRODUCTOS.", "YOU HAVE A DESIGN, A BRAND OR A COMMUNITY AND WANT TO SELL THEM PRODUCTS."),
+    t("QUIERES EMPEZAR SIN COMPRAR INVENTARIO NI INVERTIR DE MÁS.", "YOU WANT TO START WITHOUT BUYING INVENTORY OR OVER-INVESTING."),
     t(
-      "QUIERES UNA TIENDA QUE YA TENGA LA ESTRUCTURA NECESARIA PARA OPERAR.",
-      "YOU WANT A STORE THAT ALREADY HAS THE STRUCTURE NEEDED TO OPERATE."
+      "QUIERES VENDER SIN OCUPARTE DE LA PRODUCCIÓN, EL ENVÍO NI LA PARTE TÉCNICA.",
+      "YOU WANT TO SELL WITHOUT HANDLING PRODUCTION, SHIPPING OR THE TECHNICAL SIDE."
     ),
-    t("QUIERES ADMINISTRAR TUS VENTAS DESDE UN SOLO LUGAR.", "YOU WANT TO MANAGE YOUR SALES FROM ONE PLACE."),
+    t("QUIERES ADMINISTRAR TUS PRODUCTOS Y TUS VENTAS DESDE UN SOLO LUGAR.", "YOU WANT TO MANAGE YOUR PRODUCTS AND SALES FROM ONE PLACE."),
   ];
   return (
     <section id="para-quien" className="border-t border-border/60">
       <div className="mx-auto max-w-3xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow={t("PARA QUIÉN ES", "WHO IT'S FOR")}
-          title={t("PARA TI, QUE QUIERES VENDER SIN CONSTRUIRLO TODO DESDE CERO.", "FOR YOU, WHO WANTS TO SELL WITHOUT BUILDING EVERYTHING FROM SCRATCH.")}
+          title={t("PARA TI, QUE QUIERES VENDER TUS PRODUCTOS SIN COMPLICARTE.", "FOR YOU, WHO WANTS TO SELL YOUR PRODUCTS WITHOUT THE HASSLE.")}
           desc={t(
-            "Datable te entrega la estructura digital para comenzar a vender. Tú te concentras en tu tienda, tus clientes y tus ventas.",
-            "Datable gives you the digital structure to start selling. You focus on your store, your customers, and your sales."
+            "Tú pones el diseño y el precio. Datable pone la tienda, la producción y el envío.",
+            "You bring the design and the price. Datable brings the store, the production and the shipping."
           )}
         />
+
         <ul className="mt-10 grid gap-4 sm:grid-cols-2">
           {items.map((it) => (
             <li
@@ -411,47 +414,48 @@ function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
   const faqs = [
     {
-      q: t("¿Qué recibo exactamente?", "What exactly do I get?"),
+      q: t("¿Qué puedo hacer con Datable?", "What can I do with Datable?"),
       a: t(
-        "Una tienda digital ya estructurada: catálogo de productos disponibles, reglas comerciales preparadas, herramientas para administrar tus ventas y la operación conectada para que los pedidos lleguen a tus clientes.",
-        "An already-structured digital store: a catalog of available products, prepared commercial rules, tools to manage your sales, and a connected operation so orders reach your customers."
+        "Eliges un producto del catálogo, subes tu diseño, ves cómo queda en las maquetas, defines tu precio y lo publicas en tu tienda online con enlace propio para empezar a vender.",
+        "You pick a product from the catalog, upload your design, preview it on mockups, set your price and publish it in your own online store with its own link, ready to sell."
       ),
     },
     {
-      q: t("¿Tengo que contratar o gestionar algo por mi cuenta?", "Do I have to hire or manage anything myself?"),
+      q: t("¿Necesito comprar inventario?", "Do I need to buy inventory?"),
       a: t(
-        "No. Datable integra la operación necesaria para que puedas vender sin encargarte de la infraestructura que hay detrás.",
-        "No. Datable integrates the operation needed so you can sell without handling the infrastructure behind it."
+        "No. Cada producto se fabrica cuando alguien te lo compra, así que no inviertes en inventario ni te quedas con producto sin vender.",
+        "No. Each product is made once someone buys it, so you don't invest in inventory or get stuck with unsold stock."
       ),
     },
     {
-      q: t("¿Quién se encarga de preparar y enviar los pedidos?", "Who handles preparing and shipping orders?"),
+      q: t("¿Quién produce y envía los pedidos?", "Who produces and ships the orders?"),
       a: t(
-        "Datable coordina la operación necesaria para que el pedido llegue hasta tu cliente. Tú te concentras en vender.",
-        "Datable coordinates the operation needed for the order to reach your customer. You focus on selling."
+        "Datable coordina la producción y el envío de cada pedido hasta tu cliente. Tú te concentras en diseñar y vender.",
+        "Datable coordinates production and shipping of every order to your customer. You focus on designing and selling."
       ),
     },
     {
       q: t("¿Necesito saber programar o diseñar?", "Do I need to know how to code or design?"),
       a: t(
-        "No. Eliges una estructura disponible, la personalizas dentro de las opciones que ofrece y agregas tu identidad.",
-        "No. You choose an available structure, customize it within its options, and add your brand identity."
+        "No. El editor te guía paso a paso: producto, diseño, maquetas, información, precio y publicar. Tu tienda queda lista sin escribir una línea de código.",
+        "No. The editor guides you step by step: product, design, mockups, details, price and publish. Your store is ready without writing a line of code."
       ),
     },
     {
-      q: t("¿Puedo cambiar los productos y los precios?", "Can I change the products and prices?"),
+      q: t("¿Yo decido el precio y mi ganancia?", "Do I decide the price and my profit?"),
       a: t(
-        "Trabajas con el catálogo y las reglas que ya vienen preparadas. Dentro de las opciones disponibles puedes definir tu margen de ganancia.",
-        "You work with the catalog and rules that come already prepared. Within the available options you can set your profit margin."
+        "Sí. Al fijar tu precio de venta ves el costo de producción y envío y tu ganancia por venta antes de publicar.",
+        "Yes. When you set your selling price you see the production and shipping cost and your profit per sale before publishing."
       ),
     },
     {
       q: t("¿Cuánto se queda DªTªBLe de cada venta?", "How much does DªTªBLe keep from each sale?"),
       a: t(
-        "10% si vendes en la modalidad gratuita y 0% si activas Pro. El resto es tuyo.",
-        "10% if you sell on the free mode and 0% if you activate Pro. The rest is yours."
+        "10% si vendes en la modalidad gratuita y 0% si activas Pro por $499 MXN al mes. El resto es tuyo.",
+        "10% on the free mode and 0% if you activate Pro for $499 MXN per month. The rest is yours."
       ),
     },
+
     {
       q: t("¿Puedo cancelar cuando quiera?", "Can I cancel anytime?"),
       a: t(
@@ -512,7 +516,7 @@ function CTAFinal() {
           {t("Crea tu tienda con Datable.", "Create your store with Datable.")}
         </h2>
         <p className="mt-4 text-base opacity-90 md:text-lg">
-          {t("Recibe una estructura comercial preparada. Personalízala. Véndela.", "Get a ready-made commercial structure. Customize it. Sell it.")}
+          {t("Sube tu diseño, ponle precio y publica. Nosotros producimos y enviamos.", "Upload your design, set your price and publish. We produce and ship.")}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" variant="secondary" className="shine-on-hover">
@@ -546,15 +550,16 @@ function Footer() {
             <Logo />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
               {t(
-                "Activos digitales productivos: estructuras comerciales preparadas para vender. Hecho con ♥ en México.",
-                "Productive digital assets: commercial structures ready to sell. Made with ♥ in Mexico."
+                "Crea y vende tus productos personalizados en tu propia tienda online. Hecho con ♥ en México.",
+                "Create and sell your custom products in your own online store. Made with ♥ in Mexico."
+
               )}
             </p>
           </div>
           <FooterCol
             title={t("Producto", "Product")}
             links={[
-              { label: t("Qué es", "What it is"), href: "#que-es-activo" },
+              { label: t("Cómo funciona", "How it works"), href: "#como-funciona" },
               { label: t("Precios", "Pricing"), href: "#precios" },
               { label: t("Para quién", "Who it's for"), href: "#para-quien" },
             ]}
