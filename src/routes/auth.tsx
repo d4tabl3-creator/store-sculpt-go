@@ -30,16 +30,28 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const t = useT();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset" | "update">("signin");
+  const [newPassword, setNewPassword] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const hash = typeof window !== "undefined" ? window.location.hash : "";
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    const isRecovery = hash.includes("type=recovery") || search.includes("type=recovery");
+    if (isRecovery) {
+      setMode("update");
+      return;
+    }
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setMode("update");
+    });
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: "/dashboard" });
     });
+    return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
   function mensajeError(err: unknown): string {
@@ -68,7 +80,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
       });
       if (error) throw error;
       toast.success(
@@ -78,6 +90,22 @@ function AuthPage() {
         ),
       );
       setMode("signin");
+    } catch (err) {
+      toast.error(mensajeError(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleUpdatePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success(t("Contraseña actualizada. Ya puedes entrar.", "Password updated. You can sign in now."));
+      if (typeof window !== "undefined") window.history.replaceState({}, "", "/auth");
+      navigate({ to: "/dashboard" });
     } catch (err) {
       toast.error(mensajeError(err));
     } finally {

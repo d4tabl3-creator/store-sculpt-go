@@ -33,7 +33,6 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 // Configuration
 const SITE_NAME = "DªTªBLe"
 const SENDER_DOMAIN = "notify.datable.com.mx"
-const ROOT_DOMAIN = "datable.com.mx"
 const FROM_DOMAIN = "notify.datable.com.mx"
 // Public app URL used for branding links inside emails.
 const APP_URL = process.env['PUBLIC_APP_URL'] || "https://store-sculpt-go.lovable.app"
