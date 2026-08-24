@@ -550,8 +550,9 @@ function Footer() {
             <Logo />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
               {t(
-                "Activos digitales productivos: estructuras comerciales preparadas para vender. Hecho con ♥ en México.",
-                "Productive digital assets: commercial structures ready to sell. Made with ♥ in Mexico."
+                "Crea y vende tus productos personalizados en tu propia tienda online. Hecho con ♥ en México.",
+                "Create and sell your custom products in your own online store. Made with ♥ in Mexico."
+
               )}
             </p>
           </div>
