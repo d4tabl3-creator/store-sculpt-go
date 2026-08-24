@@ -414,47 +414,48 @@ function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
   const faqs = [
     {
-      q: t("¿Qué recibo exactamente?", "What exactly do I get?"),
+      q: t("¿Qué puedo hacer con Datable?", "What can I do with Datable?"),
       a: t(
-        "Una tienda digital ya estructurada: catálogo de productos disponibles, reglas comerciales preparadas, herramientas para administrar tus ventas y la operación conectada para que los pedidos lleguen a tus clientes.",
-        "An already-structured digital store: a catalog of available products, prepared commercial rules, tools to manage your sales, and a connected operation so orders reach your customers."
+        "Eliges un producto del catálogo, subes tu diseño, ves cómo queda en las maquetas, defines tu precio y lo publicas en tu tienda online con enlace propio para empezar a vender.",
+        "You pick a product from the catalog, upload your design, preview it on mockups, set your price and publish it in your own online store with its own link, ready to sell."
       ),
     },
     {
-      q: t("¿Tengo que contratar o gestionar algo por mi cuenta?", "Do I have to hire or manage anything myself?"),
+      q: t("¿Necesito comprar inventario?", "Do I need to buy inventory?"),
       a: t(
-        "No. Datable integra la operación necesaria para que puedas vender sin encargarte de la infraestructura que hay detrás.",
-        "No. Datable integrates the operation needed so you can sell without handling the infrastructure behind it."
+        "No. Cada producto se fabrica cuando alguien te lo compra, así que no inviertes en inventario ni te quedas con producto sin vender.",
+        "No. Each product is made once someone buys it, so you don't invest in inventory or get stuck with unsold stock."
       ),
     },
     {
-      q: t("¿Quién se encarga de preparar y enviar los pedidos?", "Who handles preparing and shipping orders?"),
+      q: t("¿Quién produce y envía los pedidos?", "Who produces and ships the orders?"),
       a: t(
-        "Datable coordina la operación necesaria para que el pedido llegue hasta tu cliente. Tú te concentras en vender.",
-        "Datable coordinates the operation needed for the order to reach your customer. You focus on selling."
+        "Datable coordina la producción y el envío de cada pedido hasta tu cliente. Tú te concentras en diseñar y vender.",
+        "Datable coordinates production and shipping of every order to your customer. You focus on designing and selling."
       ),
     },
     {
       q: t("¿Necesito saber programar o diseñar?", "Do I need to know how to code or design?"),
       a: t(
-        "No. Eliges una estructura disponible, la personalizas dentro de las opciones que ofrece y agregas tu identidad.",
-        "No. You choose an available structure, customize it within its options, and add your brand identity."
+        "No. El editor te guía paso a paso: producto, diseño, maquetas, información, precio y publicar. Tu tienda queda lista sin escribir una línea de código.",
+        "No. The editor guides you step by step: product, design, mockups, details, price and publish. Your store is ready without writing a line of code."
       ),
     },
     {
-      q: t("¿Puedo cambiar los productos y los precios?", "Can I change the products and prices?"),
+      q: t("¿Yo decido el precio y mi ganancia?", "Do I decide the price and my profit?"),
       a: t(
-        "Trabajas con el catálogo y las reglas que ya vienen preparadas. Dentro de las opciones disponibles puedes definir tu margen de ganancia.",
-        "You work with the catalog and rules that come already prepared. Within the available options you can set your profit margin."
+        "Sí. Al fijar tu precio de venta ves el costo de producción y envío y tu ganancia por venta antes de publicar.",
+        "Yes. When you set your selling price you see the production and shipping cost and your profit per sale before publishing."
       ),
     },
     {
       q: t("¿Cuánto se queda DªTªBLe de cada venta?", "How much does DªTªBLe keep from each sale?"),
       a: t(
-        "10% si vendes en la modalidad gratuita y 0% si activas Pro. El resto es tuyo.",
-        "10% if you sell on the free mode and 0% if you activate Pro. The rest is yours."
+        "10% si vendes en la modalidad gratuita y 0% si activas Pro por $499 MXN al mes. El resto es tuyo.",
+        "10% on the free mode and 0% if you activate Pro for $499 MXN per month. The rest is yours."
       ),
     },
+
     {
       q: t("¿Puedo cancelar cuando quiera?", "Can I cancel anytime?"),
       a: t(
