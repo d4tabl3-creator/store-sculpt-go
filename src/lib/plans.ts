@@ -26,7 +26,9 @@ export const PLANS: Array<{
     features: [
       "Sin mensualidad",
       "10% de comisión por venta",
-      "Kits pre-armados",
+      "Productos personalizados ilimitados",
+      "Producción y envío incluidos",
+
       "Checkout integrado",
       "Panel de pedidos",
     ],
