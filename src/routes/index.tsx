@@ -516,7 +516,7 @@ function CTAFinal() {
           {t("Crea tu tienda con Datable.", "Create your store with Datable.")}
         </h2>
         <p className="mt-4 text-base opacity-90 md:text-lg">
-          {t("Recibe una estructura comercial preparada. Personalízala. Véndela.", "Get a ready-made commercial structure. Customize it. Sell it.")}
+          {t("Sube tu diseño, ponle precio y publica. Nosotros producimos y enviamos.", "Upload your design, set your price and publish. We produce and ship.")}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" variant="secondary" className="shine-on-hover">
