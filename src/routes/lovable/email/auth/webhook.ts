@@ -12,12 +12,12 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirm your email',
-  invite: "You've been invited",
-  magiclink: 'Your login link',
-  recovery: 'Reset your password',
-  email_change: 'Confirm your new email',
-  reauthentication: 'Your verification code',
+  signup: 'Confirma tu correo — DªTªBLe',
+  invite: 'Te invitaron a DªTªBLe',
+  magiclink: 'Tu enlace de acceso — DªTªBLe',
+  recovery: 'Restablece tu contraseña — DªTªBLe',
+  email_change: 'Confirma tu nuevo correo — DªTªBLe',
+  reauthentication: 'Tu código de verificación — DªTªBLe',
 }
 
 // Template mapping
@@ -31,10 +31,12 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "Datable proyect"
+const SITE_NAME = "DªTªBLe"
 const SENDER_DOMAIN = "notify.datable.com.mx"
 const ROOT_DOMAIN = "datable.com.mx"
 const FROM_DOMAIN = "notify.datable.com.mx"
+// Public app URL used for branding links inside emails.
+const APP_URL = process.env['PUBLIC_APP_URL'] || "https://store-sculpt-go.lovable.app"
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'
@@ -134,7 +136,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         // Build template props from payload.data (HookData structure)
         const templateProps = {
           siteName: SITE_NAME,
-          siteUrl: `https://${ROOT_DOMAIN}`,
+          siteUrl: APP_URL,
           recipient: payload.data.email,
           confirmationUrl: payload.data.url,
           token: payload.data.token,
