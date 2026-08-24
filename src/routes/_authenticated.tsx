@@ -29,10 +29,17 @@ function AuthGate() {
 
   if (!checked || !session) {
     return (
-      <div className="grid min-h-screen place-items-center bg-background">
-        <Loader2 className="size-6 animate-spin text-primary" />
+      <div className="grid min-h-screen place-items-center bg-background px-6">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <span className="font-display text-3xl font-extrabold tracking-tight text-foreground">
+            D<span className="text-primary">ª</span>T<span className="text-primary">ª</span>BLe
+          </span>
+          <Loader2 className="size-5 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Preparando tu panel…</p>
+        </div>
       </div>
     );
   }
+
   return <Outlet />;
 }
