@@ -30,16 +30,28 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const t = useT();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset" | "update">("signin");
+  const [newPassword, setNewPassword] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const hash = typeof window !== "undefined" ? window.location.hash : "";
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    const isRecovery = hash.includes("type=recovery") || search.includes("type=recovery");
+    if (isRecovery) {
+      setMode("update");
+      return;
+    }
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setMode("update");
+    });
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: "/dashboard" });
     });
+    return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
   function mensajeError(err: unknown): string {
@@ -68,7 +80,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
       });
       if (error) throw error;
       toast.success(
@@ -78,6 +90,22 @@ function AuthPage() {
         ),
       );
       setMode("signin");
+    } catch (err) {
+      toast.error(mensajeError(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleUpdatePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success(t("Contraseña actualizada. Ya puedes entrar.", "Password updated. You can sign in now."));
+      if (typeof window !== "undefined") window.history.replaceState({}, "", "/auth");
+      navigate({ to: "/dashboard" });
     } catch (err) {
       toast.error(mensajeError(err));
     } finally {
@@ -124,16 +152,45 @@ function AuthPage() {
           D<span className="text-primary">ª</span>T<span className="text-primary">ª</span>BLe
         </Link>
         <h1 className="mt-6 text-center font-display text-2xl font-bold">
-          {mode === "signin" ? t("Entrar", "Sign in") : mode === "signup" ? t("Crear cuenta", "Create account") : t("Restablecer contraseña", "Reset password")}
+          {mode === "signin"
+            ? t("Entrar", "Sign in")
+            : mode === "signup"
+              ? t("Crear cuenta", "Create account")
+              : mode === "update"
+                ? t("Nueva contraseña", "New password")
+                : t("Restablecer contraseña", "Reset password")}
         </h1>
         <p className="mt-1 text-center text-sm text-muted-foreground">
           {mode === "signin"
             ? t("Accede a tu panel de tiendas", "Access your store dashboard")
             : mode === "signup"
               ? t("Empieza tu tienda en 10 minutos", "Start your store in 10 minutes")
-              : t("Te enviaremos un enlace a tu correo", "We'll send a link to your email")}
+              : mode === "update"
+                ? t("Escribe tu nueva contraseña para entrar", "Type your new password to sign in")
+                : t("Te enviaremos un enlace a tu correo", "We'll send a link to your email")}
         </p>
 
+        {mode === "update" ? (
+          <form onSubmit={handleUpdatePassword} className="mt-6 space-y-3">
+            <div>
+              <Label htmlFor="newPassword">{t("Nueva contraseña", "New password")}</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("Mínimo 8 caracteres, con mayúscula, número y símbolo.", "At least 8 characters, with uppercase, number and symbol.")}
+              </p>
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? t("Guardando…", "Saving…") : t("Guardar y entrar", "Save and sign in")}
+            </Button>
+          </form>
+        ) : (
         <form onSubmit={mode === "reset" ? handleReset : handleEmail} className="mt-6 space-y-3">
           {mode === "signup" && (
             <div>
@@ -167,6 +224,7 @@ function AuthPage() {
                   : t("Enviar enlace", "Send link")}
           </Button>
         </form>
+        )}
 
         {mode === "signin" && (
           <button
@@ -178,6 +236,7 @@ function AuthPage() {
           </button>
         )}
 
+        {mode !== "update" && (
         <button
           type="button"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
@@ -187,6 +246,8 @@ function AuthPage() {
             ? t("¿No tienes cuenta? Crear una", "Don't have an account? Create one")
             : t("¿Ya tienes cuenta? Entrar", "Already have an account? Sign in")}
         </button>
+        )}
+
       </div>
     </div>
   );
