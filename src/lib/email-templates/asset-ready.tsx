@@ -25,19 +25,19 @@ interface Props {
 const Email = ({ name, storeName, storeUrl, panelUrl, guideUrl, firstStep }: Props) => (
   <Html lang="es" dir="ltr">
     <Head />
-    <Preview>Tu activo digital está listo. Este es tu primer paso.</Preview>
+    <Preview>Tu tienda ya está lista. Este es tu primer paso.</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Tu activo ya está listo</Heading>
+        <Heading style={h1}>Tu tienda ya está lista</Heading>
         <Text style={p}>
           {name ? `Hola ${name}, ` : 'Hola, '}
-          terminamos de preparar {storeName ? `“${storeName}”` : 'tu activo digital'}. Ya puedes entrar
+          terminamos de preparar {storeName ? `“${storeName}”` : 'tu tienda'}. Ya puedes entrar
           y empezar a operarlo.
         </Text>
 
         <Section style={card}>
           <Text style={label}>Tu primer paso</Text>
-          <Text style={stepText}>{firstStep || 'Revisa tu activo y confirma tus productos.'}</Text>
+          <Text style={stepText}>{firstStep || 'Revisa tu tienda y confirma tus productos.'}</Text>
         </Section>
 
         {panelUrl ? (
@@ -62,7 +62,7 @@ const Email = ({ name, storeName, storeUrl, panelUrl, guideUrl, firstStep }: Pro
 
         {storeUrl ? (
           <Text style={p}>
-            Este es el enlace de tu activo:{' '}
+            Este es el enlace de tu tienda:{' '}
             <a href={storeUrl} style={link}>
               {storeUrl}
             </a>
@@ -80,8 +80,8 @@ const Email = ({ name, storeName, storeUrl, panelUrl, guideUrl, firstStep }: Pro
 
 export const template = {
   component: Email,
-  subject: 'Tu activo digital está listo',
-  displayName: 'Activo listo (bienvenida)',
+  subject: 'Tu tienda ya está lista',
+  displayName: 'Tienda lista (bienvenida)',
   previewData: {
     name: 'Camila',
     storeName: 'Mi tienda',
