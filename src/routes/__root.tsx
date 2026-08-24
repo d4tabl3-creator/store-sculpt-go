@@ -100,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@type": "Organization",
           name: "DªTªBLe",
           url: "https://store-sculpt-go.lovable.app",
-          description: "Franchise-as-a-Service: vitrina publicada hoy, tienda vendiendo producto real en 24 a 48 horas.",
+          description: "Crea y vende tus productos personalizados en tu propia tienda online. Tú diseñas y pones el precio; Datable produce y envía cada pedido.",
         }),
       },
     ],
