@@ -272,25 +272,26 @@ function QueEsActivo() {
 function ParaQuien() {
   const t = useT();
   const items = [
-    t("QUIERES EMPEZAR SIN UNA GRAN INVERSIÓN INICIAL.", "YOU WANT TO START WITHOUT A BIG INITIAL INVESTMENT."),
-    t("QUIERES VENDER SIN OCUPARTE DE LA PARTE TÉCNICA.", "YOU WANT TO SELL WITHOUT DEALING WITH THE TECHNICAL SIDE."),
+    t("TIENES UN DISEÑO, UNA MARCA O UNA COMUNIDAD Y QUIERES VENDERLE PRODUCTOS.", "YOU HAVE A DESIGN, A BRAND OR A COMMUNITY AND WANT TO SELL THEM PRODUCTS."),
+    t("QUIERES EMPEZAR SIN COMPRAR INVENTARIO NI INVERTIR DE MÁS.", "YOU WANT TO START WITHOUT BUYING INVENTORY OR OVER-INVESTING."),
     t(
-      "QUIERES UNA TIENDA QUE YA TENGA LA ESTRUCTURA NECESARIA PARA OPERAR.",
-      "YOU WANT A STORE THAT ALREADY HAS THE STRUCTURE NEEDED TO OPERATE."
+      "QUIERES VENDER SIN OCUPARTE DE LA PRODUCCIÓN, EL ENVÍO NI LA PARTE TÉCNICA.",
+      "YOU WANT TO SELL WITHOUT HANDLING PRODUCTION, SHIPPING OR THE TECHNICAL SIDE."
     ),
-    t("QUIERES ADMINISTRAR TUS VENTAS DESDE UN SOLO LUGAR.", "YOU WANT TO MANAGE YOUR SALES FROM ONE PLACE."),
+    t("QUIERES ADMINISTRAR TUS PRODUCTOS Y TUS VENTAS DESDE UN SOLO LUGAR.", "YOU WANT TO MANAGE YOUR PRODUCTS AND SALES FROM ONE PLACE."),
   ];
   return (
     <section id="para-quien" className="border-t border-border/60">
       <div className="mx-auto max-w-3xl px-4 py-20 md:py-28">
         <SectionHeader
           eyebrow={t("PARA QUIÉN ES", "WHO IT'S FOR")}
-          title={t("PARA TI, QUE QUIERES VENDER SIN CONSTRUIRLO TODO DESDE CERO.", "FOR YOU, WHO WANTS TO SELL WITHOUT BUILDING EVERYTHING FROM SCRATCH.")}
+          title={t("PARA TI, QUE QUIERES VENDER TUS PRODUCTOS SIN COMPLICARTE.", "FOR YOU, WHO WANTS TO SELL YOUR PRODUCTS WITHOUT THE HASSLE.")}
           desc={t(
-            "Datable te entrega la estructura digital para comenzar a vender. Tú te concentras en tu tienda, tus clientes y tus ventas.",
-            "Datable gives you the digital structure to start selling. You focus on your store, your customers, and your sales."
+            "Tú pones el diseño y el precio. Datable pone la tienda, la producción y el envío.",
+            "You bring the design and the price. Datable brings the store, the production and the shipping."
           )}
         />
+
         <ul className="mt-10 grid gap-4 sm:grid-cols-2">
           {items.map((it) => (
             <li
