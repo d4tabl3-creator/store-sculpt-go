@@ -201,15 +201,8 @@ function StoreProductsPage() {
     setPublishing(true);
     try {
       if (!products.length) throw new Error(t("Agrega al menos un producto", "Add at least one product"));
-      await supabase
-        .from("stores")
-        .update({
-          shipping_options: [
-            { id: "standard", label: t("Envío a domicilio", "Home delivery"), price_cents: 9900 },
-            { id: "pickup", label: t("Recoge en tienda", "Store pickup"), price_cents: 0 },
-          ],
-        })
-        .eq("id", storeId);
+      // El envío se calcula en el checkout con el costo real de cada producto.
+      await supabase.from("stores").update({ shipping_options: [] }).eq("id", storeId);
       await startProvisioning({ data: { storeId } });
       navigate({ to: "/preparando/$id", params: { id: storeId } });
     } catch (err) {
