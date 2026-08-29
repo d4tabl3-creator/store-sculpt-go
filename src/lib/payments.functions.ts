@@ -5,8 +5,32 @@ import {
   getStripeErrorMessage,
 } from "@/lib/stripe.server";
 
+import { quoteCart, type CostedProduct } from "@/lib/checkout-quote";
+
 type CartLine = { productId: string; qty: number };
 type CheckoutResult = { clientSecret: string; orderId: string } | { error: string };
+
+/** Cotización pública del carrito (subtotal, envío y total) para mostrarla antes de pagar. */
+export const quoteStoreCart = createServerFn({ method: "POST" })
+  .inputValidator((data: { storeId: string; items: CartLine[] }) => {
+    if (!/^[0-9a-fA-F-]{36}$/.test(data.storeId)) throw new Error("storeId inválido");
+    if (!data.items?.length) throw new Error("Carrito vacío");
+    for (const it of data.items) {
+      if (!/^[0-9a-fA-F-]{36}$/.test(it.productId)) throw new Error("Producto inválido");
+      if (!(it.qty > 0 && it.qty <= 100)) throw new Error("Cantidad inválida");
+    }
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: products } = await supabaseAdmin
+      .from("store_products")
+      .select("id, name, price_cents, stock, store_id, production_cost_cents, shipping_cost_cents, source_provider")
+      .in("id", data.items.map((i) => i.productId));
+    const q = quoteCart((products || []) as CostedProduct[], data.items, data.storeId);
+    if ("error" in q) return q;
+    return { subtotalCents: q.subtotalCents, shippingCents: q.shippingCents, totalCents: q.totalCents };
+  });
 
 /** Dirección estructurada neutral (opcional; si no llega, se deduce del texto). */
 type ShippingInput = {
@@ -74,7 +98,6 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
     (data: {
       storeId: string;
       items: CartLine[];
-      shippingId?: string;
       shipping?: ShippingInput;
       customer: {
         name: string;

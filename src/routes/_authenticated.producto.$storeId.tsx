@@ -129,7 +129,10 @@ function StoreProductsPage() {
   const stageIndex = STAGES.indexOf(stage);
   const variant = draft ? currentVariant(draft) : undefined;
   const price = draft?.priceCents ?? variant?.priceCents ?? 0;
-  const cost = variant?.costCents ?? 0;
+  // Costo de fabricación = precio mínimo y base de la ganancia. El envío se
+  // cobra aparte al cliente y no forma parte de la ganancia.
+  const cost = variant?.productionCents ?? variant?.costCents ?? 0;
+  const shippingToCustomer = variant?.shippingCents ?? 0;
   const profit = Math.max(0, price - cost);
 
   const canContinue =

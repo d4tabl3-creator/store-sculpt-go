@@ -25,7 +25,10 @@ export type DraftVariant = {
   colorCode: string | null;
   image: string;
   priceCents: number;
+  /** Precio mínimo = costo de fabricación (no incluye envío). */
   costCents: number;
+  productionCents?: number;
+  shippingCents?: number;
   marginCents: number;
   marginPct: number;
   inStock: boolean;
