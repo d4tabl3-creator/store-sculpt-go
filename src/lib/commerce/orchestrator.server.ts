@@ -687,7 +687,7 @@ export async function handleInboundWebhook(
       .from("commerce_store_bindings")
       .select("store_id")
       .eq("provider", providerId)
-      .eq("external_store_id", printfulStoreId);
+      .eq("external_store_id", externalStoreId);
   } else {
     bindingQuery = null;
   }
