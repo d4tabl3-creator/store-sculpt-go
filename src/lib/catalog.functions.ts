@@ -14,26 +14,30 @@ export const getCatalog = createServerFn({ method: "GET" })
 /** Variantes (talla/color) y precio sugerido de un producto del catálogo. */
 export const getCatalogProduct = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { productId: number }) => {
+  .inputValidator((data: { productId: number; printProviderId?: number }) => {
     if (!Number.isInteger(data.productId)) throw new Error("productId inválido");
     return data;
   })
   .handler(async ({ data }) => {
-    const { getCatalogVariants } = await import("@/lib/catalog.server");
-    return getCatalogVariants(data.productId);
+    const { getCatalogVariants, getProductProviders } = await import("@/lib/catalog.server");
+    const [result, providers] = await Promise.all([
+      getCatalogVariants(data.productId, data.printProviderId),
+      getProductProviders(data.productId).catch(() => []),
+    ]);
+    return { ...result, providers };
   });
 
 /** Zonas donde se puede estampar el diseño (frente, espalda, mangas…). */
 export const getProductPlacements = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { productId: number; variantId?: number }) => {
+  .inputValidator((data: { productId: number; variantId?: number; printProviderId?: number }) => {
     if (!Number.isInteger(data.productId)) throw new Error("productId inválido");
     return data;
   })
   .handler(async ({ data }) => {
     const { getPlacements } = await import("@/lib/catalog.server");
     try {
-      return await getPlacements(data.productId, data.variantId);
+      return await getPlacements(data.productId, data.variantId, data.printProviderId);
     } catch {
       return [];
     }
@@ -51,6 +55,7 @@ export const createProductMockup = createServerFn({ method: "POST" })
       scale?: number;
       offsetX?: number;
       offsetY?: number;
+      printProviderId?: number;
     }) => {
       if (!Number.isInteger(data.productId)) throw new Error("Producto inválido");
       if (!Array.isArray(data.variantIds) || !data.variantIds.length) throw new Error("Elige al menos una variante");
@@ -82,6 +87,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         designUrl?: string;
         mockupUrl?: string;
         placement?: string;
+        printProviderId?: number;
       }>;
     }) => {
       if (!UUID.test(data.storeId)) throw new Error("storeId inválido");
@@ -95,7 +101,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { getCatalogVariants, catalogPrintProviderId } = await import("@/lib/catalog.server");
+    const { getCatalogVariants } = await import("@/lib/catalog.server");
 
     const { data: store } = await supabaseAdmin
       .from("stores")
@@ -128,7 +134,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     const rows: Array<Record<string, unknown>> = [];
     let i = count ?? 0;
     for (const item of data.items) {
-      const { product, variants } = await getCatalogVariants(item.productId);
+      const { product, variants, printProviderId } = await getCatalogVariants(item.productId, item.printProviderId);
       const variant =
         variants.find((v) => v.id === item.variantId) ||
         variants.find((v) => v.inStock) ||
@@ -136,7 +142,6 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       if (!variant) continue;
 
       const mockup = item.mockupUrl ? await persistMockup(item.mockupUrl, product.id) : null;
-      const printProviderId = await catalogPrintProviderId(product.id);
 
       // El precio nunca puede quedar por debajo del costo base (fabricación +
       // envío): así la ganancia del vendedor jamás es negativa.
