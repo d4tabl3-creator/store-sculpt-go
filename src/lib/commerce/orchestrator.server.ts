@@ -657,15 +657,20 @@ export async function handleInboundWebhook(
   // Shopify identifica la tienda por dominio en header.
   const domain = headers.get("x-shopify-shop-domain");
 
-  // Printful envía el id de tienda en el payload (`store` o `store_id`).
-  let printfulStoreId: string | null = null;
-  if (providerId === "printful") {
+  // Otros conectores mandan el id de tienda dentro del cuerpo, con distinta
+  // forma según el proveedor. Se extrae aquí sin que el núcleo asuma nada.
+  let externalStoreId: string | null = null;
+  if (providerId === "printful" || providerId === "printify") {
     try {
-      const payload = JSON.parse(rawBody) as { store_id?: number; store?: number };
-      const sid = payload.store_id ?? payload.store;
-      if (sid) printfulStoreId = String(sid);
+      const payload = JSON.parse(rawBody) as {
+        store_id?: number;
+        store?: number;
+        resource?: { data?: { shop_id?: number } };
+      };
+      const sid = payload.store_id ?? payload.store ?? payload.resource?.data?.shop_id;
+      if (sid) externalStoreId = String(sid);
     } catch {
-      printfulStoreId = null;
+      externalStoreId = null;
     }
   }
 
@@ -677,7 +682,7 @@ export async function handleInboundWebhook(
       .select("store_id")
       .eq("provider", providerId)
       .eq("external_domain", domain);
-  } else if (printfulStoreId) {
+  } else if (externalStoreId) {
     bindingQuery = supabaseAdmin
       .from("commerce_store_bindings")
       .select("store_id")
