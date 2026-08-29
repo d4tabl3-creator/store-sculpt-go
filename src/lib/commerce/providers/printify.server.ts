@@ -288,6 +288,13 @@ export const printifyProvider: CommerceProvider = {
 
       const variants = await listBlueprintVariants(blueprintId, printProviderId);
       const chosen = variants.find((v) => v.id === variantId);
+      if (chosen && chosen.available === false) {
+        throw new OrchestratorError(
+          `"${product.name}" está agotado en la talla o color elegido. Elige otra opción disponible.`,
+          PROVIDER,
+          false,
+        );
+      }
       const position =
         product.design?.placement ||
         chosen?.placeholders[0]?.position ||
@@ -317,6 +324,14 @@ export const printifyProvider: CommerceProvider = {
         throw new OrchestratorError("El proveedor no devolvió el producto creado", PROVIDER, true);
       }
 
+      // Cierra el ciclo de publicación: la tienda de venta es la de DªTªBLe,
+      // así que se confirma la publicación con nuestra referencia para que el
+      // producto no quede bloqueado en "publicando" del lado del proveedor.
+      await publishProduct(shopId, String(created.id), {
+        externalId: product.productId,
+        handle: `datable/producto/${product.productId}`,
+      }).catch(() => null);
+
       return {
         externalProductId: String(created.id),
         externalVariantId: String(variantId),
@@ -331,12 +346,16 @@ export const printifyProvider: CommerceProvider = {
   async deleteProduct(binding: ProviderBinding, externalProductId: string) {
     const shopId = Number(binding.externalStoreId);
     if (!shopId) return;
+    // Primero se retira de publicación; si no, el proveedor puede rechazar el
+    // borrado por tener el producto bloqueado.
+    await unpublishProduct(shopId, externalProductId).catch(() => null);
     try {
       await printify(`/v1/shops/${shopId}/products/${externalProductId}.json`, { method: "DELETE" });
     } catch {
       /* el producto ya no existe */
     }
   },
+
 
   async setInventory() {
     // El proveedor fabrica bajo demanda: no hay inventario que sincronizar.
