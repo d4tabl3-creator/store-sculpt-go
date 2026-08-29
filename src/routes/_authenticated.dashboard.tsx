@@ -181,12 +181,18 @@ function Dashboard() {
                       </Link>
                     </Button>
                   )}
-                  <Button asChild size="sm">
+                  <Button asChild size="sm" variant="outline">
                     <Link to="/tienda/$id" params={{ id: st.id }}>
                       <Edit3 className="mr-1 size-3.5" /> {t("Editar", "Edit")}
                     </Link>
                   </Button>
+                  <Button asChild size="sm" className="col-span-2 shine-on-hover">
+                    <Link to="/producto/$storeId" params={{ storeId: st.id }}>
+                      <Plus className="mr-1 size-3.5" /> {t("Agregar productos", "Add products")}
+                    </Link>
+                  </Button>
                 </div>
+
               </div>
             ))}
           </div>
