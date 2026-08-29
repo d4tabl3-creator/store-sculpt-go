@@ -25,7 +25,7 @@ export type GuideStep = {
   body: string;
   bodyEn?: string;
   /** Qué hace exactamente el cliente en este paso. */
-  action?: { label: string; to: string; params?: Record<string, string> } | null;
+  action?: { label: string; labelEn?: string; to: string; params?: Record<string, string> } | null;
   /** Cómo sabe DªTªBLe que ya está hecho. */
   check: { kind: "auto"; signal: GuideSignal } | { kind: "manual" };
   /** Cómo sabe el cliente que terminó bien. */
