@@ -13,6 +13,7 @@ import {
   getVariantCosts,
   listBlueprintVariants,
   listBlueprints,
+  listPrintProviders,
   printify,
   printifyShopId,
   resolvePrintProviderId,
@@ -57,6 +58,8 @@ export type CatalogVariant = {
   markup: number;
   inStock: boolean;
 };
+
+export type ProviderOption = { id: number; name: string; location: string | null };
 
 export type Placement = {
   id: string;
@@ -160,11 +163,23 @@ function hexFor(color: string | null): string | null {
   return null;
 }
 
-export async function getCatalogVariants(productId: number): Promise<{
+/** Fabricantes que pueden producir este artículo del catálogo. */
+export async function getProductProviders(productId: number): Promise<ProviderOption[]> {
+  const list = await listPrintProviders(productId);
+  return list.map((p) => ({ id: p.id, name: p.title, location: p.location }));
+}
+
+export async function getCatalogVariants(
+  productId: number,
+  requestedProviderId?: number,
+): Promise<{
   product: CatalogItem;
   variants: CatalogVariant[];
+  printProviderId: number;
+  shippingEstimated: boolean;
 }> {
-  const printProviderId = await resolvePrintProviderId(productId);
+  const printProviderId =
+    requestedProviderId && requestedProviderId > 0 ? requestedProviderId : await resolvePrintProviderId(productId);
   const [blueprint, rawVariants] = await Promise.all([
     getBlueprint(productId),
     listBlueprintVariants(productId, printProviderId),
@@ -223,7 +238,7 @@ export async function getCatalogVariants(productId: number): Promise<{
     };
   });
 
-  return { product, variants };
+  return { product, variants, printProviderId, shippingEstimated: shipping.size === 0 };
 }
 
 const PLACEMENT_ES: Record<string, string> = {
@@ -251,8 +266,13 @@ function placementLabel(id: string): string {
 }
 
 /** Zonas de estampado disponibles para un producto, con el tamaño real del área. */
-export async function getPlacements(productId: number, variantId?: number): Promise<Placement[]> {
-  const printProviderId = await resolvePrintProviderId(productId);
+export async function getPlacements(
+  productId: number,
+  variantId?: number,
+  requestedProviderId?: number,
+): Promise<Placement[]> {
+  const printProviderId =
+    requestedProviderId && requestedProviderId > 0 ? requestedProviderId : await resolvePrintProviderId(productId);
   const variants = await listBlueprintVariants(productId, printProviderId);
   const chosen = (variantId && variants.find((v) => v.id === variantId)) || variants.find((v) => v.placeholders.length);
   if (!chosen) return [];
@@ -295,10 +315,14 @@ export async function generateMockups(input: {
   scale?: number;
   offsetX?: number;
   offsetY?: number;
+  printProviderId?: number;
 }): Promise<MockupResult[]> {
-  const printProviderId = await resolvePrintProviderId(input.productId);
+  const printProviderId =
+    input.printProviderId && input.printProviderId > 0
+      ? input.printProviderId
+      : await resolvePrintProviderId(input.productId);
   const shopId = await printifyShopId();
-  const placements = await getPlacements(input.productId, input.variantIds[0]);
+  const placements = await getPlacements(input.productId, input.variantIds[0], printProviderId);
   const area = placements.find((p) => p.id === input.placement) ?? placements[0];
   if (!area) throw new Error("Este producto no admite diseño personalizado.");
 
