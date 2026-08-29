@@ -19,27 +19,50 @@ type ShippingInput = {
 };
 
 /**
- * Deducción mínima de la dirección estructurada a partir del texto libre.
- * Sólo se usa cuando el formulario no envía los campos por separado; el
- * proveedor de fabricación necesita CP, ciudad y país reales.
+ * Convierte la dirección escrita en una sola línea a la dirección estructurada
+ * que necesita el taller de fabricación (calle, ciudad, estado, CP y país).
+ *
+ * Es deliberadamente tolerante con el formato mexicano habitual
+ * ("Calle 123, Col. Centro, Guadalajara, Jalisco, 44100") pero nunca inventa
+ * datos: si falta calle, ciudad o código postal devuelve null y el cobro se
+ * detiene ANTES de crear el pedido. Nunca se cobra un pedido que no se podría
+ * mandar a producción.
  */
 function deriveShipping(address: string, provided?: ShippingInput) {
-  const zip = provided?.zip?.trim() || address.match(/\b(\d{5})\b/)?.[1] || "";
-  const parts = address.split(/[,\n]/).map((p) => p.trim()).filter(Boolean);
-  const city = provided?.city?.trim() || (parts.length > 1 ? parts[parts.length - 2] : "");
-  const address1 = provided?.address1?.trim() || parts[0] || address.trim();
+  const text = (address || "").trim();
+  const parts = text.split(/[,\n]/).map((p) => p.trim()).filter(Boolean);
+
+  // Código postal: 5 dígitos aislados (MX) o el formato de 4-10 caracteres.
+  const zipFromText = text.match(/\b(\d{5})\b/)?.[1] || text.match(/\b([A-Z0-9]{4,10})\s*$/i)?.[1] || "";
+  const zip = (provided?.zip?.trim() || zipFromText).replace(/\s+/g, "");
+
+  // Quitar del análisis los tramos que sólo contienen el código postal o el país.
+  const meaningful = parts.filter((p) => {
+    const bare = p.replace(/\s+/g, "");
+    return bare !== zip && !/^(m[eé]xico|mexico|mx)$/i.test(bare);
+  });
+
+  const address1 = provided?.address1?.trim() || meaningful[0] || parts[0] || "";
+  const stateCode = provided?.stateCode?.trim() || null;
+  // La ciudad suele ser el penúltimo tramo útil; con dos tramos, el segundo.
+  const city =
+    provided?.city?.trim() ||
+    (meaningful.length >= 3 ? meaningful[meaningful.length - 2] : meaningful.length === 2 ? meaningful[1] : "");
+  const stateName = !stateCode && meaningful.length >= 3 ? meaningful[meaningful.length - 1] : null;
   const countryCode = (provided?.countryCode?.trim() || "MX").toUpperCase();
-  if (!address1 || !city || !zip) return null;
+
+  if (!address1 || address1.length < 4 || !city || !/^\d{4,10}$/.test(zip)) return null;
   return {
     address1,
     address2: provided?.address2?.trim() || null,
     city,
-    stateCode: provided?.stateCode?.trim() || null,
-    stateName: null,
+    stateCode,
+    stateName,
     countryCode,
     zip,
   };
 }
+
 
 /**
  * SEGURO: el cliente sólo manda productIds+qty. El servidor lee precios,
