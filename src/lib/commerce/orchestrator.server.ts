@@ -477,18 +477,48 @@ export async function getSizeGuideForProduct(
   }
 }
 
+/**
+ * Manda el pedido al proveedor de fabricación.
+ *
+ * GUARDA DE PAGO: sólo se ejecuta si el pedido está cobrado. Un pedido sin
+ * pago confirmado jamás llega al proveedor y jamás entra a producción.
+ */
 export async function pushOrderToProvider(orderId: string) {
 
   const { data: order } = await supabaseAdmin
     .from("store_orders")
-    .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, shipping_details, items, total_cents")
+    .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, shipping_details, items, total_cents, payment_status")
     .eq("id", orderId)
     .maybeSingle();
   if (!order) return;
 
+  if ((order.payment_status as string) !== "paid") {
+    await supabaseAdmin.from("commerce_event_log").insert({
+      store_id: order.store_id as string,
+      direction: "outbound",
+      event: "order.push.blocked_unpaid",
+      level: "warn",
+      detail: { orderId, paymentStatus: order.payment_status },
+    } as never);
+    return;
+  }
+
   const binding = await loadBinding(order.store_id as string);
   if (!binding) return;
   const provider = getProvider(binding.provider);
+
+  // Idempotencia: si el pedido ya se envió al proveedor no se duplica.
+  const { data: existingBinding } = await supabaseAdmin
+    .from("commerce_order_bindings")
+    .select("external_order_id, sync_status, fulfillment_status")
+    .eq("order_id", orderId)
+    .eq("provider", binding.provider)
+    .maybeSingle();
+  if (existingBinding?.external_order_id && existingBinding.sync_status === "synced") {
+    await authorizeProduction(binding, orderId, String(existingBinding.external_order_id), provider);
+    return;
+  }
+
 
   const rawItems = (order.items as Array<{ productId?: string; name: string; qty: number; price_cents: number }>) || [];
   const ids = rawItems.map((i) => i.productId).filter(Boolean) as string[];
