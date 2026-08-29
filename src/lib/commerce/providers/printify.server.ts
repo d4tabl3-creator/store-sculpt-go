@@ -375,10 +375,8 @@ export const printifyProvider: CommerceProvider = {
   ): Promise<ShippingRate[]> {
     const shopId = Number(binding.externalStoreId);
     if (!shopId) return [];
-    const items = input.lines
-      .filter((l) => !!l.externalVariantId)
-      .map((l) => ({ variant_id: Number(l.externalVariantId), quantity: l.qty }));
-    if (!items.length) return [];
+    if (!input.lines.length) return [];
+
 
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
