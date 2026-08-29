@@ -381,6 +381,19 @@ export const printifyProvider: CommerceProvider = {
     }
   },
 
+  /** Fabricación autorizada. El orquestador sólo llega aquí con el pago confirmado. */
+  async sendOrderToProduction(binding: ProviderBinding, externalOrderId: string) {
+    const shopId = Number(binding.externalStoreId);
+    if (!shopId || !externalOrderId) return;
+    try {
+      await sendToProduction(shopId, externalOrderId);
+    } catch (err) {
+      wrap(err);
+    }
+  },
+
+
+
   async estimateShipping(
     binding: ProviderBinding,
     input: { shipping: ShippingDetails; lines: ProviderOrderLine[] },
