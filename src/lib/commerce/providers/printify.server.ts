@@ -188,11 +188,11 @@ export const printifyProvider: CommerceProvider = {
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-      // Un secreto por tienda: se guarda antes de registrar, para que ningún
-      // evento entrante pueda llegar sin poder verificarse.
-      let secret = binding.credentials.webhookSecret;
-      if (!secret) {
-        secret = crypto.randomUUID().replace(/-/g, "");
+      // El espacio de fabricación es compartido por todas las tiendas, así que
+      // el secreto se deriva de forma determinista: todas verifican igual y no
+      // se pisan entre registros.
+      const secret = await sharedWebhookSecret();
+      if (binding.credentials.webhookSecret !== secret) {
         await supabaseAdmin
           .from("commerce_store_credentials")
           .update({ webhook_secret: secret })
