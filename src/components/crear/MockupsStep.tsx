@@ -33,6 +33,7 @@ export function MockupsStep({
           scale: draft.scale,
           offsetX: (1 - draft.scale) / 2,
           offsetY: draft.offsetY,
+          printProviderId: draft.printProviderId ?? undefined,
         },
       })) as Array<{ placement: string; url: string }>;
       const urls = [...new Set(res.map((m) => m.url))];
