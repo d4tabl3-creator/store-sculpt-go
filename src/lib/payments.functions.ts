@@ -145,6 +145,17 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       }
       const totalCents = subtotal + shippingCents;
 
+      // La dirección se valida ANTES de cobrar: un pedido cobrado que no se
+      // puede mandar a fabricar sería dinero recibido sin producto.
+      const shippingDetails = deriveShipping(data.customer.address, data.shipping);
+      const needsAddress = data.shippingId !== "pickup";
+      if (needsAddress && !shippingDetails) {
+        return {
+          error:
+            "La dirección está incompleta. Escríbela así: calle y número, colonia, ciudad, estado, código postal.",
+        };
+      }
+
       // Insertar orden con service role
       const { data: order, error: orderErr } = await supabaseAdmin
         .from("store_orders")
@@ -154,7 +165,8 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           customer_email: data.customer.email.trim().toLowerCase(),
           customer_phone: data.customer.phone?.trim() || null,
           shipping_address: `${data.customer.address.trim()}${shippingLabel ? ` · ${shippingLabel}` : ""}`,
-          shipping_details: deriveShipping(data.customer.address, data.shipping),
+          shipping_details: shippingDetails,
+
           items: orderItems,
           total_cents: totalCents,
           notes: data.customer.notes?.trim() || null,
