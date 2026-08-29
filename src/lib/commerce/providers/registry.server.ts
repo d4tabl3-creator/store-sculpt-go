@@ -1,13 +1,19 @@
 import type { CommerceProvider, ProviderCapabilities, ProviderId } from "../types";
 import { internalProvider } from "./internal.server";
 import { shopifyProvider } from "./shopify.server";
-import { printfulProvider } from "./printful.server";
 import { printifyProvider } from "./printify.server";
 
+/**
+ * Conectores activos en runtime.
+ *
+ * `printify` es la infraestructura de fabricación de DªTªBLe Stores.
+ * El conector de la infraestructura anterior (printful) permanece en el
+ * repositorio como referencia histórica, pero NO se registra: no participa en
+ * runtime ni sirve de respaldo.
+ */
 const REGISTRY: Partial<Record<ProviderId, CommerceProvider>> = {
   internal: internalProvider,
   shopify: shopifyProvider,
-  printful: printfulProvider,
   printify: printifyProvider,
 };
 
@@ -26,16 +32,14 @@ export function supports(id: ProviderId | string | null | undefined, cap: keyof 
   return getCapabilities(id)[cap] === true;
 }
 
-
 /**
- * Elige el mejor conector disponible para una tienda nueva.
- * Orden de preferencia: externo configurado → motor nativo.
- * Nunca falla: siempre existe un conector válido.
+ * Elige el conector de una tienda nueva.
+ * Preferencia: fabricación bajo demanda → motor nativo. Nunca falla.
  */
 export function pickProvider(preferred?: ProviderId): CommerceProvider {
   const candidates: ProviderId[] = preferred
-    ? [preferred, "printify", "printful", "shopify", "internal"]
-    : ["printify", "printful", "shopify", "internal"];
+    ? [preferred, "printify", "internal"]
+    : ["printify", "internal"];
   for (const id of candidates) {
     const p = REGISTRY[id];
     if (p && p.isConfigured()) return p;
