@@ -26,7 +26,7 @@ export type Check = {
   label: string;
   status: CheckStatus;
   detail: string;
-  data?: Record<string, unknown>;
+  data?: Record<string, string | number | boolean | null | string[] | Record<string, number>>;
 };
 
 async function run(
