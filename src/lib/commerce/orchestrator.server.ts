@@ -754,7 +754,7 @@ export async function handleInboundWebhook(
   // Otros conectores mandan el id de tienda dentro del cuerpo, con distinta
   // forma según el proveedor. Se extrae aquí sin que el núcleo asuma nada.
   let externalStoreId: string | null = null;
-  if (providerId === "printful" || providerId === "printify") {
+  if (providerId === "printify") {
     try {
       const payload = JSON.parse(rawBody) as {
         store_id?: number;
