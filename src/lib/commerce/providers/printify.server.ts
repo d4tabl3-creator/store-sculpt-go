@@ -143,7 +143,16 @@ const WEBHOOK_TOPICS = [
   "order:sent-to-production",
   "order:shipment:created",
   "order:shipment:delivered",
+  // Cambios hechos del lado del proveedor: si un producto se borra o cambia
+  // allá, DªTªBLe se entera y no queda vendiendo algo inexistente.
+  "product:created",
+  "product:updated",
+  "product:deleted",
+  "product:publish:started",
+  // Si el espacio de fabricación se desconecta, hay que dejar de prometer envíos.
+  "shop:disconnected",
 ];
+
 
 export const printifyProvider: CommerceProvider = {
   id: PROVIDER,
