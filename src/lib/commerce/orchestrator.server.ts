@@ -478,6 +478,63 @@ export async function getSizeGuideForProduct(
 }
 
 /**
+ * Autoriza la fabricación de un pedido ya creado en el proveedor.
+ *
+ * Vuelve a leer el estado de pago desde la base antes de autorizar (defensa en
+ * profundidad) y es idempotente: si el pedido ya está en producción o enviado,
+ * no repite la orden.
+ */
+async function authorizeProduction(
+  binding: ProviderBinding,
+  orderId: string,
+  externalOrderId: string,
+  provider: CommerceProvider,
+) {
+  if (!provider.sendOrderToProduction) return;
+
+  const { data: paid } = await supabaseAdmin
+    .from("store_orders")
+    .select("payment_status")
+    .eq("id", orderId)
+    .maybeSingle();
+  if ((paid?.payment_status as string) !== "paid") return;
+
+  const { data: ob } = await supabaseAdmin
+    .from("commerce_order_bindings")
+    .select("fulfillment_status")
+    .eq("order_id", orderId)
+    .eq("provider", binding.provider)
+    .maybeSingle();
+  const status = (ob?.fulfillment_status as string | null) ?? "";
+  if (["in_production", "fulfilled", "shipped", "delivered", "canceled"].includes(status)) return;
+
+  try {
+    await provider.sendOrderToProduction(binding, externalOrderId);
+    await supabaseAdmin
+      .from("commerce_order_bindings")
+      .update({ fulfillment_status: "in_production", sync_error: null, last_synced_at: new Date().toISOString() })
+      .eq("order_id", orderId)
+      .eq("provider", binding.provider);
+    await supabaseAdmin.from("commerce_event_log").insert({
+      store_id: binding.storeId,
+      provider: binding.provider,
+      direction: "outbound",
+      event: "order.production.authorized",
+      level: "info",
+      detail: { orderId, externalOrderId },
+    } as never);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "No se pudo autorizar la producción";
+    await supabaseAdmin
+      .from("commerce_order_bindings")
+      .update({ sync_error: message })
+      .eq("order_id", orderId)
+      .eq("provider", binding.provider);
+  }
+}
+
+
+/**
  * Manda el pedido al proveedor de fabricación.
  *
  * GUARDA DE PAGO: sólo se ejecuta si el pedido está cobrado. Un pedido sin
