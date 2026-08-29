@@ -28,6 +28,7 @@ import {
   printify,
   printifyShopId,
   resolvePrintProviderId,
+  sendOrderToProduction as sendToProduction,
   uploadImageByUrl,
   type PrintifyProduct,
 } from "@/lib/printify.server";
