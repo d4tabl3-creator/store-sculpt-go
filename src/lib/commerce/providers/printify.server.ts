@@ -118,6 +118,19 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+/** Secreto compartido y determinista para los webhooks del espacio de fabricación. */
+async function sharedWebhookSecret(): Promise<string> {
+  const token = process.env["PRINTIFY_API_TOKEN"] ?? "";
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(`datable-printify-webhook:${token}`),
+  );
+  return [...new Uint8Array(digest)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 40);
+}
+
 const WEBHOOK_TOPICS = [
   "order:created",
   "order:updated",
