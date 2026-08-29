@@ -23,6 +23,7 @@ import type {
 } from "./types";
 import { OrchestratorError, PROVISION_STEPS } from "./types";
 import { getProvider, pickProvider } from "./providers/registry.server";
+import { publicUrl } from "@/lib/public-url";
 
 type Json = Record<string, unknown>;
 
@@ -31,11 +32,7 @@ function progressFor(step: ProvisioningStatus): number {
 }
 
 export function publicBaseUrl(): string {
-  return (
-    process.env.PUBLIC_APP_URL ||
-    process.env.VITE_PUBLIC_APP_URL ||
-    "https://store-sculpt-go.lovable.app"
-  ).replace(/\/$/, "");
+  return publicUrl();
 }
 
 async function log(

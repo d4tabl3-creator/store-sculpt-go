@@ -13,10 +13,11 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { createPlanCheckout, getMyPlan, redeemDemoCoupon } from "@/lib/plans.functions";
 import { useT } from "@/lib/i18n";
+import { publicUrlFor } from "@/lib/public-url";
 
 export const Route = createFileRoute("/planes")({
   head: () => {
-    const url = "https://store-sculpt-go.lovable.app/planes";
+    const url = publicUrlFor("/planes");
     const desc = "Empieza gratis con Datable y paga 20% de tu ganancia, o activa Pro por $499 MXN al mes y conserva el 100% de tus ventas.";
     return {
       meta: [

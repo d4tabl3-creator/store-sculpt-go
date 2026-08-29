@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, LogIn, Palette, ShoppingBag, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
+import { publicUrl } from "@/lib/public-url";
 
-const ENTRY_URL = "https://store-sculpt-go.lovable.app/";
+const ENTRY_URL = `${publicUrl()}/`;
 const ENTRY_TITLE = "DªTªBLe Stores — Diseña tu tienda y empieza a vender";
 const ENTRY_DESC =
   "Entra o crea tu tienda: define su identidad y apariencia, elige y personaliza tus productos y publícala con enlace propio.";

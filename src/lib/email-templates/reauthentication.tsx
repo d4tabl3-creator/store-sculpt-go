@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Heading, Text } from '@react-email/components'
 
 import { BrandLayout, styles } from './_brand'
+import { publicUrl } from "@/lib/public-url";
 
 interface ReauthenticationEmailProps {
   siteUrl?: string
@@ -10,7 +11,7 @@ interface ReauthenticationEmailProps {
 }
 
 export const ReauthenticationEmail = ({
-  siteUrl = 'https://store-sculpt-go.lovable.app',
+  siteUrl = publicUrl(),
   token,
 }: ReauthenticationEmailProps) => (
   <BrandLayout preview="Tu código de verificación" siteUrl={siteUrl}>

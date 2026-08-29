@@ -10,6 +10,7 @@ import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
 import { RecoveryEmail } from '@/lib/email-templates/recovery'
 import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
+import { publicUrl } from "@/lib/public-url";
 
 const EMAIL_SUBJECTS: Record<string, string> = {
   signup: 'Confirma tu correo — DªTªBLe',
@@ -35,7 +36,7 @@ const SITE_NAME = "DªTªBLe"
 const SENDER_DOMAIN = "notify.datable.com.mx"
 const FROM_DOMAIN = "notify.datable.com.mx"
 // Public app URL used for branding links inside emails.
-const APP_URL = process.env['PUBLIC_APP_URL'] || "https://store-sculpt-go.lovable.app"
+const APP_URL = publicUrl()
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'
