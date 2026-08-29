@@ -135,8 +135,14 @@ export type ProviderOrder = {
   /** Dirección estructurada cuando existe; los conectores la prefieren. */
   shipping?: ShippingDetails | null;
   totalCents: number;
+  /**
+   * Sólo es true cuando DªTªBLe ya confirmó el cobro al cliente final.
+   * Ningún conector puede mandar a producción un pedido sin esta bandera.
+   */
+  paymentConfirmed: boolean;
   lines: ProviderOrderLine[];
 };
+
 
 // ---------------------------------------------------------------------------
 // Diseños: representación neutral
