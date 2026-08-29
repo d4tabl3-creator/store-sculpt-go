@@ -363,9 +363,14 @@ function StoreProductsPage() {
               </div>
               <div className="rounded-xl border-2 border-border bg-card p-4 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("Costo de producción y envío", "Production and shipping cost")}</span>
+                  <span className="text-muted-foreground">{t("Costo de fabricación", "Production cost")}</span>
                   <span>{money(cost)} MXN</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("Envío (se cobra aparte al cliente)", "Shipping (charged separately to the customer)")}</span>
+                  <span>{money(shippingToCustomer)} MXN</span>
+                </div>
+
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t(
                     "Este costo lo define la producción: es fijo y no se puede editar.",
