@@ -4,7 +4,7 @@ import { ArrowLeft, Download, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GuideChecklist } from "@/components/GuideChecklist";
 import { getGuideState, setGuideStep } from "@/lib/guides.functions";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import type { GuideState } from "@/lib/guides/types";
 
 export const Route = createFileRoute("/_authenticated/guia/$id")({
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/guia/$id")({
 
 function GuidePage() {
   const t = useT();
+  const { lang } = useLang();
   const { id } = Route.useParams();
   const [state, setState] = useState<GuideState | null>(null);
   const [loading, setLoading] = useState(true);
