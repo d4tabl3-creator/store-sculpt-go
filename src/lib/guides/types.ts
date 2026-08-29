@@ -19,22 +19,29 @@ export type GuideSignal =
 export type GuideStep = {
   id: string;
   title: string;
+  /** Traducción al inglés (el idioma se detecta del dispositivo). */
+  titleEn?: string;
   /** Explicación corta, en lenguaje del cliente. */
   body: string;
+  bodyEn?: string;
   /** Qué hace exactamente el cliente en este paso. */
   action?: { label: string; to: string; params?: Record<string, string> } | null;
   /** Cómo sabe DªTªBLe que ya está hecho. */
   check: { kind: "auto"; signal: GuideSignal } | { kind: "manual" };
   /** Cómo sabe el cliente que terminó bien. */
   done?: string;
+  doneEn?: string;
 };
 
 export type GuideDefinition = {
   id: string;
   title: string;
+  titleEn?: string;
   intro: string;
+  introEn?: string;
   steps: GuideStep[];
   help: string;
+  helpEn?: string;
 };
 
 /** Clave de resolución: tipo de activo + proveedor (ambos opcionales). */
@@ -52,8 +59,11 @@ export type GuideStepState = GuideStep & {
 export type GuideState = {
   guideId: string;
   title: string;
+  titleEn?: string;
   intro: string;
+  introEn?: string;
   help: string;
+  helpEn?: string;
   steps: GuideStepState[];
   currentStepId: string | null;
   completedCount: number;
