@@ -183,10 +183,10 @@ export type BlueprintFetch = {
   fromCache: boolean;
 };
 
-let blueprintsCache: { at: number; fetch: BlueprintFetch } | null = null;
-
 const PAGE_SIZE = 100;
 const MAX_PAGES = 60;
+/** El catálogo cambia poco: se conserva un día completo en base de datos. */
+const CATALOG_TTL_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Recorre TODAS las páginas del catálogo base.
@@ -195,51 +195,60 @@ const MAX_PAGES = 60;
  * un arreglo completo, o una envoltura paginada `{ data, current_page,
  * last_page }`. Aquí se soportan ambas y se deduplica por id, de modo que
  * DªTªBLe siempre termine con el catálogo íntegro disponible para la cuenta.
+ *
+ * El resultado se guarda en base de datos: el catálogo del proveedor tiene un
+ * límite de 100 consultas por minuto y recorrerlo son decenas de páginas.
  */
 export async function fetchAllBlueprints(force = false): Promise<BlueprintFetch> {
-  if (!force && blueprintsCache && Date.now() - blueprintsCache.at < TTL_MS) {
-    return { ...blueprintsCache.fetch, fromCache: true };
-  }
+  const key = "catalog:blueprints";
+  const before = force ? null : await import("@/lib/provider-cache.server").then((m) => m.readCache<BlueprintFetch>(key));
+  if (before) return { ...before, fromCache: true };
 
-  const items: PrintifyBlueprint[] = [];
-  const seen = new Set<number>();
-  let pagesFetched = 0;
-  let paginated = false;
-  let reportedLastPage: number | null = null;
+  return cached<BlueprintFetch>(
+    key,
+    CATALOG_TTL_MS,
+    async () => {
+      const items: PrintifyBlueprint[] = [];
+      const seen = new Set<number>();
+      let pagesFetched = 0;
+      let paginated = false;
+      let reportedLastPage: number | null = null;
 
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const raw = await printify<RawBlueprint[] | { data?: RawBlueprint[]; last_page?: number; current_page?: number }>(
-      `/v1/catalog/blueprints.json?page=${page}&limit=${PAGE_SIZE}`,
-    );
-    pagesFetched = page;
+      for (let page = 1; page <= MAX_PAGES; page++) {
+        const raw = await printify<
+          RawBlueprint[] | { data?: RawBlueprint[]; last_page?: number; current_page?: number }
+        >(`/v1/catalog/blueprints.json?page=${page}&limit=${PAGE_SIZE}`);
+        pagesFetched = page;
 
-    const isArray = Array.isArray(raw);
-    const list: RawBlueprint[] = isArray ? raw : Array.isArray(raw?.data) ? raw.data! : [];
-    if (!isArray) {
-      paginated = true;
-      const last = (raw as { last_page?: number }).last_page;
-      if (typeof last === "number") reportedLastPage = last;
-    }
+        const isArray = Array.isArray(raw);
+        const list: RawBlueprint[] = isArray ? raw : Array.isArray(raw?.data) ? raw.data! : [];
+        if (!isArray) {
+          paginated = true;
+          const last = (raw as { last_page?: number }).last_page;
+          if (typeof last === "number") reportedLastPage = last;
+        }
 
-    let added = 0;
-    for (const b of list) {
-      if (!b || typeof b.id !== "number" || seen.has(b.id)) continue;
-      seen.add(b.id);
-      items.push(mapBlueprint(b));
-      added++;
-    }
+        let added = 0;
+        for (const b of list) {
+          if (!b || typeof b.id !== "number" || seen.has(b.id)) continue;
+          seen.add(b.id);
+          items.push(mapBlueprint(b));
+          added++;
+        }
 
-    if (!list.length) break;
-    // El catálogo ignoró la paginación y devolvió todo de una vez.
-    if (!added) break;
-    if (reportedLastPage !== null && page >= reportedLastPage) break;
-    if (isArray && list.length < PAGE_SIZE) break;
-  }
+        if (!list.length) break;
+        // El catálogo ignoró la paginación y devolvió todo de una vez.
+        if (!added) break;
+        if (reportedLastPage !== null && page >= reportedLastPage) break;
+        if (isArray && list.length < PAGE_SIZE) break;
+      }
 
-  const result: BlueprintFetch = { items, pagesFetched, paginated, reportedLastPage, fromCache: false };
-  blueprintsCache = { at: Date.now(), fetch: result };
-  return result;
+      return { items, pagesFetched, paginated, reportedLastPage, fromCache: false } satisfies BlueprintFetch;
+    },
+    force,
+  );
 }
+
 
 export async function listBlueprints(): Promise<PrintifyBlueprint[]> {
   return (await fetchAllBlueprints()).items;
