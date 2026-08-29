@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useT } from "@/lib/i18n";
@@ -174,9 +175,10 @@ function AuthPage() {
           <form onSubmit={handleUpdatePassword} className="mt-6 space-y-3">
             <div>
               <Label htmlFor="newPassword">{t("Nueva contraseña", "New password")}</Label>
-              <Input
+              <PasswordInput
                 id="newPassword"
-                type="password"
+                showLabel={t("Mostrar contraseña", "Show password")}
+                hideLabel={t("Ocultar contraseña", "Hide password")}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
@@ -205,7 +207,7 @@ function AuthPage() {
           {mode !== "reset" && (
             <div>
               <Label htmlFor="password">{t("Contraseña", "Password")}</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+              <PasswordInput id="password" showLabel={t("Mostrar contraseña", "Show password")} hideLabel={t("Ocultar contraseña", "Hide password")} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
               {mode === "signup" && (
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t("Mínimo 8 caracteres. Evita palabras comunes (ej. usa Tienda#2026mx).", "At least 8 characters. Avoid common words (e.g. use Store#2026us).")}

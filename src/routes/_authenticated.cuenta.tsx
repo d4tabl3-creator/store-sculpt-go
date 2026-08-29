@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowLeft, Loader2, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -160,7 +161,7 @@ function AccountPage() {
           <div className="mt-3">
             <Label htmlFor="np">{t("Nueva contraseña", "New password")}</Label>
             <div className="flex gap-2">
-              <Input id="np" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t("Mínimo 8 caracteres", "Minimum 8 characters")} />
+              <PasswordInput id="np" showLabel={t("Mostrar contraseña", "Show password")} hideLabel={t("Ocultar contraseña", "Hide password")} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t("Mínimo 8 caracteres", "Minimum 8 characters")} />
               <Button onClick={changePassword} disabled={changingPass || !newPassword}>
                 {changingPass && <Loader2 className="mr-2 size-4 animate-spin" />} {t("Cambiar", "Change")}
               </Button>
