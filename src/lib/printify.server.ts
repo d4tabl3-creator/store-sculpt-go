@@ -157,7 +157,6 @@ async function probeImage(): Promise<string> {
 // Catálogo
 // ---------------------------------------------------------------------------
 
-const TTL_MS = 30 * 60 * 1000;
 
 type RawBlueprint = { id: number; title: string; description: string; brand: string; model: string; images: string[] };
 
