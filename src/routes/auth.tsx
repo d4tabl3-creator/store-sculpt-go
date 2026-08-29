@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useT } from "@/lib/i18n";
@@ -69,7 +70,12 @@ function AuthPage() {
       );
     if (m.includes("already registered") || m.includes("user already"))
       return t("Ese correo ya tiene cuenta. Inicia sesión con tu contraseña.", "That email already has an account. Sign in with your password.");
-    if (m.includes("invalid login")) return t("Correo o contraseña incorrectos.", "Incorrect email or password.");
+    if (m.includes("invalid login"))
+      return t(
+        "Correo o contraseña incorrectos. Si tu cuenta se creó con Google, aún no tiene contraseña: usa «¿Olvidaste tu contraseña?» para crear una y recuperar tu tienda.",
+        "Incorrect email or password. If your account was created with Google it has no password yet: use \"Forgot your password?\" to set one and recover your store.",
+      );
+
     if (m.includes("email not confirmed")) return t("Confirma tu correo con el enlace que te enviamos.", "Confirm your email with the link we sent you.");
     if (m.includes("rate limit")) return t("Demasiados intentos. Espera un minuto e inténtalo de nuevo.", "Too many attempts. Wait a minute and try again.");
     return raw || t("Ocurrió un error. Inténtalo de nuevo.", "Something went wrong. Please try again.");
@@ -139,11 +145,14 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       }
     } catch (err) {
+      const raw = (err instanceof Error ? err.message : String(err ?? "")).toLowerCase();
       toast.error(mensajeError(err));
+      if (mode === "signin" && raw.includes("invalid login")) setMode("reset");
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4">
@@ -174,9 +183,10 @@ function AuthPage() {
           <form onSubmit={handleUpdatePassword} className="mt-6 space-y-3">
             <div>
               <Label htmlFor="newPassword">{t("Nueva contraseña", "New password")}</Label>
-              <Input
+              <PasswordInput
                 id="newPassword"
-                type="password"
+                showLabel={t("Mostrar contraseña", "Show password")}
+                hideLabel={t("Ocultar contraseña", "Hide password")}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
@@ -205,7 +215,7 @@ function AuthPage() {
           {mode !== "reset" && (
             <div>
               <Label htmlFor="password">{t("Contraseña", "Password")}</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+              <PasswordInput id="password" showLabel={t("Mostrar contraseña", "Show password")} hideLabel={t("Ocultar contraseña", "Hide password")} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
               {mode === "signup" && (
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t("Mínimo 8 caracteres. Evita palabras comunes (ej. usa Tienda#2026mx).", "At least 8 characters. Avoid common words (e.g. use Store#2026us).")}
