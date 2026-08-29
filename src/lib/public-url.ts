@@ -3,9 +3,8 @@
  *
  * Centraliza el dominio del sitio para metadatos, sitemap, correos y
  * redirecciones de autenticación. El dominio definitivo es
- * https://store.datable.com.mx; puede sobreescribirse con la variable
- * PUBLIC_APP_URL (servidor) o VITE_PUBLIC_APP_URL (cliente) mientras el
- * dominio termina de configurarse.
+ * https://store.datable.com.mx. No admite sobrescrituras del entorno para
+ * impedir que un despliegue conserve dominios históricos en enlaces públicos.
  */
 export const DEFAULT_PUBLIC_URL = "https://store.datable.com.mx";
 
@@ -15,14 +14,7 @@ function clean(url: string): string {
 
 /** Base pública del sitio (sin barra final). Segura en cliente y servidor. */
 export function publicUrl(): string {
-  const fromEnv =
-    (typeof process !== "undefined" ? process.env?.["PUBLIC_APP_URL"] : undefined) ||
-    (typeof import.meta !== "undefined"
-      ? (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.[
-          "VITE_PUBLIC_APP_URL"
-        ]
-      : undefined);
-  return clean(fromEnv || DEFAULT_PUBLIC_URL);
+  return DEFAULT_PUBLIC_URL;
 }
 
 /** URL absoluta pública para una ruta interna. */
