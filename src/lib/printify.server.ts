@@ -411,7 +411,7 @@ export async function getVariantCosts(
       const costs = new Map<number, number>();
       const shopId = await printifyShopId();
       const variants = await listBlueprintVariants(blueprintId, printProviderId);
-      const position = variants.find((v) => v.placeholders.length)?.placeholders[0]?.position ?? "front";
+      const position = variants.find((v) => v.placeholders?.length)?.placeholders?.[0]?.position ?? "front";
       const imageId = await probeImage();
 
       let created: PrintifyProduct | null = null;

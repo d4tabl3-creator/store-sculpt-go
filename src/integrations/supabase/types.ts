@@ -14,6 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
+      _backup_fase2_commission_ledger: {
+        Row: {
+          backed_up_at: string | null
+          base_cost_cents: number | null
+          commission_cents: number | null
+          created_at: string | null
+          gross_cents: number | null
+          id: string | null
+          net_owed_cents: number | null
+          order_id: string | null
+          owner_id: string | null
+          paid_at: string | null
+          payout_ref: string | null
+          seller_margin_cents: number | null
+          status: string | null
+          store_id: string | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          base_cost_cents?: number | null
+          commission_cents?: number | null
+          created_at?: string | null
+          gross_cents?: number | null
+          id?: string | null
+          net_owed_cents?: number | null
+          order_id?: string | null
+          owner_id?: string | null
+          paid_at?: string | null
+          payout_ref?: string | null
+          seller_margin_cents?: number | null
+          status?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          base_cost_cents?: number | null
+          commission_cents?: number | null
+          created_at?: string | null
+          gross_cents?: number | null
+          id?: string | null
+          net_owed_cents?: number | null
+          order_id?: string | null
+          owner_id?: string | null
+          paid_at?: string | null
+          payout_ref?: string | null
+          seller_margin_cents?: number | null
+          status?: string | null
+          store_id?: string | null
+        }
+        Relationships: []
+      }
+      _backup_fase2_store_products: {
+        Row: {
+          backed_up_at: string | null
+          base_cost_cents: number | null
+          created_at: string | null
+          description: string | null
+          design_url: string | null
+          id: string | null
+          image_url: string | null
+          mockup_url: string | null
+          name: string | null
+          placement: string | null
+          price_cents: number | null
+          sort_order: number | null
+          source_product_id: string | null
+          source_provider: string | null
+          source_variant_id: string | null
+          stock: number | null
+          store_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          base_cost_cents?: number | null
+          created_at?: string | null
+          description?: string | null
+          design_url?: string | null
+          id?: string | null
+          image_url?: string | null
+          mockup_url?: string | null
+          name?: string | null
+          placement?: string | null
+          price_cents?: number | null
+          sort_order?: number | null
+          source_product_id?: string | null
+          source_provider?: string | null
+          source_variant_id?: string | null
+          stock?: number | null
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          base_cost_cents?: number | null
+          created_at?: string | null
+          description?: string | null
+          design_url?: string | null
+          id?: string | null
+          image_url?: string | null
+          mockup_url?: string | null
+          name?: string | null
+          placement?: string | null
+          price_cents?: number | null
+          sort_order?: number | null
+          source_product_id?: string | null
+          source_provider?: string | null
+          source_variant_id?: string | null
+          stock?: number | null
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      _backup_fase2_stores_shipping: {
+        Row: {
+          backed_up_at: string | null
+          id: string | null
+          shipping_options: Json | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          id?: string | null
+          shipping_options?: Json | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          id?: string | null
+          shipping_options?: Json | null
+        }
+        Relationships: []
+      }
       commerce_design_assets: {
         Row: {
           created_at: string
@@ -475,6 +607,7 @@ export type Database = {
       commission_ledger: {
         Row: {
           base_cost_cents: number
+          commission_bps: number
           commission_cents: number
           created_at: string
           gross_cents: number
@@ -484,12 +617,17 @@ export type Database = {
           owner_id: string
           paid_at: string | null
           payout_ref: string | null
+          production_cost_cents: number
           seller_margin_cents: number
+          seller_net_margin_cents: number
+          shipping_charged_cents: number
+          shipping_cost_cents: number
           status: string
           store_id: string
         }
         Insert: {
           base_cost_cents?: number
+          commission_bps?: number
           commission_cents: number
           created_at?: string
           gross_cents: number
@@ -499,12 +637,17 @@ export type Database = {
           owner_id: string
           paid_at?: string | null
           payout_ref?: string | null
+          production_cost_cents?: number
           seller_margin_cents?: number
+          seller_net_margin_cents?: number
+          shipping_charged_cents?: number
+          shipping_cost_cents?: number
           status?: string
           store_id: string
         }
         Update: {
           base_cost_cents?: number
+          commission_bps?: number
           commission_cents?: number
           created_at?: string
           gross_cents?: number
@@ -514,7 +657,11 @@ export type Database = {
           owner_id?: string
           paid_at?: string | null
           payout_ref?: string | null
+          production_cost_cents?: number
           seller_margin_cents?: number
+          seller_net_margin_cents?: number
+          shipping_charged_cents?: number
+          shipping_cost_cents?: number
           status?: string
           store_id?: string
         }
@@ -871,10 +1018,12 @@ export type Database = {
           notes: string | null
           payment_status: string
           shipping_address: string | null
+          shipping_cents: number
           shipping_details: Json
           status: string
           store_id: string
           stripe_session_id: string | null
+          subtotal_cents: number
           total_cents: number
         }
         Insert: {
@@ -887,10 +1036,12 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           shipping_address?: string | null
+          shipping_cents?: number
           shipping_details?: Json
           status?: string
           store_id: string
           stripe_session_id?: string | null
+          subtotal_cents?: number
           total_cents?: number
         }
         Update: {
@@ -903,10 +1054,12 @@ export type Database = {
           notes?: string | null
           payment_status?: string
           shipping_address?: string | null
+          shipping_cents?: number
           shipping_details?: Json
           status?: string
           store_id?: string
           stripe_session_id?: string | null
+          subtotal_cents?: number
           total_cents?: number
         }
         Relationships: [
@@ -951,6 +1104,7 @@ export type Database = {
       store_products: {
         Row: {
           base_cost_cents: number
+          costs_need_resync: boolean
           created_at: string
           description: string | null
           design_url: string | null
@@ -960,6 +1114,8 @@ export type Database = {
           name: string
           placement: string | null
           price_cents: number
+          production_cost_cents: number
+          shipping_cost_cents: number
           sort_order: number
           source_product_id: string | null
           source_provider: string | null
@@ -970,6 +1126,7 @@ export type Database = {
         }
         Insert: {
           base_cost_cents?: number
+          costs_need_resync?: boolean
           created_at?: string
           description?: string | null
           design_url?: string | null
@@ -979,6 +1136,8 @@ export type Database = {
           name: string
           placement?: string | null
           price_cents?: number
+          production_cost_cents?: number
+          shipping_cost_cents?: number
           sort_order?: number
           source_product_id?: string | null
           source_provider?: string | null
@@ -989,6 +1148,7 @@ export type Database = {
         }
         Update: {
           base_cost_cents?: number
+          costs_need_resync?: boolean
           created_at?: string
           description?: string | null
           design_url?: string | null
@@ -998,6 +1158,8 @@ export type Database = {
           name?: string
           placement?: string | null
           price_cents?: number
+          production_cost_cents?: number
+          shipping_cost_cents?: number
           sort_order?: number
           source_product_id?: string | null
           source_provider?: string | null
