@@ -26,6 +26,7 @@ import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
+import { Route as AuthenticatedProductoStoreIdRouteImport } from './routes/_authenticated.producto.$storeId'
 import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authenticated.preparando.$id'
 import { Route as AuthenticatedGuiaIdRouteImport } from './routes/_authenticated.guia.$id'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -122,6 +123,12 @@ const AuthenticatedTiendaIdRoute = AuthenticatedTiendaIdRouteImport.update({
   path: '/tienda/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedProductoStoreIdRoute =
+  AuthenticatedProductoStoreIdRouteImport.update({
+    id: '/producto/$storeId',
+    path: '/producto/$storeId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPreparandoIdRoute =
   AuthenticatedPreparandoIdRouteImport.update({
     id: '/preparando/$id',
@@ -201,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/demo/': typeof DemoIndexRoute
   '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
+  '/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -229,6 +237,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoIndexRoute
   '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
+  '/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -260,6 +269,7 @@ export interface FileRoutesById {
   '/demo/': typeof DemoIndexRoute
   '/_authenticated/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
+  '/_authenticated/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/demo/'
     | '/guia/$id'
     | '/preparando/$id'
+    | '/producto/$storeId'
     | '/tienda/$id'
     | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/guia/$id'
     | '/preparando/$id'
+    | '/producto/$storeId'
     | '/tienda/$id'
     | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
@@ -349,6 +361,7 @@ export interface FileRouteTypes {
     | '/demo/'
     | '/_authenticated/guia/$id'
     | '/_authenticated/preparando/$id'
+    | '/_authenticated/producto/$storeId'
     | '/_authenticated/tienda/$id'
     | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
@@ -505,6 +518,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTiendaIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/producto/$storeId': {
+      id: '/_authenticated/producto/$storeId'
+      path: '/producto/$storeId'
+      fullPath: '/producto/$storeId'
+      preLoaderRoute: typeof AuthenticatedProductoStoreIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/preparando/$id': {
       id: '/_authenticated/preparando/$id'
       path: '/preparando/$id'
@@ -592,6 +612,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGuiaIdRoute: typeof AuthenticatedGuiaIdRoute
   AuthenticatedPreparandoIdRoute: typeof AuthenticatedPreparandoIdRoute
+  AuthenticatedProductoStoreIdRoute: typeof AuthenticatedProductoStoreIdRoute
   AuthenticatedTiendaIdRoute: typeof AuthenticatedTiendaIdRoute
 }
 
@@ -602,6 +623,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGuiaIdRoute: AuthenticatedGuiaIdRoute,
   AuthenticatedPreparandoIdRoute: AuthenticatedPreparandoIdRoute,
+  AuthenticatedProductoStoreIdRoute: AuthenticatedProductoStoreIdRoute,
   AuthenticatedTiendaIdRoute: AuthenticatedTiendaIdRoute,
 }
 
