@@ -20,12 +20,14 @@ import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DemoProductIdRouteImport } from './routes/demo.$productId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
+import { Route as AuthenticatedDiagnosticoRouteImport } from './routes/_authenticated.diagnostico'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCuentaRouteImport } from './routes/_authenticated.cuenta'
 import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.crear'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticated.tienda.$id'
+import { Route as AuthenticatedProductoStoreIdRouteImport } from './routes/_authenticated.producto.$storeId'
 import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authenticated.preparando.$id'
 import { Route as AuthenticatedGuiaIdRouteImport } from './routes/_authenticated.guia.$id'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -92,6 +94,12 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDiagnosticoRoute =
+  AuthenticatedDiagnosticoRouteImport.update({
+    id: '/diagnostico',
+    path: '/diagnostico',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -122,6 +130,12 @@ const AuthenticatedTiendaIdRoute = AuthenticatedTiendaIdRouteImport.update({
   path: '/tienda/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedProductoStoreIdRoute =
+  AuthenticatedProductoStoreIdRouteImport.update({
+    id: '/producto/$storeId',
+    path: '/producto/$storeId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPreparandoIdRoute =
   AuthenticatedPreparandoIdRouteImport.update({
     id: '/preparando/$id',
@@ -194,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/crear': typeof AuthenticatedCrearRoute
   '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/diagnostico': typeof AuthenticatedDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -201,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/demo/': typeof DemoIndexRoute
   '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
+  '/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -222,6 +238,7 @@ export interface FileRoutesByTo {
   '/crear': typeof AuthenticatedCrearRoute
   '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/diagnostico': typeof AuthenticatedDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -229,6 +246,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoIndexRoute
   '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
+  '/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
   '/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -253,6 +271,7 @@ export interface FileRoutesById {
   '/_authenticated/crear': typeof AuthenticatedCrearRoute
   '/_authenticated/cuenta': typeof AuthenticatedCuentaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/diagnostico': typeof AuthenticatedDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -260,6 +279,7 @@ export interface FileRoutesById {
   '/demo/': typeof DemoIndexRoute
   '/_authenticated/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
+  '/_authenticated/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
   '/_authenticated/tienda/$id': typeof AuthenticatedTiendaIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/commerce/worker': typeof ApiPublicCommerceWorkerRoute
@@ -284,6 +304,7 @@ export interface FileRouteTypes {
     | '/crear'
     | '/cuenta'
     | '/dashboard'
+    | '/diagnostico'
     | '/checkout/return'
     | '/demo/$productId'
     | '/email/unsubscribe'
@@ -291,6 +312,7 @@ export interface FileRouteTypes {
     | '/demo/'
     | '/guia/$id'
     | '/preparando/$id'
+    | '/producto/$storeId'
     | '/tienda/$id'
     | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
@@ -312,6 +334,7 @@ export interface FileRouteTypes {
     | '/crear'
     | '/cuenta'
     | '/dashboard'
+    | '/diagnostico'
     | '/checkout/return'
     | '/demo/$productId'
     | '/email/unsubscribe'
@@ -319,6 +342,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/guia/$id'
     | '/preparando/$id'
+    | '/producto/$storeId'
     | '/tienda/$id'
     | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
@@ -342,6 +366,7 @@ export interface FileRouteTypes {
     | '/_authenticated/crear'
     | '/_authenticated/cuenta'
     | '/_authenticated/dashboard'
+    | '/_authenticated/diagnostico'
     | '/checkout/return'
     | '/demo/$productId'
     | '/email/unsubscribe'
@@ -349,6 +374,7 @@ export interface FileRouteTypes {
     | '/demo/'
     | '/_authenticated/guia/$id'
     | '/_authenticated/preparando/$id'
+    | '/_authenticated/producto/$storeId'
     | '/_authenticated/tienda/$id'
     | '/lovable/email/suppression'
     | '/api/public/commerce/worker'
@@ -463,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/diagnostico': {
+      id: '/_authenticated/diagnostico'
+      path: '/diagnostico'
+      fullPath: '/diagnostico'
+      preLoaderRoute: typeof AuthenticatedDiagnosticoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -503,6 +536,13 @@ declare module '@tanstack/react-router' {
       path: '/tienda/$id'
       fullPath: '/tienda/$id'
       preLoaderRoute: typeof AuthenticatedTiendaIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/producto/$storeId': {
+      id: '/_authenticated/producto/$storeId'
+      path: '/producto/$storeId'
+      fullPath: '/producto/$storeId'
+      preLoaderRoute: typeof AuthenticatedProductoStoreIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/preparando/$id': {
@@ -590,8 +630,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCrearRoute: typeof AuthenticatedCrearRoute
   AuthenticatedCuentaRoute: typeof AuthenticatedCuentaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDiagnosticoRoute: typeof AuthenticatedDiagnosticoRoute
   AuthenticatedGuiaIdRoute: typeof AuthenticatedGuiaIdRoute
   AuthenticatedPreparandoIdRoute: typeof AuthenticatedPreparandoIdRoute
+  AuthenticatedProductoStoreIdRoute: typeof AuthenticatedProductoStoreIdRoute
   AuthenticatedTiendaIdRoute: typeof AuthenticatedTiendaIdRoute
 }
 
@@ -600,8 +642,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCrearRoute: AuthenticatedCrearRoute,
   AuthenticatedCuentaRoute: AuthenticatedCuentaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDiagnosticoRoute: AuthenticatedDiagnosticoRoute,
   AuthenticatedGuiaIdRoute: AuthenticatedGuiaIdRoute,
   AuthenticatedPreparandoIdRoute: AuthenticatedPreparandoIdRoute,
+  AuthenticatedProductoStoreIdRoute: AuthenticatedProductoStoreIdRoute,
   AuthenticatedTiendaIdRoute: AuthenticatedTiendaIdRoute,
 }
 

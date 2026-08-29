@@ -11,6 +11,7 @@
  */
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type {
+  CommerceProvider,
   ProviderBinding,
   ProviderId,
   ProviderOrder,
@@ -477,18 +478,105 @@ export async function getSizeGuideForProduct(
   }
 }
 
+/**
+ * Autoriza la fabricación de un pedido ya creado en el proveedor.
+ *
+ * Vuelve a leer el estado de pago desde la base antes de autorizar (defensa en
+ * profundidad) y es idempotente: si el pedido ya está en producción o enviado,
+ * no repite la orden.
+ */
+async function authorizeProduction(
+  binding: ProviderBinding,
+  orderId: string,
+  externalOrderId: string,
+  provider: CommerceProvider,
+) {
+  if (!provider.sendOrderToProduction) return;
+
+  const { data: paid } = await supabaseAdmin
+    .from("store_orders")
+    .select("payment_status")
+    .eq("id", orderId)
+    .maybeSingle();
+  if ((paid?.payment_status as string) !== "paid") return;
+
+  const { data: ob } = await supabaseAdmin
+    .from("commerce_order_bindings")
+    .select("fulfillment_status")
+    .eq("order_id", orderId)
+    .eq("provider", binding.provider)
+    .maybeSingle();
+  const status = (ob?.fulfillment_status as string | null) ?? "";
+  if (["in_production", "fulfilled", "shipped", "delivered", "canceled"].includes(status)) return;
+
+  try {
+    await provider.sendOrderToProduction(binding, externalOrderId);
+    await supabaseAdmin
+      .from("commerce_order_bindings")
+      .update({ fulfillment_status: "in_production", sync_error: null, last_synced_at: new Date().toISOString() })
+      .eq("order_id", orderId)
+      .eq("provider", binding.provider);
+    await supabaseAdmin.from("commerce_event_log").insert({
+      store_id: binding.storeId,
+      provider: binding.provider,
+      direction: "outbound",
+      event: "order.production.authorized",
+      level: "info",
+      detail: { orderId, externalOrderId },
+    } as never);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "No se pudo autorizar la producción";
+    await supabaseAdmin
+      .from("commerce_order_bindings")
+      .update({ sync_error: message })
+      .eq("order_id", orderId)
+      .eq("provider", binding.provider);
+  }
+}
+
+
+/**
+ * Manda el pedido al proveedor de fabricación.
+ *
+ * GUARDA DE PAGO: sólo se ejecuta si el pedido está cobrado. Un pedido sin
+ * pago confirmado jamás llega al proveedor y jamás entra a producción.
+ */
 export async function pushOrderToProvider(orderId: string) {
 
   const { data: order } = await supabaseAdmin
     .from("store_orders")
-    .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, shipping_details, items, total_cents")
+    .select("id, store_id, customer_name, customer_email, customer_phone, shipping_address, shipping_details, items, total_cents, payment_status")
     .eq("id", orderId)
     .maybeSingle();
   if (!order) return;
 
+  if ((order.payment_status as string) !== "paid") {
+    await supabaseAdmin.from("commerce_event_log").insert({
+      store_id: order.store_id as string,
+      direction: "outbound",
+      event: "order.push.blocked_unpaid",
+      level: "warn",
+      detail: { orderId, paymentStatus: order.payment_status },
+    } as never);
+    return;
+  }
+
   const binding = await loadBinding(order.store_id as string);
   if (!binding) return;
   const provider = getProvider(binding.provider);
+
+  // Idempotencia: si el pedido ya se envió al proveedor no se duplica.
+  const { data: existingBinding } = await supabaseAdmin
+    .from("commerce_order_bindings")
+    .select("external_order_id, sync_status, fulfillment_status")
+    .eq("order_id", orderId)
+    .eq("provider", binding.provider)
+    .maybeSingle();
+  if (existingBinding?.external_order_id && existingBinding.sync_status === "synced") {
+    await authorizeProduction(binding, orderId, String(existingBinding.external_order_id), provider);
+    return;
+  }
+
 
   const rawItems = (order.items as Array<{ productId?: string; name: string; qty: number; price_cents: number }>) || [];
   const ids = rawItems.map((i) => i.productId).filter(Boolean) as string[];
@@ -528,6 +616,8 @@ export async function pushOrderToProvider(orderId: string) {
     shippingAddress: (order.shipping_address as string | null) ?? null,
     shipping: normalizeShipping(order.shipping_details as Record<string, unknown> | null),
     totalCents: order.total_cents as number,
+    // Ya pasó la guarda de pago de arriba.
+    paymentConfirmed: true,
     lines: rawItems.map((i) => ({
       productId: i.productId ?? "",
       name: i.name,
@@ -554,6 +644,10 @@ export async function pushOrderToProvider(orderId: string) {
       },
       { onConflict: "order_id,provider" },
     );
+    if (res.externalOrderId) {
+      await authorizeProduction(binding, orderId, res.externalOrderId, provider);
+    }
+
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error al enviar pedido";
     await supabaseAdmin.from("commerce_order_bindings").upsert(

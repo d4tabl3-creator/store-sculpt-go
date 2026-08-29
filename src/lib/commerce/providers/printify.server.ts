@@ -28,6 +28,7 @@ import {
   printify,
   printifyShopId,
   resolvePrintProviderId,
+  sendOrderToProduction as sendToProduction,
   uploadImageByUrl,
   type PrintifyProduct,
 } from "@/lib/printify.server";
@@ -371,16 +372,28 @@ export const printifyProvider: CommerceProvider = {
         },
       });
 
-      // Enviar a producción inmediatamente: el cliente ya pagó.
-      await printify(`/v1/shops/${shopId}/orders/${created.id}/send_to_production.json`, {
-        method: "POST",
-      }).catch(() => null);
+      // NUNCA se manda a fabricar aquí. El pedido queda en espera hasta que
+      // DªTªBLe confirme el pago del cliente y el orquestador llame a
+      // `sendOrderToProduction`.
+      return { externalOrderId: String(created.id), fulfillmentStatus: "on_hold" };
 
-      return { externalOrderId: String(created.id), fulfillmentStatus: "in_production" };
     } catch (err) {
       wrap(err);
     }
   },
+
+  /** Fabricación autorizada. El orquestador sólo llega aquí con el pago confirmado. */
+  async sendOrderToProduction(binding: ProviderBinding, externalOrderId: string) {
+    const shopId = Number(binding.externalStoreId);
+    if (!shopId || !externalOrderId) return;
+    try {
+      await sendToProduction(shopId, externalOrderId);
+    } catch (err) {
+      wrap(err);
+    }
+  },
+
+
 
   async estimateShipping(
     binding: ProviderBinding,
@@ -427,27 +440,27 @@ export const printifyProvider: CommerceProvider = {
         },
       });
 
-      const LABELS: Record<string, { label: string; min: number; max: number }> = {
-        economy: { label: "Económico", min: 8, max: 15 },
-        standard: { label: "Estándar", min: 5, max: 10 },
-        priority: { label: "Prioritario", min: 3, max: 6 },
-        printify_express: { label: "Exprés", min: 2, max: 4 },
-        express: { label: "Exprés", min: 2, max: 4 },
+      // Sólo se traduce el nombre del servicio. Los tiempos de entrega no se
+      // inventan: si el proveedor no los publica, no se muestran.
+      const LABELS: Record<string, string> = {
+        economy: "Económico",
+        standard: "Estándar",
+        priority: "Prioritario",
+        printify_express: "Exprés",
+        express: "Exprés",
       };
 
       return Object.entries(res || {})
         .filter(([, cents]) => typeof cents === "number" && cents > 0)
-        .map(([key, cents]) => {
-          const meta = LABELS[key] ?? { label: key, min: 5, max: 12 };
-          return {
-            id: key,
-            label: meta.label,
-            costUsd: cents / 100,
-            currency: "USD",
-            minDays: meta.min,
-            maxDays: meta.max,
-          };
-        });
+        .map(([key, cents]) => ({
+          id: key,
+          label: LABELS[key] ?? key,
+          costUsd: cents / 100,
+          currency: "USD",
+          minDays: null,
+          maxDays: null,
+        }));
+
     } catch (err) {
       console.error("printify estimateShipping error:", err);
       return [];

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Loader2, Plus, Rocket, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Loader2, Store as StoreIcon, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,47 +10,38 @@ import { supabase } from "@/integrations/supabase/client";
 import { THEMES, slugify } from "@/lib/kits";
 import { getMyPlan } from "@/lib/plans.functions";
 import { planLimit } from "@/lib/plans";
-import { startProvisioning } from "@/lib/commerce.functions";
-import { addCatalogProducts, getCatalog } from "@/lib/catalog.functions";
 import { useT } from "@/lib/i18n";
-import { CatalogPicker } from "@/components/crear/CatalogPicker";
-import { CustomizeStep } from "@/components/crear/CustomizeStep";
-import { MockupsStep } from "@/components/crear/MockupsStep";
-import {
-  currentVariant,
-  draftToProduct,
-  money,
-  newDraft,
-  type CatalogItem,
-  type ProductDraft,
-  type ReadyProduct,
-} from "@/lib/product-draft";
 
 export const Route = createFileRoute("/_authenticated/crear")({
-  head: () => ({ meta: [{ title: "Crear producto — DªTªBLe" }] }),
-  component: CreateProductPage,
+  head: () => ({
+    meta: [
+      { title: "Diseña tu tienda — DªTªBLe" },
+      { name: "description", content: "Ponle nombre, logo y estilo a tu tienda. Después eliges qué vender." },
+      { property: "og:title", content: "Diseña tu tienda — DªTªBLe" },
+      { property: "og:description", content: "Crea tu tienda en minutos y elige después qué quieres vender." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: CreateStorePage,
 });
 
-type Stage = "catalog" | "customize" | "mockups" | "info" | "price" | "publish";
-
-const STAGES: Stage[] = ["catalog", "customize", "mockups", "info", "price", "publish"];
-const MAX_PRODUCTS = 40;
-
-function CreateProductPage() {
+/**
+ * Paso 1 del recorrido: la tienda existe como objeto ANTES de que el
+ * comerciante agregue productos. Aquí sólo se define su identidad.
+ */
+function CreateStorePage() {
   const t = useT();
   const navigate = useNavigate();
-  const [stage, setStage] = useState<Stage>("catalog");
+  const fileRef = useRef<HTMLInputElement>(null);
+
   const [gateChecked, setGateChecked] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
-  const [catalogError, setCatalogError] = useState<string | null>(null);
-  const [loadingCatalog, setLoadingCatalog] = useState(true);
-
-  const [draft, setDraft] = useState<ProductDraft | null>(null);
-  const [ready, setReady] = useState<ReadyProduct[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const [storeName, setStoreName] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [themeId, setThemeId] = useState("berry");
   const [primaryColor, setPrimaryColor] = useState("#CF3790");
   const [paymentEmail, setPaymentEmail] = useState("");
@@ -71,328 +62,200 @@ function CreateProductPage() {
         if ((count || 0) >= limit) {
           toast.error(
             plan.plan
-              ? t(`Tu plan actual permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`, `Your current plan allows ${limit} store${limit === 1 ? "" : "s"}. Upgrade to Pro for more.`)
-              : t(`Sin plan solo puedes tener 1 tienda. Activa Pro para crear más.`, `Without a plan you can only have 1 store. Activate Pro to create more.`),
+              ? t(
+                  `Tu plan actual permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`,
+                  `Your current plan allows ${limit} store${limit === 1 ? "" : "s"}. Upgrade to Pro for more.`,
+                )
+              : t(
+                  "Sin plan solo puedes tener 1 tienda. Activa Pro para crear más.",
+                  "Without a plan you can only have 1 store. Activate Pro to create more.",
+                ),
           );
           navigate({ to: plan.plan ? "/planes" : "/dashboard" });
           return;
         }
       }
-      if (!paymentEmail && u.email) setPaymentEmail(u.email);
+      if (u.email) setPaymentEmail((prev) => prev || u.email!);
       setGateChecked(true);
     })();
   }, [navigate]);
 
-  useEffect(() => {
-    if (!gateChecked) return;
-    (async () => {
-      try {
-        setCatalog((await getCatalog()) as CatalogItem[]);
-      } catch (err) {
-        setCatalogError(err instanceof Error ? err.message : t("No se pudieron cargar los productos", "Could not load products"));
-      } finally {
-        setLoadingCatalog(false);
-      }
-    })();
-  }, [gateChecked]);
-
-  function update(patch: Partial<ProductDraft>) {
-    setDraft((d) => (d ? { ...d, ...patch } : d));
+  async function uploadLogo(file: File) {
+    setUploading(true);
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error(t("Inicia sesión otra vez", "Please sign in again"));
+      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+      const path = `${user.id}/logos/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("disenos").upload(path, file, { contentType: file.type });
+      if (error) throw new Error(error.message);
+      const signed = await supabase.storage.from("disenos").createSignedUrl(path, 60 * 60 * 24 * 3650);
+      if (!signed.data?.signedUrl) throw new Error(t("No se pudo preparar tu logo", "Could not prepare your logo"));
+      setLogoUrl(signed.data.signedUrl);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("No se pudo subir el logo", "Could not upload the logo"));
+    } finally {
+      setUploading(false);
+    }
   }
 
-  function pick(item: CatalogItem) {
-    if (ready.length >= MAX_PRODUCTS) {
-      toast.error(t(`Máximo ${MAX_PRODUCTS} productos por tienda.`, `Maximum ${MAX_PRODUCTS} products per store.`));
-      return;
-    }
-    setDraft(newDraft(item));
-    setStage("customize");
-  }
+  const canCreate = storeName.trim().length >= 2 && paymentEmail.includes("@");
 
-  const stageIndex = STAGES.indexOf(stage);
-  const variant = draft ? currentVariant(draft) : undefined;
-  const price = draft?.priceCents ?? variant?.priceCents ?? 0;
-  const cost = variant?.costCents ?? 0;
-  const profit = Math.max(0, price - cost);
-
-  const canContinue =
-    (stage === "customize" && !!draft && draft.variants.length > 0) ||
-    (stage === "mockups" && !!draft) ||
-    (stage === "info" && !!draft && draft.name.trim().length >= 2) ||
-    (stage === "price" && price > 0) ||
-    (stage === "publish" && storeName.trim().length >= 2 && paymentEmail.includes("@") && ready.length > 0);
-
-  function next() {
-    if (!draft) return;
-    if (stage === "price") {
-      const product = draftToProduct(draft);
-      setReady((prev) => [...prev.filter((p) => p.productId !== product.productId), product]);
-      setDraft(null);
-      setStage("publish");
-      return;
-    }
-    setStage(STAGES[stageIndex + 1]);
-  }
-
-  function back() {
-    if (stage === "publish") {
-      setStage("catalog");
-      return;
-    }
-    if (stage === "customize") {
-      setDraft(null);
-      setStage("catalog");
-      return;
-    }
-    setStage(STAGES[Math.max(0, stageIndex - 1)]);
-  }
-
-  async function publish() {
+  async function createStore() {
     setSaving(true);
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error(t("Sesión inválida", "Invalid session"));
-      if (!ready.length) throw new Error(t("Crea al menos un producto", "Create at least one product"));
 
       let finalSlug = slug;
       const { data: exists } = await supabase.from("stores").select("id").eq("slug", finalSlug).maybeSingle();
       if (exists) finalSlug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
 
-      const shipping = [
-        { id: "standard", label: t("Envío estándar (3-7 días)", "Standard shipping (3-7 days)"), price_cents: 9900 },
-        { id: "pickup", label: t("Recoge en tienda", "Store pickup"), price_cents: 0 },
-      ];
-
-      const { data: store, error: e1 } = await supabase
+      const { data: store, error } = await supabase
         .from("stores")
         .insert({
           owner_id: user.id,
           slug: finalSlug,
           name: storeName.trim(),
-          niche: ready[0]?.category || t("Catálogo", "Catalog"),
+          niche: tagline.trim() || t("Mi tienda", "My store"),
           kit_id: "catalogo",
           theme: themeId,
           primary_color: primaryColor,
-          shipping_options: shipping,
+          logo_url: logoUrl,
+          shipping_options: [],
           status: "draft",
         })
         .select()
         .single();
-      if (e1 || !store) throw e1 || new Error(t("No se pudo crear tu tienda", "Could not create your store"));
+      if (error || !store) throw error || new Error(t("No se pudo crear tu tienda", "Could not create your store"));
 
-      await addCatalogProducts({
-        data: {
-          storeId: store.id,
-          items: ready.map((p) => ({
-            productId: p.productId,
-            variantId: p.variantId ?? undefined,
-            name: p.name,
-            description: p.description || undefined,
-            priceCents: p.priceCents ?? undefined,
-            designUrl: p.designUrl,
-            mockupUrl: p.mockupUrl,
-            placement: p.placement,
-          })),
-        },
-      });
+      await supabase.from("store_payment_settings").insert({ store_id: store.id, payment_email: paymentEmail });
 
-      if (paymentEmail) {
-        await supabase.from("store_payment_settings").insert({ store_id: store.id, payment_email: paymentEmail });
-      }
-
-      await startProvisioning({ data: { storeId: store.id } });
-      navigate({ to: "/preparando/$id", params: { id: store.id } });
+      navigate({ to: "/producto/$storeId", params: { storeId: store.id } });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("No se pudo publicar", "Could not publish"));
+      toast.error(err instanceof Error ? err.message : t("No se pudo crear tu tienda", "Could not create your store"));
     } finally {
       setSaving(false);
     }
   }
 
   if (!gateChecked) {
-    return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">{t("Comprobando plan…", "Checking plan…")}</div>;
+    return (
+      <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">
+        {t("Un momento…", "One moment…")}
+      </div>
+    );
   }
-
-  const stageLabels: Record<Stage, string> = {
-    catalog: t("Producto", "Product"),
-    customize: t("Personalizar", "Customize"),
-    mockups: t("Maquetas", "Mockups"),
-    info: t("Información", "Details"),
-    price: t("Precio", "Price"),
-    publish: t("Publicar", "Publish"),
-  };
 
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-card">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="size-4" /> {t("Salir", "Exit")}
           </Link>
-          <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
-            {STAGES.map((sg, i) => (
-              <div key={sg} className="flex items-center gap-1">
-                <span
-                  className={`whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-bold uppercase tracking-wide ${
-                    i === stageIndex ? "bg-primary text-primary-foreground" : i < stageIndex ? "text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  {stageLabels[sg]}
-                </span>
-                {i < STAGES.length - 1 && <span className="text-border">→</span>}
-              </div>
-            ))}
-          </nav>
-          {ready.length > 0 && (
-            <span className="whitespace-nowrap text-xs font-bold text-primary">
-              {ready.length} {t(ready.length === 1 ? "producto listo" : "productos listos", ready.length === 1 ? "product ready" : "products ready")}
-            </span>
-          )}
+          <span className="text-xs font-bold uppercase tracking-wide text-primary">
+            {t("Paso 1 de 2 · Tu tienda", "Step 1 of 2 · Your store")}
+          </span>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        {stage === "catalog" && <CatalogPicker items={catalog} loading={loadingCatalog} error={catalogError} onPick={pick} />}
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        <h1 className="font-display text-4xl font-extrabold uppercase">{t("Diseña tu tienda", "Design your store")}</h1>
+        <p className="mt-2 text-muted-foreground">
+          {t(
+            "Primero creamos tu tienda. Después eliges qué quieres vender y la llenas de productos.",
+            "First we create your store. Then you choose what to sell and fill it with products.",
+          )}
+        </p>
 
-        {stage === "customize" && draft && <CustomizeStep draft={draft} update={update} />}
-
-        {stage === "mockups" && draft && <MockupsStep draft={draft} update={update} />}
-
-        {stage === "info" && draft && (
-          <section>
-            <h1 className="font-display text-3xl font-extrabold uppercase">{t("Información del producto", "Product details")}</h1>
-            <p className="mt-1 text-muted-foreground">{t("Así lo verán tus clientes en tu tienda.", "This is what your customers will see in your store.")}</p>
-            <div className="mt-6 grid gap-6 md:grid-cols-[220px_1fr]">
-              <div className="overflow-hidden rounded-2xl border-2 border-border bg-muted">
-                <img src={draft.mockupUrl || variant?.image || draft.image} alt={draft.name} className="aspect-square size-full object-cover" />
-              </div>
-              <div className="grid gap-4">
-                <div>
-                  <Label htmlFor="pname">{t("Título del producto", "Product title")}</Label>
-                  <Input id="pname" value={draft.name} onChange={(e) => update({ name: e.target.value })} />
-                </div>
-                <div>
-                  <Label htmlFor="pdesc">{t("Descripción", "Description")}</Label>
-                  <Textarea id="pdesc" rows={8} value={draft.description} onChange={(e) => update({ description: e.target.value })} />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {t("Cuenta para quién es, de qué está hecho y por qué vale la pena.", "Say who it's for, what it's made of and why it's worth it.")}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {stage === "price" && draft && (
-          <section>
-            <h1 className="font-display text-3xl font-extrabold uppercase">{t("Precio y ganancia", "Price and profit")}</h1>
-            <p className="mt-1 text-muted-foreground">{t("Define tu precio de venta. Puedes cambiarlo después.", "Set your selling price. You can change it later.")}</p>
-            <div className="mt-6 grid max-w-md gap-4">
-              <div>
-                <Label htmlFor="price">{t("Precio de venta (MXN)", "Selling price (MXN)")}</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min={1}
-                  value={price ? Math.round(price / 100) : ""}
-                  onChange={(e) => update({ priceCents: Math.max(0, Math.round(Number(e.target.value) * 100)) })}
-                />
-              </div>
-              <div className="rounded-xl border-2 border-border bg-card p-4 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("Costo de producción y envío", "Production and shipping cost")}</span>
-                  <span>{money(cost)} MXN</span>
-                </div>
-                <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-bold text-primary">
-                  <span>{t("Tu ganancia por venta", "Your profit per sale")}</span>
-                  <span>
-                    {money(profit)} {price > 0 ? `(${Math.round((profit / price) * 100)}%)` : ""}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {stage === "publish" && (
-          <section>
-            <h1 className="font-display text-3xl font-extrabold uppercase">{t("Publicar en mi tienda", "Publish to my store")}</h1>
-            <p className="mt-1 text-muted-foreground">{t("Último paso: ponle nombre y estilo a tu tienda.", "Last step: give your store a name and a style.")}</p>
-
-            <div className="mt-6 grid gap-3">
-              {ready.map((p) => (
-                <div key={p.productId} className="flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-3">
-                  <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-muted">
-                    <img src={p.image} alt={p.name} className="size-full object-cover" loading="lazy" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold">{p.name}</div>
-                    <div className="text-xs text-muted-foreground">{p.priceCents != null ? `${money(p.priceCents)} MXN` : p.category}</div>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => setReady((prev) => prev.filter((x) => x.productId !== p.productId))}>
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button variant="outline" onClick={() => setStage("catalog")}>
-                <Plus className="mr-2 size-4" /> {t("Crear otro producto", "Create another product")}
-              </Button>
-            </div>
-
-            <div className="mt-8 grid gap-6">
-              <div>
-                <Label htmlFor="sname">{t("Nombre de tu tienda", "Your store's name")}</Label>
-                <Input id="sname" placeholder={t("Ej. Aurora Studio", "E.g. Aurora Studio")} value={storeName} onChange={(e) => setStoreName(e.target.value)} />
-                {slug && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {t("URL pública:", "Public URL:")} <span className="font-mono text-foreground">datable.app/t/{slug}</span>
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label>{t("Estilo visual", "Visual style")}</Label>
-                <div className="mt-2 grid gap-3 sm:grid-cols-3">
-                  {THEMES.map((th) => (
-                    <button
-                      key={th.id}
-                      onClick={() => {
-                        setThemeId(th.id);
-                        setPrimaryColor(th.primary);
-                      }}
-                      className={`rounded-xl border-2 p-4 text-left transition-all ${themeId === th.id ? "border-primary" : "border-border"}`}
-                    >
-                      <div className="h-12 rounded-md" style={{ background: th.primary }} />
-                      <div className="mt-3 font-bold">{th.name}</div>
-                      <div className="text-xs text-muted-foreground">{th.description}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="pay">{t("Email para recibir tus pedidos", "Email to receive your orders")}</Label>
-                <Input id="pay" type="email" placeholder="tu@email.com" value={paymentEmail} onChange={(e) => setPaymentEmail(e.target.value)} />
-              </div>
-            </div>
-          </section>
-        )}
-
-        {stage !== "catalog" && (
-          <div className="mt-10 flex items-center justify-between">
-            <Button variant="outline" disabled={saving} onClick={back}>
-              <ArrowLeft className="mr-1 size-4" /> {t("Atrás", "Back")}
-            </Button>
-            {stage === "publish" ? (
-              <Button disabled={!canContinue || saving} onClick={publish} className="shadow-cta shine-on-hover">
-                {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Rocket className="mr-2 size-4" />}
-                {t("Publicar en mi tienda", "Publish to my store")}
-              </Button>
-            ) : (
-              <Button disabled={!canContinue} onClick={next} className="shine-on-hover">
-                {stage === "price" ? t("Listo, continuar", "Done, continue") : t("Continuar", "Continue")} <ArrowRight className="ml-1 size-4" />
-              </Button>
+        <div className="mt-8 grid gap-6">
+          <div>
+            <Label htmlFor="sname">{t("Nombre de tu tienda", "Your store's name")}</Label>
+            <Input
+              id="sname"
+              placeholder={t("Ej. Aurora Studio", "E.g. Aurora Studio")}
+              value={storeName}
+              onChange={(e) => setStoreName(e.target.value)}
+            />
+            {slug && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("Dirección pública:", "Public address:")}{" "}
+                <span className="font-mono text-foreground">datable.app/t/{slug}</span>
+              </p>
             )}
           </div>
-        )}
+
+          <div>
+            <Label htmlFor="tagline">{t("¿De qué trata tu tienda?", "What is your store about?")}</Label>
+            <Textarea
+              id="tagline"
+              rows={3}
+              placeholder={t("Ej. Ropa con ilustraciones originales para amantes del café.", "E.g. Clothing with original illustrations for coffee lovers.")}
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label>{t("Logo (opcional)", "Logo (optional)")}</Label>
+            <div className="mt-2 flex items-center gap-4">
+              <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-2xl border-2 border-border bg-muted">
+                {logoUrl ? (
+                  <img src={logoUrl} alt={t("Logo de tu tienda", "Your store logo")} className="size-full object-cover" />
+                ) : (
+                  <StoreIcon className="size-7 text-muted-foreground" />
+                )}
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void uploadLogo(f);
+                }}
+              />
+              <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                {uploading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Upload className="mr-2 size-4" />}
+                {logoUrl ? t("Cambiar logo", "Change logo") : t("Subir logo", "Upload logo")}
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <Label>{t("Estilo visual", "Visual style")}</Label>
+            <div className="mt-2 grid gap-3 sm:grid-cols-3">
+              {THEMES.map((th) => (
+                <button
+                  key={th.id}
+                  onClick={() => {
+                    setThemeId(th.id);
+                    setPrimaryColor(th.primary);
+                  }}
+                  className={`rounded-xl border-2 p-4 text-left transition-all ${themeId === th.id ? "border-primary" : "border-border"}`}
+                >
+                  <div className="h-12 rounded-md" style={{ background: th.primary }} />
+                  <div className="mt-3 font-bold">{th.name}</div>
+                  <div className="text-xs text-muted-foreground">{th.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="pay">{t("Email para recibir tus pedidos", "Email to receive your orders")}</Label>
+            <Input id="pay" type="email" placeholder="tu@email.com" value={paymentEmail} onChange={(e) => setPaymentEmail(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="mt-10 flex justify-end">
+          <Button disabled={!canCreate || saving} onClick={createStore} className="shadow-cta shine-on-hover">
+            {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+            {t("Crear tienda y elegir productos", "Create store and choose products")} <ArrowRight className="ml-1 size-4" />
+          </Button>
+        </div>
       </main>
     </div>
   );
