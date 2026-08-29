@@ -20,6 +20,7 @@ import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DemoProductIdRouteImport } from './routes/demo.$productId'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
+import { Route as AuthenticatedDiagnosticoRouteImport } from './routes/_authenticated.diagnostico'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCuentaRouteImport } from './routes/_authenticated.cuenta'
 import { Route as AuthenticatedCrearRouteImport } from './routes/_authenticated.crear'
@@ -29,7 +30,6 @@ import { Route as AuthenticatedTiendaIdRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProductoStoreIdRouteImport } from './routes/_authenticated.producto.$storeId'
 import { Route as AuthenticatedPreparandoIdRouteImport } from './routes/_authenticated.preparando.$id'
 import { Route as AuthenticatedGuiaIdRouteImport } from './routes/_authenticated.guia.$id'
-import { Route as AuthenticatedAdminDiagnosticoRouteImport } from './routes/_authenticated.admin.diagnostico'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -94,6 +94,12 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDiagnosticoRoute =
+  AuthenticatedDiagnosticoRouteImport.update({
+    id: '/diagnostico',
+    path: '/diagnostico',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -141,12 +147,6 @@ const AuthenticatedGuiaIdRoute = AuthenticatedGuiaIdRouteImport.update({
   path: '/guia/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAdminDiagnosticoRoute =
-  AuthenticatedAdminDiagnosticoRouteImport.update({
-    id: '/diagnostico',
-    path: '/diagnostico',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -204,16 +204,16 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRouteWithChildren
   '/planes': typeof PlanesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/admin': typeof AuthenticatedAdminRoute
   '/crear': typeof AuthenticatedCrearRoute
   '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/diagnostico': typeof AuthenticatedDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/t/$slug': typeof TSlugRoute
   '/demo/': typeof DemoIndexRoute
-  '/admin/diagnostico': typeof AuthenticatedAdminDiagnosticoRoute
   '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
@@ -234,16 +234,16 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/planes': typeof PlanesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/admin': typeof AuthenticatedAdminRoute
   '/crear': typeof AuthenticatedCrearRoute
   '/cuenta': typeof AuthenticatedCuentaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/diagnostico': typeof AuthenticatedDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/t/$slug': typeof TSlugRoute
   '/demo': typeof DemoIndexRoute
-  '/admin/diagnostico': typeof AuthenticatedAdminDiagnosticoRoute
   '/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
@@ -267,16 +267,16 @@ export interface FileRoutesById {
   '/demo': typeof DemoRouteWithChildren
   '/planes': typeof PlanesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/crear': typeof AuthenticatedCrearRoute
   '/_authenticated/cuenta': typeof AuthenticatedCuentaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/diagnostico': typeof AuthenticatedDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/demo/$productId': typeof DemoProductIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/t/$slug': typeof TSlugRoute
   '/demo/': typeof DemoIndexRoute
-  '/_authenticated/admin/diagnostico': typeof AuthenticatedAdminDiagnosticoRoute
   '/_authenticated/guia/$id': typeof AuthenticatedGuiaIdRoute
   '/_authenticated/preparando/$id': typeof AuthenticatedPreparandoIdRoute
   '/_authenticated/producto/$storeId': typeof AuthenticatedProductoStoreIdRoute
@@ -304,12 +304,12 @@ export interface FileRouteTypes {
     | '/crear'
     | '/cuenta'
     | '/dashboard'
+    | '/diagnostico'
     | '/checkout/return'
     | '/demo/$productId'
     | '/email/unsubscribe'
     | '/t/$slug'
     | '/demo/'
-    | '/admin/diagnostico'
     | '/guia/$id'
     | '/preparando/$id'
     | '/producto/$storeId'
@@ -334,12 +334,12 @@ export interface FileRouteTypes {
     | '/crear'
     | '/cuenta'
     | '/dashboard'
+    | '/diagnostico'
     | '/checkout/return'
     | '/demo/$productId'
     | '/email/unsubscribe'
     | '/t/$slug'
     | '/demo'
-    | '/admin/diagnostico'
     | '/guia/$id'
     | '/preparando/$id'
     | '/producto/$storeId'
@@ -366,12 +366,12 @@ export interface FileRouteTypes {
     | '/_authenticated/crear'
     | '/_authenticated/cuenta'
     | '/_authenticated/dashboard'
+    | '/_authenticated/diagnostico'
     | '/checkout/return'
     | '/demo/$productId'
     | '/email/unsubscribe'
     | '/t/$slug'
     | '/demo/'
-    | '/_authenticated/admin/diagnostico'
     | '/_authenticated/guia/$id'
     | '/_authenticated/preparando/$id'
     | '/_authenticated/producto/$storeId'
@@ -489,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/diagnostico': {
+      id: '/_authenticated/diagnostico'
+      path: '/diagnostico'
+      fullPath: '/diagnostico'
+      preLoaderRoute: typeof AuthenticatedDiagnosticoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -551,13 +558,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/guia/$id'
       preLoaderRoute: typeof AuthenticatedGuiaIdRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/admin/diagnostico': {
-      id: '/_authenticated/admin/diagnostico'
-      path: '/diagnostico'
-      fullPath: '/admin/diagnostico'
-      preLoaderRoute: typeof AuthenticatedAdminDiagnosticoRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
@@ -625,22 +625,12 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedAdminRouteChildren {
-  AuthenticatedAdminDiagnosticoRoute: typeof AuthenticatedAdminDiagnosticoRoute
-}
-
-const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
-  AuthenticatedAdminDiagnosticoRoute: AuthenticatedAdminDiagnosticoRoute,
-}
-
-const AuthenticatedAdminRouteWithChildren =
-  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
-
 interface AuthenticatedRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCrearRoute: typeof AuthenticatedCrearRoute
   AuthenticatedCuentaRoute: typeof AuthenticatedCuentaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDiagnosticoRoute: typeof AuthenticatedDiagnosticoRoute
   AuthenticatedGuiaIdRoute: typeof AuthenticatedGuiaIdRoute
   AuthenticatedPreparandoIdRoute: typeof AuthenticatedPreparandoIdRoute
   AuthenticatedProductoStoreIdRoute: typeof AuthenticatedProductoStoreIdRoute
@@ -648,10 +638,11 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCrearRoute: AuthenticatedCrearRoute,
   AuthenticatedCuentaRoute: AuthenticatedCuentaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDiagnosticoRoute: AuthenticatedDiagnosticoRoute,
   AuthenticatedGuiaIdRoute: AuthenticatedGuiaIdRoute,
   AuthenticatedPreparandoIdRoute: AuthenticatedPreparandoIdRoute,
   AuthenticatedProductoStoreIdRoute: AuthenticatedProductoStoreIdRoute,
