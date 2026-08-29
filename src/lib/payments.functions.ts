@@ -114,42 +114,52 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       const ids = data.items.map((i) => i.productId);
       const { data: products } = await supabaseAdmin
         .from("store_products")
-        .select("id, name, price_cents, stock, store_id")
+        .select("id, name, price_cents, stock, store_id, production_cost_cents, shipping_cost_cents")
         .in("id", ids);
       const byId = new Map((products || []).map((p) => [p.id as string, p]));
 
-      const orderItems: Array<{ productId: string; name: string; qty: number; price_cents: number }> = [];
+      const orderItems: Array<{
+        productId: string;
+        name: string;
+        qty: number;
+        price_cents: number;
+        production_cost_cents: number;
+        shipping_cost_cents: number;
+      }> = [];
       let subtotal = 0;
+      let shippingFromProducts = 0;
       for (const it of data.items) {
         const p = byId.get(it.productId);
         if (!p || p.store_id !== store.id) return { error: "Producto no válido en esta tienda" };
         if ((p.stock as number) < it.qty) return { error: `Sin stock suficiente de ${p.name}` };
+        const production = (p.production_cost_cents as number) ?? 0;
+        const shipCost = (p.shipping_cost_cents as number) ?? 0;
+        // Precio mínimo = costo de fabricación. Nunca se cobra por debajo.
+        if ((p.price_cents as number) <= 0 || (p.price_cents as number) < production) {
+          return { error: `El producto ${p.name} no está disponible para la venta` };
+        }
         orderItems.push({
           productId: p.id as string,
           name: p.name as string,
           qty: it.qty,
           price_cents: p.price_cents as number,
+          production_cost_cents: production,
+          shipping_cost_cents: shipCost,
         });
         subtotal += (p.price_cents as number) * it.qty;
+        shippingFromProducts += shipCost * it.qty;
       }
 
       // Envío validado contra shipping_options guardadas en la tienda
-      const shippingOptions = (store.shipping_options as Array<{ id: string; label: string; price_cents: number }>) || [];
-      let shippingLabel = "";
-      let shippingCents = 0;
-      if (data.shippingId) {
-        const s = shippingOptions.find((o) => o.id === data.shippingId);
-        if (!s) return { error: "Método de envío inválido" };
-        shippingLabel = s.label;
-        shippingCents = s.price_cents;
-      }
+      // El envío se cobra aparte y siempre con el costo real de cada producto.
+      const shippingLabel = "Envío";
+      const shippingCents = shippingFromProducts;
       const totalCents = subtotal + shippingCents;
 
       // La dirección se valida ANTES de cobrar: un pedido cobrado que no se
       // puede mandar a fabricar sería dinero recibido sin producto.
       const shippingDetails = deriveShipping(data.customer.address, data.shipping);
-      const needsAddress = data.shippingId !== "pickup";
-      if (needsAddress && !shippingDetails) {
+      if (!shippingDetails) {
         return {
           error:
             "La dirección está incompleta. Escríbela así: calle y número, colonia, ciudad, estado, código postal.",
@@ -164,10 +174,12 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           customer_name: data.customer.name.trim(),
           customer_email: data.customer.email.trim().toLowerCase(),
           customer_phone: data.customer.phone?.trim() || null,
-          shipping_address: `${data.customer.address.trim()}${shippingLabel ? ` · ${shippingLabel}` : ""}`,
+          shipping_address: data.customer.address.trim(),
           shipping_details: shippingDetails ?? {},
 
           items: orderItems,
+          subtotal_cents: subtotal,
+          shipping_cents: shippingCents,
           total_cents: totalCents,
           notes: data.customer.notes?.trim() || null,
           status: "pending",
@@ -192,7 +204,7 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           quantity: 1,
           price_data: {
             currency: "mxn",
-            product_data: { name: `Envío — ${shippingLabel}` },
+            product_data: { name: shippingLabel },
             unit_amount: shippingCents,
           },
         });
