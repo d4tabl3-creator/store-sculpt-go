@@ -233,8 +233,10 @@ export async function getCatalogVariants(
       marginCents: money.marginCents,
       marginPct: money.marginPct,
       markup: money.markup,
-      // El catálogo consultado ya excluye variantes agotadas.
-      inStock: costs.size === 0 ? true : costs.has(v.id),
+      // Agotada = el fabricante la reporta sin existencias, o no hay costo real
+      // para calcularla. En ambos casos no se puede vender.
+      inStock: v.available !== false && (costs.size === 0 ? true : costs.has(v.id)),
+
     };
   });
 
