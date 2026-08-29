@@ -43,13 +43,29 @@ function AuthPage() {
     const hash = typeof window !== "undefined" ? window.location.hash : "";
     const search = typeof window !== "undefined" ? window.location.search : "";
     const isRecovery = hash.includes("type=recovery") || search.includes("type=recovery");
-    if (isRecovery) {
-      setMode("update");
+    // Enlace caducado o ya usado: Supabase vuelve con error_code en la URL.
+    const params = new URLSearchParams((hash.startsWith("#") ? hash.slice(1) : hash) || search);
+    const linkError = params.get("error_code") || params.get("error_description");
+    if (linkError) {
+      setMode("reset");
+      toast.error(
+        t(
+          "El enlace de recuperación caducó o ya fue usado. Solicita uno nuevo.",
+          "The recovery link expired or was already used. Request a new one.",
+        ),
+      );
+      if (typeof window !== "undefined") window.history.replaceState({}, "", "/auth");
       return;
     }
+    // Siempre escuchamos PASSWORD_RECOVERY: con el flujo PKCE la sesión de
+    // recuperación se establece unos milisegundos después de cargar la página.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setMode("update");
     });
+    if (isRecovery) {
+      setMode("update");
+      return () => sub.subscription.unsubscribe();
+    }
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: "/dashboard" });
     });
@@ -87,7 +103,9 @@ function AuthPage() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: authRedirectUrl("/auth?type=recovery"),
+        // Siempre al dominio público definitivo de Datable (nunca a una URL de
+        // vista previa). Debe estar en Supabase Auth → Redirect URLs.
+        redirectTo: publicUrlFor("/auth?type=recovery"),
       });
       if (error) throw error;
       toast.success(

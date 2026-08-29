@@ -282,26 +282,34 @@ function CheckoutForm({
   const [submitting, setSubmitting] = useState(false);
   const [orderInfo, setOrderInfo] = useState<{ orderId: string; clientSecret: string } | null>(null);
 
-  // Envío separado: el servidor es la única fuente de verdad del total.
-  // Mientras responde se muestra el estimado local con los costos ya conocidos.
-  const localShipping = useMemo(
-    () => cart.reduce((acc, c) => acc + (c.product.shipping_cost_cents || 0) * c.qty, 0),
-    [cart],
-  );
+  // Cotización del servidor: Productos + Envío = Total. El envío es el costo
+  // real de entrega del pedido; se muestra como concepto separado. No se
+  // muestra ningún cálculo local provisional.
   const [quote, setQuote] = useState<{ subtotalCents: number; shippingCents: number; totalCents: number } | null>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+
+  const cartKey = useMemo(() => cart.map((c) => `${c.product.id}:${c.qty}`).join(","), [cart]);
   useEffect(() => {
     let alive = true;
+    setQuote(null);
+    setQuoteError(null);
     quoteStoreCart({ data: { storeId: store.id, items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })) } })
-      .then((r) => {
-        if (alive && r && !("error" in r)) setQuote(r);
+      .then((res) => {
+        if (!alive) return;
+        if ("error" in res) setQuoteError(res.error);
+        else setQuote(res);
       })
-      .catch(() => undefined);
+      .catch(() => alive && setQuoteError(t("No pudimos calcular el envío.", "We could not calculate shipping.")));
     return () => {
       alive = false;
     };
-  }, [store.id, cart]);
-  const shippingCents = quote?.shippingCents ?? localShipping;
-  const total = quote?.totalCents ?? subtotal + shippingCents;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartKey, store.id]);
+
+  const shippingCents = quote?.shippingCents ?? 0;
+  const total = quote?.totalCents ?? subtotal;
+
+
 
 
   const fetchClientSecret = useCallback(async () => {
@@ -348,13 +356,17 @@ function CheckoutForm({
         <div><Label htmlFor="nt">{t("Notas (opcional)", "Notes (optional)")}</Label><Textarea id="nt" value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
       </div>
       <div className="mt-4 border-t border-border pt-3">
-        <div className="flex justify-between text-sm"><span>{t("Subtotal", "Subtotal")}</span><span>${(subtotal / 100).toFixed(2)}</span></div>
-        <div className="flex justify-between text-sm"><span>{t("Envío", "Shipping")}</span><span>${(shippingCents / 100).toFixed(2)}</span></div>
+        <div className="flex justify-between text-sm"><span>{t("Productos", "Products")}</span><span>${(subtotal / 100).toFixed(2)}</span></div>
+        <div className="flex justify-between text-sm">
+          <span>{t("Envío", "Shipping")}</span>
+          <span>{quote ? `$${(shippingCents / 100).toFixed(2)}` : quoteError ? "—" : t("Calculando…", "Calculating…")}</span>
+        </div>
+        {quoteError && <p className="mt-1 text-xs text-destructive">{quoteError}</p>}
         <div className="mt-1 flex justify-between text-lg font-bold"><span>{t("Total", "Total")}</span><span>${(total / 100).toFixed(2)}</span></div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>{t("Atrás", "Back")}</Button>
-        <Button type="submit" disabled={submitting} style={{ background: store.primary_color }}>
+        <Button type="submit" disabled={submitting || !quote} style={{ background: store.primary_color }}>
           {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
           {t("Ir a pagar", "Go to payment")}
         </Button>

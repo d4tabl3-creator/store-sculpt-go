@@ -94,7 +94,9 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     }) => {
       if (!UUID.test(data.storeId)) throw new Error("storeId inválido");
       if (!Array.isArray(data.items) || data.items.length === 0) throw new Error("Elige al menos un producto");
-      if (data.items.length > 40) throw new Error("Máximo 40 productos por tienda");
+      // Sin límite artificial de productos por tienda. Se acota el tamaño del
+      // lote por petición para proteger al servidor; se pueden hacer varias.
+      if (data.items.length > 200) throw new Error("Agrega hasta 200 opciones por vez");
       for (const it of data.items) {
         if (!Number.isInteger(it.productId)) throw new Error("Producto inválido");
       }
