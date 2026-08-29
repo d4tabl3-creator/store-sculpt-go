@@ -107,8 +107,8 @@ function StoreManage() {
     if (nextStatus === "published" && !hasPlan) {
       const ok = confirm(
         t(
-          "Vas a publicar sin plan mensual. Aplicará 10% de comisión por venta.\n\n¿Continuar?",
-          "You're about to publish without a monthly plan. A 10% commission per sale will apply.\n\nContinue?",
+          "Vas a publicar sin plan mensual. Aplicará 20% de comisión sobre tu ganancia.\n\n¿Continuar?",
+          "You're about to publish without a monthly plan. A 20% commission on your profit will apply.\n\nContinue?",
         ),
       );
       if (!ok) return;
@@ -192,12 +192,12 @@ function StoreManage() {
                 <p className="text-sm text-muted-foreground">
                   {hasPlan
                     ? t("Cuando tengas todo listo, presiona Publicar para recibir pedidos reales.", "When you're ready, press Publish to start receiving real orders.")
-                    : t("Puedes publicar gratis y empezar a cobrar. Aplicará 10% de comisión por venta. Activa Pro para conservar el 100%.", "You can publish for free and start selling. A 10% commission per sale will apply. Activate Pro to keep 100%.")}
+                    : t("Puedes publicar gratis y empezar a cobrar. Aplicará 20% de comisión sobre tu ganancia. Activa Pro para conservar el 100%.", "You can publish for free and start selling. A 20% commission on your profit will apply. Activate Pro to keep 100%.")}
                 </p>
               </div>
               {!hasPlan && (
                 <Button asChild size="sm" variant="outline">
-                  <Link to="/planes">{t("Bajar a 10% con plan", "Lower to 10% with a plan")}</Link>
+                  <Link to="/planes">{t("Quitar la comisión con Pro", "Remove the commission with Pro")}</Link>
                 </Button>
               )}
             </div>
@@ -206,7 +206,7 @@ function StoreManage() {
           <div className="mb-6 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
             {t("Comisión actual:", "Current commission:")} <span className="font-semibold text-foreground">{commissionLabelFor(plan)}</span>
             {!hasPlan && (
-              <>{" · "}<Link to="/planes" className="font-semibold text-primary hover:underline">{t("Bajar a 10% con plan →", "Lower to 10% with a plan →")}</Link></>
+              <>{" · "}<Link to="/planes" className="font-semibold text-primary hover:underline">{t("Quitar la comisión con Pro →", "Remove the commission with Pro →")}</Link></>
             )}
           </div>
         )}
