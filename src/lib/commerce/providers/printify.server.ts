@@ -21,17 +21,22 @@ import type {
 import { NO_CAPABILITIES, OrchestratorError } from "../types";
 import {
   PrintifyError,
+  cancelOrder as cancelProviderOrder,
+  getOrder,
   getStandardShippingCosts,
   getVariantCosts,
   isPrintifyConfigured,
   listBlueprintVariants,
   printify,
   printifyShopId,
+  publishProduct,
   resolvePrintProviderId,
   sendOrderToProduction as sendToProduction,
+  unpublishProduct,
   uploadImageByUrl,
   type PrintifyProduct,
 } from "@/lib/printify.server";
+
 
 const PROVIDER = "printify" as const;
 
@@ -138,7 +143,16 @@ const WEBHOOK_TOPICS = [
   "order:sent-to-production",
   "order:shipment:created",
   "order:shipment:delivered",
+  // Cambios hechos del lado del proveedor: si un producto se borra o cambia
+  // allá, DªTªBLe se entera y no queda vendiendo algo inexistente.
+  "product:created",
+  "product:updated",
+  "product:deleted",
+  "product:publish:started",
+  // Si el espacio de fabricación se desconecta, hay que dejar de prometer envíos.
+  "shop:disconnected",
 ];
+
 
 export const printifyProvider: CommerceProvider = {
   id: PROVIDER,
@@ -274,6 +288,13 @@ export const printifyProvider: CommerceProvider = {
 
       const variants = await listBlueprintVariants(blueprintId, printProviderId);
       const chosen = variants.find((v) => v.id === variantId);
+      if (chosen && chosen.available === false) {
+        throw new OrchestratorError(
+          `"${product.name}" está agotado en la talla o color elegido. Elige otra opción disponible.`,
+          PROVIDER,
+          false,
+        );
+      }
       const position =
         product.design?.placement ||
         chosen?.placeholders[0]?.position ||
@@ -303,6 +324,14 @@ export const printifyProvider: CommerceProvider = {
         throw new OrchestratorError("El proveedor no devolvió el producto creado", PROVIDER, true);
       }
 
+      // Cierra el ciclo de publicación: la tienda de venta es la de DªTªBLe,
+      // así que se confirma la publicación con nuestra referencia para que el
+      // producto no quede bloqueado en "publicando" del lado del proveedor.
+      await publishProduct(shopId, String(created.id), {
+        externalId: product.productId,
+        handle: `datable/producto/${product.productId}`,
+      }).catch(() => null);
+
       return {
         externalProductId: String(created.id),
         externalVariantId: String(variantId),
@@ -317,12 +346,16 @@ export const printifyProvider: CommerceProvider = {
   async deleteProduct(binding: ProviderBinding, externalProductId: string) {
     const shopId = Number(binding.externalStoreId);
     if (!shopId) return;
+    // Primero se retira de publicación; si no, el proveedor puede rechazar el
+    // borrado por tener el producto bloqueado.
+    await unpublishProduct(shopId, externalProductId).catch(() => null);
     try {
       await printify(`/v1/shops/${shopId}/products/${externalProductId}.json`, { method: "DELETE" });
     } catch {
       /* el producto ya no existe */
     }
   },
+
 
   async setInventory() {
     // El proveedor fabrica bajo demanda: no hay inventario que sincronizar.
@@ -392,6 +425,35 @@ export const printifyProvider: CommerceProvider = {
       wrap(err);
     }
   },
+
+  async cancelOrder(binding: ProviderBinding, externalOrderId: string): Promise<boolean> {
+    const shopId = Number(binding.externalStoreId);
+    if (!shopId || !externalOrderId) return false;
+    try {
+      return await cancelProviderOrder(shopId, externalOrderId);
+    } catch {
+      return false;
+    }
+  },
+
+  async fetchOrderState(binding: ProviderBinding, externalOrderId: string) {
+    const shopId = Number(binding.externalStoreId);
+    if (!shopId || !externalOrderId) return null;
+    try {
+      const order = await getOrder(shopId, externalOrderId);
+      if (!order) return null;
+      const shipment = order.shipments?.[0];
+      return {
+        status: order.status ?? "unknown",
+        trackingNumber: shipment?.number ?? null,
+        trackingUrl: shipment?.url ?? null,
+      };
+    } catch {
+      return null;
+    }
+  },
+
+
 
 
 

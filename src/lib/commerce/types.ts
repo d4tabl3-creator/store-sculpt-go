@@ -265,6 +265,24 @@ export interface CommerceProvider {
    * el orquestador sólo lo invoca cuando el pago está confirmado.
    */
   sendOrderToProduction?(binding: ProviderBinding, externalOrderId: string): Promise<void>;
+  /**
+   * Cancela un pedido en el proveedor. Devuelve false cuando ya no se puede
+   * (por ejemplo, si ya entró a fabricación).
+   */
+  cancelOrder?(binding: ProviderBinding, externalOrderId: string): Promise<boolean>;
+  /**
+   * Lee el estado real del pedido en el proveedor. Sirve para reconciliar
+   * cuando un aviso automático se pierde.
+   */
+  fetchOrderState?(
+    binding: ProviderBinding,
+    externalOrderId: string,
+  ): Promise<{
+    status: string;
+    trackingNumber: string | null;
+    trackingUrl: string | null;
+  } | null>;
+
 
   /** Verifica firma y normaliza un webhook entrante. Devuelve null si la firma es inválida. */
   verifyAndParseWebhook(

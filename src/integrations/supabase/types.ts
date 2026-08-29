@@ -830,6 +830,36 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_cost_cache: {
+        Row: {
+          cache_key: string
+          created_at: string
+          expires_at: string
+          id: string
+          payload: Json
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          payload?: Json
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload?: Json
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       store_orders: {
         Row: {
           created_at: string
