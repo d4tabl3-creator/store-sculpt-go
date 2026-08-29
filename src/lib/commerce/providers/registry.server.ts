@@ -2,11 +2,13 @@ import type { CommerceProvider, ProviderCapabilities, ProviderId } from "../type
 import { internalProvider } from "./internal.server";
 import { shopifyProvider } from "./shopify.server";
 import { printfulProvider } from "./printful.server";
+import { printifyProvider } from "./printify.server";
 
 const REGISTRY: Partial<Record<ProviderId, CommerceProvider>> = {
   internal: internalProvider,
   shopify: shopifyProvider,
   printful: printfulProvider,
+  printify: printifyProvider,
 };
 
 /** Devuelve el conector pedido o el motor nativo si no existe. */
