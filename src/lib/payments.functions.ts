@@ -166,8 +166,9 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           customer_name: data.customer.name.trim(),
           customer_email: data.customer.email.trim().toLowerCase(),
           customer_phone: data.customer.phone?.trim() || null,
-          shipping_address: data.customer.address.trim(),
-          shipping_details: shippingDetails ?? {},
+          shipping_address: `${data.customer.address.trim()} · ${shippingLabel}`,
+          shipping_details: shippingDetails,
+
 
           items: orderItems,
           subtotal_cents: subtotal,
