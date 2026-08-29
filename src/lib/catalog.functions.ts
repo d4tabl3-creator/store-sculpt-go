@@ -111,20 +111,29 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     if (!store || store.owner_id !== context.userId) throw new Error("No autorizado");
 
     /** Copia la maqueta temporal del proveedor a nuestro almacén para que no expire. */
+    const mockupCache = new Map<string, string | null>();
     async function persistMockup(url: string, productId: number): Promise<string | null> {
+      // Varias tallas del mismo diseño comparten maqueta: se guarda una sola vez.
+      if (mockupCache.has(url)) return mockupCache.get(url) ?? null;
+      let result: string | null = null;
       try {
         const res = await fetch(url);
-        if (!res.ok) return null;
-        const bytes = new Uint8Array(await res.arrayBuffer());
-        const path = `${context.userId}/mockups/${productId}-${Date.now()}.jpg`;
-        const up = await supabaseAdmin.storage.from("disenos").upload(path, bytes, { contentType: "image/jpeg" });
-        if (up.error) return null;
-        const signed = await supabaseAdmin.storage.from("disenos").createSignedUrl(path, 60 * 60 * 24 * 3650);
-        return signed.data?.signedUrl ?? null;
+        if (res.ok) {
+          const bytes = new Uint8Array(await res.arrayBuffer());
+          const path = `${context.userId}/mockups/${productId}-${Date.now()}.jpg`;
+          const up = await supabaseAdmin.storage.from("disenos").upload(path, bytes, { contentType: "image/jpeg" });
+          if (!up.error) {
+            const signed = await supabaseAdmin.storage.from("disenos").createSignedUrl(path, 60 * 60 * 24 * 3650);
+            result = signed.data?.signedUrl ?? null;
+          }
+        }
       } catch {
-        return null;
+        result = null;
       }
+      mockupCache.set(url, result);
+      return result;
     }
+
 
     const { count } = await supabaseAdmin
       .from("store_products")

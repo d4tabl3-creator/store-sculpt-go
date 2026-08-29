@@ -143,34 +143,41 @@ function StoreProductsPage() {
     setSaving(true);
     try {
       const p = draftToProduct(draft);
-      await addCatalogProducts({
-        data: {
-          storeId,
-          items: [
-            {
-              productId: p.productId,
-              printProviderId: p.printProviderId ?? undefined,
-              variantId: p.variantId ?? undefined,
-              name: p.name,
-              description: p.description || undefined,
-              priceCents: p.priceCents ?? undefined,
-              designUrl: p.designUrl,
-              mockupUrl: p.mockupUrl,
-              placement: p.placement,
-            },
-          ],
-        },
+      // Cada talla/color elegido se guarda como una opción vendible propia:
+      // si el comerciante marcó S, M y L, las tres quedan disponibles.
+      const chosen = p.selectedVariantIds.length ? p.selectedVariantIds : p.variantId ? [p.variantId] : [];
+      const byId = new Map(draft.variants.map((v) => [v.id, v]));
+      const items = (chosen.length ? chosen : [null]).map((variantId) => {
+        const v = variantId != null ? byId.get(variantId) : undefined;
+        const suffix = v?.size ? ` — ${v.size}` : v?.color && chosen.length > 1 ? ` — ${v.color}` : "";
+        return {
+          productId: p.productId,
+          printProviderId: p.printProviderId ?? undefined,
+          variantId: variantId ?? undefined,
+          name: `${p.name}${chosen.length > 1 ? suffix : ""}`,
+          description: p.description || undefined,
+          priceCents: p.priceCents ?? undefined,
+          designUrl: p.designUrl,
+          mockupUrl: p.mockupUrl,
+          placement: p.placement,
+        };
       });
+      await addCatalogProducts({ data: { storeId, items } });
       await reloadProducts();
       setDraft(null);
       setStage("catalog");
-      toast.success(t("Producto agregado a tu tienda.", "Product added to your store."));
+      toast.success(
+        items.length > 1
+          ? t(`Se agregaron ${items.length} opciones a tu tienda.`, `${items.length} options added to your store.`)
+          : t("Producto agregado a tu tienda.", "Product added to your store."),
+      );
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("No se pudo agregar", "Could not add it"));
     } finally {
       setSaving(false);
     }
   }
+
 
   function next() {
     if (!draft) return;

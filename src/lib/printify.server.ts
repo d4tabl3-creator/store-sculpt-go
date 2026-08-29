@@ -62,13 +62,35 @@ export class PrintifyError extends Error {
   }
 }
 
+/**
+ * Credencial del proveedor de fabricación.
+ *
+ * Se acepta más de un nombre porque el secreto puede haberse guardado como
+ * `PRINTIFY_API_TOKEN` o simplemente `Printify`. Se limpian espacios y saltos
+ * de línea: al pegar la credencial es común que se parta en varias líneas y
+ * eso invalida la petición.
+ */
 export function printifyToken(): string | null {
-  return process.env["PRINTIFY_API_TOKEN"] ?? null;
+  const raw =
+    process.env["PRINTIFY_API_TOKEN"] ??
+    process.env["PRINTIFY_TOKEN"] ??
+    process.env["Printify"] ??
+    null;
+  if (!raw) return null;
+  const clean = raw.replace(/\s+/g, "").replace(/^Bearer/i, "");
+  return clean || null;
+}
+
+/** Una credencial válida es un JWT de tres partes; si no, está mal copiada. */
+export function printifyTokenLooksValid(): boolean {
+  const t = printifyToken();
+  return !!t && t.split(".").filter(Boolean).length === 3;
 }
 
 export function isPrintifyConfigured(): boolean {
   return !!printifyToken();
 }
+
 
 export async function printify<T>(
   path: string,
@@ -96,6 +118,10 @@ export async function printify<T>(
     } catch {
       /* respuesta no JSON */
     }
+    if (res.status === 401 || res.status === 403) {
+      message =
+        "La credencial del proveedor de fabricación fue rechazada (no es válida, está incompleta o fue revocada).";
+    }
     throw new PrintifyError(message, res.status, res.status >= 500 || res.status === 429);
   }
   if (!text) return {} as T;
@@ -108,6 +134,19 @@ export async function printify<T>(
 
 let shopIdCache: number | null = null;
 
+export type PrintifyShop = { id: number; title: string };
+
+/** Espacios de fabricación de la cuenta. */
+export async function listShops(): Promise<PrintifyShop[]> {
+  return (await printify<PrintifyShop[]>("/v1/shops.json")) || [];
+}
+
+/**
+ * Espacio de fabricación activo.
+ *
+ * Si no está fijado por configuración se descubre solo contra el proveedor y
+ * se guarda en base de datos, para no consultar en cada arranque en frío.
+ */
 export async function printifyShopId(): Promise<number> {
   if (shopIdCache) return shopIdCache;
   const configured = Number(process.env["PRINTIFY_SHOP_ID"] || 0);
@@ -115,12 +154,16 @@ export async function printifyShopId(): Promise<number> {
     shopIdCache = configured;
     return configured;
   }
-  const shops = await printify<Array<{ id: number; title: string }>>("/v1/shops.json");
-  const id = shops?.[0]?.id;
-  if (!id) throw new PrintifyError("No hay espacio de fabricación disponible.", 0, false);
+  const id = await cached<number>("shop:id", CATALOG_TTL_MS, async () => {
+    const shops = await listShops();
+    const first = shops[0]?.id;
+    if (!first) throw new PrintifyError("No hay espacio de fabricación disponible.", 0, false);
+    return first;
+  });
   shopIdCache = id;
   return id;
 }
+
 
 // ---------------------------------------------------------------------------
 // Biblioteca de imágenes

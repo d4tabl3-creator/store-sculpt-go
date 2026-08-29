@@ -15,6 +15,7 @@ import {
   listWebhooks,
   printify,
   printifyShopId,
+  printifyTokenLooksValid,
   type PrintifyProduct,
 } from "@/lib/printify.server";
 import { listCatalog } from "@/lib/catalog.server";
@@ -56,18 +57,22 @@ export async function runCommerceDiagnostics(options: { productTest?: boolean } 
   const configured = isPrintifyConfigured();
   const checks: Check[] = [];
 
+  const wellFormed = printifyTokenLooksValid();
   checks.push({
     id: "token",
     label: "Credencial de fabricación",
-    status: configured ? "ok" : "fail",
-    detail: configured
-      ? "Credencial presente en el servidor (nunca se expone al navegador)."
-      : "Falta la credencial de la infraestructura de fabricación.",
+    status: configured ? (wellFormed ? "ok" : "fail") : "fail",
+    detail: !configured
+      ? "Falta la credencial de la infraestructura de fabricación."
+      : wellFormed
+        ? "Credencial presente y con formato válido (nunca se expone al navegador)."
+        : "La credencial está guardada pero incompleta o mal copiada: hay que volver a pegarla completa, en una sola línea.",
   });
 
   if (!configured) {
     return { generatedAt: new Date().toISOString(), configured, checks };
   }
+
 
   let shopId = 0;
   checks.push(
