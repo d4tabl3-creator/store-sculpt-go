@@ -831,7 +831,7 @@ export async function handleInboundWebhook(
 
   const topic = parsed.topic.toLowerCase();
   if (topic.includes("fulfill") || topic.includes("package_shipped") || topic.includes("shipment")) {
-    // Printful envuelve el evento en `data`; Shopify manda el objeto plano.
+    // Algunos conectores envuelven el evento en `data`; otros mandan el objeto plano.
     const root = parsed.payload as Record<string, unknown>;
     const body = (root["data"] as Record<string, unknown> | undefined) ?? root;
     const order = (body["order"] as Record<string, unknown> | undefined) ?? root;
