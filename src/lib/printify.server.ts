@@ -65,17 +65,12 @@ export class PrintifyError extends Error {
 /**
  * Credencial del proveedor de fabricación.
  *
- * Se acepta más de un nombre porque el secreto puede haberse guardado como
- * `PRINTIFY_API_TOKEN` o simplemente `Printify`. Se limpian espacios y saltos
+ * Se lee exclusivamente de `PRINTIFY_API_TOKEN`. Se limpian espacios y saltos
  * de línea: al pegar la credencial es común que se parta en varias líneas y
  * eso invalida la petición.
  */
 export function printifyToken(): string | null {
-  const raw =
-    process.env["PRINTIFY_API_TOKEN"] ??
-    process.env["PRINTIFY_TOKEN"] ??
-    process.env["Printify"] ??
-    null;
+  const raw = process.env["PRINTIFY_API_TOKEN"] ?? null;
   if (!raw) return null;
   const clean = raw.replace(/\s+/g, "").replace(/^Bearer/i, "");
   return clean || null;
