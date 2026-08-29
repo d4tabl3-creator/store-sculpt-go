@@ -20,7 +20,6 @@ type Store = {
   name: string;
   niche: string;
   primary_color: string;
-  shipping_options: Array<{ id: string; label: string; price_cents: number }>;
 };
 type Product = {
   id: string;
@@ -36,7 +35,7 @@ export const Route = createFileRoute("/t/$slug")({
   loader: async ({ params }) => {
     const { data: store } = await supabase
       .from("stores")
-      .select("id, slug, name, niche, primary_color, shipping_options")
+      .select("id, slug, name, niche, primary_color")
       .eq("slug", params.slug)
       .eq("status", "published")
       .maybeSingle();
