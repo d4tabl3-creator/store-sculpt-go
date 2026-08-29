@@ -80,7 +80,7 @@ export function CatalogPicker({
               }}
               className={`whitespace-nowrap rounded-full border-2 px-3 py-1 text-xs font-bold ${category === name ? "border-primary bg-primary-soft" : "border-border bg-card"}`}
             >
-              {name} ({n})
+              {categoryLabel(name, t)} ({n})
             </button>
           ))}
         </div>
@@ -105,7 +105,7 @@ export function CatalogPicker({
             </div>
             <div className="p-3">
               <div className="line-clamp-2 text-xs font-bold leading-snug">{p.title}</div>
-              <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{p.category || p.typeName}</div>
+              <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">{categoryLabel(p.category || p.typeName, t)}</div>
               <div className="mt-2 text-[11px] font-bold text-primary opacity-0 transition-opacity group-hover:opacity-100">
                 {t("Crear este producto →", "Create this product →")}
               </div>
