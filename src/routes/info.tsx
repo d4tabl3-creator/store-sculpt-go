@@ -47,7 +47,7 @@ const HOME_FAQS_STATIC = [
 ];
 
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/info")({
   head: () => ({
     meta: [
       { title: HOME_TITLE },
