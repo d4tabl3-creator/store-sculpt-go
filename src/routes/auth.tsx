@@ -145,11 +145,14 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       }
     } catch (err) {
+      const raw = (err instanceof Error ? err.message : String(err ?? "")).toLowerCase();
       toast.error(mensajeError(err));
+      if (mode === "signin" && raw.includes("invalid login")) setMode("reset");
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4">
