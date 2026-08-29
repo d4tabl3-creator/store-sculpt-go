@@ -70,7 +70,12 @@ function AuthPage() {
       );
     if (m.includes("already registered") || m.includes("user already"))
       return t("Ese correo ya tiene cuenta. Inicia sesión con tu contraseña.", "That email already has an account. Sign in with your password.");
-    if (m.includes("invalid login")) return t("Correo o contraseña incorrectos.", "Incorrect email or password.");
+    if (m.includes("invalid login"))
+      return t(
+        "Correo o contraseña incorrectos. Si tu cuenta se creó con Google, aún no tiene contraseña: usa «¿Olvidaste tu contraseña?» para crear una y recuperar tu tienda.",
+        "Incorrect email or password. If your account was created with Google it has no password yet: use \"Forgot your password?\" to set one and recover your store.",
+      );
+
     if (m.includes("email not confirmed")) return t("Confirma tu correo con el enlace que te enviamos.", "Confirm your email with the link we sent you.");
     if (m.includes("rate limit")) return t("Demasiados intentos. Espera un minuto e inténtalo de nuevo.", "Too many attempts. Wait a minute and try again.");
     return raw || t("Ocurrió un error. Inténtalo de nuevo.", "Something went wrong. Please try again.");
