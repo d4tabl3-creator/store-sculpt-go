@@ -129,7 +129,10 @@ function StoreProductsPage() {
   const stageIndex = STAGES.indexOf(stage);
   const variant = draft ? currentVariant(draft) : undefined;
   const price = draft?.priceCents ?? variant?.priceCents ?? 0;
-  const cost = variant?.costCents ?? 0;
+  // Costo de fabricación = precio mínimo y base de la ganancia. El envío se
+  // cobra aparte al cliente y no forma parte de la ganancia.
+  const cost = variant?.productionCents ?? variant?.costCents ?? 0;
+  const shippingToCustomer = variant?.shippingCents ?? 0;
   const profit = Math.max(0, price - cost);
 
   const canContinue =
@@ -201,8 +204,9 @@ function StoreProductsPage() {
     setPublishing(true);
     try {
       if (!products.length) throw new Error(t("Agrega al menos un producto", "Add at least one product"));
-      // El envío se calcula en el checkout con el costo real de cada producto.
-      await supabase.from("stores").update({ shipping_options: [] }).eq("id", storeId);
+      // El envío ya no es una tarifa fija de la tienda: el checkout cobra el
+      // costo real de envío del proveedor por pedido, como concepto separado.
+
       await startProvisioning({ data: { storeId } });
       navigate({ to: "/preparando/$id", params: { id: storeId } });
     } catch (err) {
@@ -360,9 +364,14 @@ function StoreProductsPage() {
               </div>
               <div className="rounded-xl border-2 border-border bg-card p-4 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("Costo de producción y envío", "Production and shipping cost")}</span>
+                  <span className="text-muted-foreground">{t("Costo de fabricación", "Production cost")}</span>
                   <span>{money(cost)} MXN</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("Envío (se cobra aparte al cliente)", "Shipping (charged separately to the customer)")}</span>
+                  <span>{money(shippingToCustomer)} MXN</span>
+                </div>
+
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t(
                     "Este costo lo define la producción: es fijo y no se puede editar.",

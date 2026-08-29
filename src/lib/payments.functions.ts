@@ -5,8 +5,32 @@ import {
   getStripeErrorMessage,
 } from "@/lib/stripe.server";
 
+import { quoteCart, type CostedProduct } from "@/lib/checkout-quote";
+
 type CartLine = { productId: string; qty: number };
 type CheckoutResult = { clientSecret: string; orderId: string } | { error: string };
+
+/** Cotización pública del carrito (subtotal, envío y total) para mostrarla antes de pagar. */
+export const quoteStoreCart = createServerFn({ method: "POST" })
+  .inputValidator((data: { storeId: string; items: CartLine[] }) => {
+    if (!/^[0-9a-fA-F-]{36}$/.test(data.storeId)) throw new Error("storeId inválido");
+    if (!data.items?.length) throw new Error("Carrito vacío");
+    for (const it of data.items) {
+      if (!/^[0-9a-fA-F-]{36}$/.test(it.productId)) throw new Error("Producto inválido");
+      if (!(it.qty > 0 && it.qty <= 100)) throw new Error("Cantidad inválida");
+    }
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: products } = await supabaseAdmin
+      .from("store_products")
+      .select("id, name, price_cents, stock, store_id, production_cost_cents, shipping_cost_cents, source_provider")
+      .in("id", data.items.map((i) => i.productId));
+    const q = quoteCart((products || []) as CostedProduct[], data.items, data.storeId);
+    if ("error" in q) return q;
+    return { subtotalCents: q.subtotalCents, shippingCents: q.shippingCents, totalCents: q.totalCents };
+  });
 
 /** Dirección estructurada neutral (opcional; si no llega, se deduce del texto). */
 type ShippingInput = {
@@ -74,7 +98,6 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
     (data: {
       storeId: string;
       items: CartLine[];
-      shippingId?: string;
       shipping?: ShippingInput;
       customer: {
         name: string;
@@ -105,56 +128,25 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       // Cargar tienda publicada
       const { data: store } = await supabaseAdmin
         .from("stores")
-        .select("id, slug, name, owner_id, status, shipping_options")
+        .select("id, slug, name, owner_id, status")
         .eq("id", data.storeId)
         .maybeSingle();
       if (!store || store.status !== "published") return { error: "Tienda no disponible" };
 
-      // Cargar productos por id, validar que sean de esta tienda y con stock
+      // Cargar productos por id, validar tienda, stock, precio y costos.
       const ids = data.items.map((i) => i.productId);
       const { data: products } = await supabaseAdmin
         .from("store_products")
-        .select("id, name, price_cents, stock, store_id, production_cost_cents, shipping_cost_cents")
+        .select("id, name, price_cents, stock, store_id, production_cost_cents, shipping_cost_cents, source_provider")
         .in("id", ids);
-      const byId = new Map((products || []).map((p) => [p.id as string, p]));
+      const quote = quoteCart((products || []) as CostedProduct[], data.items, store.id as string);
+      if ("error" in quote) return quote;
+      const orderItems = quote.lines;
+      const subtotal = quote.subtotalCents;
+      const shippingCents = quote.shippingCents;
+      const totalCents = quote.totalCents;
+      const shippingLabel = "Envío a domicilio";
 
-      const orderItems: Array<{
-        productId: string;
-        name: string;
-        qty: number;
-        price_cents: number;
-        production_cost_cents: number;
-        shipping_cost_cents: number;
-      }> = [];
-      let subtotal = 0;
-      let shippingFromProducts = 0;
-      for (const it of data.items) {
-        const p = byId.get(it.productId);
-        if (!p || p.store_id !== store.id) return { error: "Producto no válido en esta tienda" };
-        if ((p.stock as number) < it.qty) return { error: `Sin stock suficiente de ${p.name}` };
-        const production = (p.production_cost_cents as number) ?? 0;
-        const shipCost = (p.shipping_cost_cents as number) ?? 0;
-        // Precio mínimo = costo de fabricación. Nunca se cobra por debajo.
-        if ((p.price_cents as number) <= 0 || (p.price_cents as number) < production) {
-          return { error: `El producto ${p.name} no está disponible para la venta` };
-        }
-        orderItems.push({
-          productId: p.id as string,
-          name: p.name as string,
-          qty: it.qty,
-          price_cents: p.price_cents as number,
-          production_cost_cents: production,
-          shipping_cost_cents: shipCost,
-        });
-        subtotal += (p.price_cents as number) * it.qty;
-        shippingFromProducts += shipCost * it.qty;
-      }
-
-      // Envío validado contra shipping_options guardadas en la tienda
-      // El envío se cobra aparte y siempre con el costo real de cada producto.
-      const shippingLabel = "Envío";
-      const shippingCents = shippingFromProducts;
-      const totalCents = subtotal + shippingCents;
 
       // La dirección se valida ANTES de cobrar: un pedido cobrado que no se
       // puede mandar a fabricar sería dinero recibido sin producto.
@@ -174,8 +166,9 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           customer_name: data.customer.name.trim(),
           customer_email: data.customer.email.trim().toLowerCase(),
           customer_phone: data.customer.phone?.trim() || null,
-          shipping_address: data.customer.address.trim(),
-          shipping_details: shippingDetails ?? {},
+          shipping_address: `${data.customer.address.trim()} · ${shippingLabel}`,
+          shipping_details: shippingDetails,
+
 
           items: orderItems,
           subtotal_cents: subtotal,

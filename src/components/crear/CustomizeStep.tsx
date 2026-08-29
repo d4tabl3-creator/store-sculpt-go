@@ -167,8 +167,12 @@ export function CustomizeStep({
                 <span className="font-bold">{money(current.priceCents)} MXN</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("Costo de producción y envío", "Production and shipping cost")}</span>
-                <span>{money(current.costCents)} MXN</span>
+                <span className="text-muted-foreground">{t("Costo de fabricación", "Production cost")}</span>
+                <span>{money(current.productionCents ?? current.costCents)} MXN</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("Envío (se cobra aparte)", "Shipping (charged separately)")}</span>
+                <span>{money(current.shippingCents ?? 0)} MXN</span>
               </div>
               <p className="mt-1 text-[11px] text-muted-foreground">
                 {t("El costo lo define la producción y no se puede editar.", "The cost is set by production and cannot be edited.")}

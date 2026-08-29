@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { validatePrice } from "@/lib/pricing";
 
 const UUID = /^[0-9a-fA-F-]{36}$/;
 
@@ -153,20 +154,33 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
 
       const mockup = item.mockupUrl ? await persistMockup(item.mockupUrl, product.id) : null;
 
-      // El precio nunca puede quedar por debajo del costo base (fabricación +
-      // envío): así la ganancia del vendedor jamás es negativa.
-      const requested =
-        typeof item.priceCents === "number" && item.priceCents > 0
-          ? Math.round(item.priceCents)
-          : variant.priceCents;
-      const priceCents = Math.max(requested, variant.costCents);
+      // REGLA: precio > 0 y precio >= fabricación. Un precio inválido se
+      // RECHAZA (no se corrige en silencio). Si no se envió precio, se usa el
+      // sugerido, que ya cumple la regla. La base de datos repite la validación.
+      const priceCents =
+        typeof item.priceCents === "number" ? Math.round(item.priceCents) : variant.priceCents;
+      const check = validatePrice(priceCents, variant.productionCents);
+      if (!check.ok) {
+        throw new Error(
+          check.code === "PRICE_INVALID"
+            ? `"${item.name?.trim() || product.title}": el precio de venta debe ser mayor a cero.`
+            : `"${item.name?.trim() || product.title}": el precio (${(priceCents / 100).toFixed(2)} MXN) no puede ser menor al costo de fabricación (${(variant.productionCents / 100).toFixed(2)} MXN).`,
+        );
+      }
+      if (variant.productionCents <= 0) {
+        throw new Error(`"${item.name?.trim() || product.title}": no hay un costo de fabricación confiable; no se puede agregar todavía.`);
+      }
 
       rows.push({
         store_id: data.storeId,
         name: item.name?.trim() || product.title,
         description: item.description?.trim() || product.description,
         price_cents: priceCents,
-        base_cost_cents: variant.costCents,
+        // Costos del proveedor: sólo los escribe el servidor (trigger cost_guard).
+        production_cost_cents: variant.productionCents,
+        shipping_cost_cents: variant.shippingCents,
+        base_cost_cents: variant.productionCents + variant.shippingCents,
+        costs_need_resync: false,
         image_url: mockup || variant.image || product.image,
         mockup_url: mockup,
         design_url: item.designUrl ?? null,

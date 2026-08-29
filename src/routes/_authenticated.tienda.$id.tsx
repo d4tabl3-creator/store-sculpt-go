@@ -68,6 +68,8 @@ type Product = {
   description: string | null;
   price_cents: number;
   base_cost_cents: number;
+  production_cost_cents: number;
+  shipping_cost_cents: number;
   image_url: string | null;
   stock: number;
 };
@@ -201,7 +203,7 @@ function StoreManage() {
         toast.error(t("Configura primero un correo de cobros (pestaña Configuración).", "First set a payments email (Settings tab)."));
         return;
       }
-      const invalid = products.filter((p) => p.price_cents <= 0 || (p.base_cost_cents > 0 && p.price_cents < p.base_cost_cents));
+      const invalid = products.filter((p) => p.price_cents <= 0 || p.price_cents < p.production_cost_cents);
       if (invalid.length) {
         toast.error(
           t(
@@ -251,11 +253,11 @@ function StoreManage() {
       toast.error(t("El precio debe ser mayor a cero.", "Price must be greater than zero."));
       return;
     }
-    if (p.base_cost_cents > 0 && p.price_cents < p.base_cost_cents) {
+    if (p.price_cents < p.production_cost_cents) {
       toast.error(
         t(
-          `Precio mínimo permitido: ${money(p.base_cost_cents)} MXN (costo real).`,
-          `Minimum allowed price: ${money(p.base_cost_cents)} MXN (real cost).`,
+          `Precio mínimo permitido: ${money(p.production_cost_cents)} MXN (costo de fabricación).`,
+          `Minimum allowed price: ${money(p.production_cost_cents)} MXN (production cost).`,
         ),
       );
       return;
@@ -390,8 +392,8 @@ function StoreManage() {
 
             {products.map((p) => {
               const issue = issues.find((i) => i.productId === p.id);
-              const min = p.base_cost_cents;
-              const belowCost = p.price_cents <= 0 || (min > 0 && p.price_cents < min);
+              const min = p.production_cost_cents;
+              const belowCost = p.price_cents <= 0 || p.price_cents < min;
               return (
                 <div key={p.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex flex-wrap items-center gap-4">
