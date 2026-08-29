@@ -347,7 +347,8 @@ export async function listBlueprintVariants(
 // Costos reales de fabricación
 // ---------------------------------------------------------------------------
 
-const costCache = new Map<string, { at: number; costs: Map<number, number> }>();
+/** Los costos de fabricación cambian poco: se guardan una semana en base. */
+const COST_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Costos reales por variante, en centavos de dólar.
@@ -355,108 +356,144 @@ const costCache = new Map<string, { at: number; costs: Map<number, number> }>();
  * El catálogo público del proveedor no publica precios: el costo sólo aparece
  * al armar el producto. Por eso se crea un producto técnico temporal con la
  * imagen de sondeo, se leen los costos y se elimina de inmediato. El resultado
- * se memoriza media hora para no repetir la operación.
+ * queda GUARDADO EN BASE DE DATOS: esa operación es la más cara de todas y
+ * repetirla por cada visita al catálogo provoca bloqueos por exceso de uso.
  */
 export async function getVariantCosts(
   blueprintId: number,
   printProviderId: number,
   variantIds: number[],
 ): Promise<Map<number, number>> {
-  const key = `${blueprintId}:${printProviderId}`;
-  const cached = costCache.get(key);
-  if (cached && Date.now() - cached.at < TTL_MS) return cached.costs;
-
-  const costs = new Map<number, number>();
   const ids = variantIds.slice(0, 100);
-  if (!ids.length) return costs;
+  if (!ids.length) return new Map();
 
-  const shopId = await printifyShopId();
-  const variants = await listBlueprintVariants(blueprintId, printProviderId);
-  const position = variants.find((v) => v.placeholders.length)?.placeholders[0]?.position ?? "front";
-  const imageId = await probeImage();
+  const record = await cached<Record<string, number>>(
+    `costs:${blueprintId}:${printProviderId}`,
+    COST_TTL_MS,
+    async () => {
+      const costs = new Map<number, number>();
+      const shopId = await printifyShopId();
+      const variants = await listBlueprintVariants(blueprintId, printProviderId);
+      const position = variants.find((v) => v.placeholders.length)?.placeholders[0]?.position ?? "front";
+      const imageId = await probeImage();
 
-  let created: PrintifyProduct | null = null;
-  try {
-    created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
-      method: "POST",
-      body: {
-        title: "DATABLE-COST-PROBE",
-        description: "Consulta interna de costos. No publicar.",
-        blueprint_id: blueprintId,
-        print_provider_id: printProviderId,
-        variants: ids.map((id) => ({ id, price: 10000, is_enabled: true })),
-        print_areas: [
-          {
-            variant_ids: ids,
-            placeholders: [{ position, images: [{ id: imageId, x: 0.5, y: 0.5, scale: 1, angle: 0 }] }],
-          },
-        ],
-      },
-    });
-    for (const v of created.variants || []) {
-      if (typeof v.cost === "number") costs.set(v.id, v.cost);
-    }
-  } finally {
-    if (created?.id) {
+      let created: PrintifyProduct | null = null;
       try {
-        await printify(`/v1/shops/${shopId}/products/${created.id}.json`, { method: "DELETE" });
-      } catch {
-        /* limpieza best-effort */
+        created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
+          method: "POST",
+          body: {
+            title: "DATABLE-COST-PROBE",
+            description: "Consulta interna de costos. No publicar.",
+            blueprint_id: blueprintId,
+            print_provider_id: printProviderId,
+            variants: ids.map((id) => ({ id, price: 10000, is_enabled: true })),
+            print_areas: [
+              {
+                variant_ids: ids,
+                placeholders: [{ position, images: [{ id: imageId, x: 0.5, y: 0.5, scale: 1, angle: 0 }] }],
+              },
+            ],
+          },
+        });
+        for (const v of created.variants || []) {
+          if (typeof v.cost === "number") costs.set(v.id, v.cost);
+        }
+      } finally {
+        if (created?.id) {
+          try {
+            await printify(`/v1/shops/${shopId}/products/${created.id}.json`, { method: "DELETE" });
+          } catch {
+            /* limpieza best-effort */
+          }
+        }
       }
-    }
-  }
+      return mapToRecord(costs);
+    },
+  );
 
-  costCache.set(key, { at: Date.now(), costs });
-  return costs;
+  return recordToMap(record);
 }
 
 // ---------------------------------------------------------------------------
 // Envío
 // ---------------------------------------------------------------------------
 
-const shippingCache = new Map<string, { at: number; costs: Map<number, number> }>();
-
 /**
  * Costo de envío estándar del primer artículo, por variante, en centavos de dólar.
  * Es la parte de envío del costo base que DªTªBLe absorbe en el precio.
+ * Se guarda en base de datos igual que los costos de fabricación.
  */
 export async function getStandardShippingCosts(
   blueprintId: number,
   printProviderId: number,
   countryCode = "MX",
 ): Promise<Map<number, number>> {
-  const key = `${blueprintId}:${printProviderId}:${countryCode}`;
-  const cached = shippingCache.get(key);
-  if (cached && Date.now() - cached.at < TTL_MS) return cached.costs;
-
-  const costs = new Map<number, number>();
-  try {
-    const res = await printify<{
-      data: Array<{
-        attributes: {
-          variantId: number;
-          country: { code: string };
-          shippingCost: { firstItem: { amount: number } };
-        };
-      }>;
-    }>(`/v2/catalog/blueprints/${blueprintId}/print_providers/${printProviderId}/shipping/standard.json`);
-    for (const row of res.data || []) {
-      const a = row.attributes;
-      if (!a) continue;
-      if (a.country?.code && a.country.code !== countryCode) continue;
-      const amount = a.shippingCost?.firstItem?.amount;
-      if (typeof amount === "number") costs.set(a.variantId, amount);
-    }
-  } catch {
-    /* sin datos de envío: el costo base se queda con la fabricación */
-  }
-
-  shippingCache.set(key, { at: Date.now(), costs });
-  return costs;
+  const record = await cached<Record<string, number>>(
+    `shipping:${blueprintId}:${printProviderId}:${countryCode}`,
+    COST_TTL_MS,
+    async () => {
+      const costs = new Map<number, number>();
+      try {
+        const res = await printify<{
+          data: Array<{
+            attributes: {
+              variantId: number;
+              country: { code: string };
+              shippingCost: { firstItem: { amount: number } };
+            };
+          }>;
+        }>(`/v2/catalog/blueprints/${blueprintId}/print_providers/${printProviderId}/shipping/standard.json`);
+        for (const row of res.data || []) {
+          const a = row.attributes;
+          if (!a) continue;
+          if (a.country?.code && a.country.code !== countryCode) continue;
+          const amount = a.shippingCost?.firstItem?.amount;
+          if (typeof amount === "number") costs.set(a.variantId, amount);
+        }
+      } catch {
+        /* sin datos de envío: el costo base se queda con la fabricación */
+      }
+      return mapToRecord(costs);
+    },
+  );
+  return recordToMap(record);
 }
 
 // ---------------------------------------------------------------------------
-// Producción
+// Publicación de productos
+// ---------------------------------------------------------------------------
+
+/**
+ * Cierra el ciclo de publicación del proveedor.
+ *
+ * DªTªBLe es el comerciante de registro: la tienda visible es la nuestra, no
+ * un canal externo. Aun así el proveedor exige marcar el producto como
+ * publicado; si no, queda bloqueado en estado "publicando" y no se puede
+ * editar ni pedir. Por eso: publish → publishing_succeeded con la referencia
+ * de DªTªBLe.
+ */
+export async function publishProduct(
+  shopId: number,
+  externalProductId: string,
+  ref: { handle: string; externalId: string },
+): Promise<void> {
+  await printify(`/v1/shops/${shopId}/products/${externalProductId}/publish.json`, {
+    method: "POST",
+    body: { title: true, description: true, images: true, variants: true, tags: true, keyFeatures: true, shipping_template: true },
+  });
+  await printify(`/v1/shops/${shopId}/products/${externalProductId}/publishing_succeeded.json`, {
+    method: "POST",
+    body: { external: { id: ref.externalId, handle: ref.handle } },
+  });
+}
+
+/** Marca el producto como no publicado (antes de borrarlo o al ocultarlo). */
+export async function unpublishProduct(shopId: number, externalProductId: string): Promise<void> {
+  await printify(`/v1/shops/${shopId}/products/${externalProductId}/unpublish.json`, { method: "POST" });
+}
+
+// ---------------------------------------------------------------------------
+// Producción y pedidos
 // ---------------------------------------------------------------------------
 
 /**
@@ -469,7 +506,49 @@ export async function sendOrderToProduction(shopId: number, externalOrderId: str
   await printify(`/v1/shops/${shopId}/orders/${externalOrderId}/send_to_production.json`, { method: "POST" });
 }
 
+export type PrintifyOrder = {
+  id: string;
+  status: string;
+  external_id?: string | null;
+  shipments?: Array<{ carrier?: string; number?: string; url?: string; delivered_at?: string | null }>;
+};
+
+/** Estado real de un pedido en el proveedor (reconciliación). */
+export async function getOrder(shopId: number, externalOrderId: string): Promise<PrintifyOrder | null> {
+  try {
+    return await printify<PrintifyOrder>(`/v1/shops/${shopId}/orders/${externalOrderId}.json`);
+  } catch (err) {
+    if (err instanceof PrintifyError && err.status === 404) return null;
+    throw err;
+  }
+}
+
+/** Listado de pedidos del espacio de fabricación (reconciliación por lotes). */
+export async function listOrders(shopId: number, page = 1, limit = 20): Promise<PrintifyOrder[]> {
+  const res = await printify<{ data?: PrintifyOrder[] } | PrintifyOrder[]>(
+    `/v1/shops/${shopId}/orders.json?page=${page}&limit=${Math.min(limit, 50)}`,
+  );
+  if (Array.isArray(res)) return res;
+  return res.data ?? [];
+}
+
+/**
+ * Cancela un pedido en el proveedor.
+ * Sólo funciona mientras no haya entrado a producción; devuelve false si ya no
+ * es posible, para que el flujo de reembolso lo informe con claridad.
+ */
+export async function cancelOrder(shopId: number, externalOrderId: string): Promise<boolean> {
+  try {
+    await printify(`/v1/shops/${shopId}/orders/${externalOrderId}/cancel.json`, { method: "POST" });
+    return true;
+  } catch (err) {
+    if (err instanceof PrintifyError && err.status >= 400 && err.status < 500) return false;
+    throw err;
+  }
+}
+
 /** Webhooks registrados en el espacio de fabricación (para diagnóstico interno). */
 export async function listWebhooks(shopId: number): Promise<Array<{ id: string; topic: string; url: string }>> {
+
   return printify<Array<{ id: string; topic: string; url: string }>>(`/v1/shops/${shopId}/webhooks.json`);
 }
