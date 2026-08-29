@@ -1019,6 +1019,7 @@ export type Database = {
       stores: {
         Row: {
           created_at: string
+          external_links: Json
           id: string
           kit_id: string | null
           logo_url: string | null
@@ -1034,6 +1035,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          external_links?: Json
           id?: string
           kit_id?: string | null
           logo_url?: string | null
@@ -1049,6 +1051,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          external_links?: Json
           id?: string
           kit_id?: string | null
           logo_url?: string | null
