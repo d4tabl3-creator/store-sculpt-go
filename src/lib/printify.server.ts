@@ -62,13 +62,35 @@ export class PrintifyError extends Error {
   }
 }
 
+/**
+ * Credencial del proveedor de fabricación.
+ *
+ * Se acepta más de un nombre porque el secreto puede haberse guardado como
+ * `PRINTIFY_API_TOKEN` o simplemente `Printify`. Se limpian espacios y saltos
+ * de línea: al pegar la credencial es común que se parta en varias líneas y
+ * eso invalida la petición.
+ */
 export function printifyToken(): string | null {
-  return process.env["PRINTIFY_API_TOKEN"] ?? null;
+  const raw =
+    process.env["PRINTIFY_API_TOKEN"] ??
+    process.env["PRINTIFY_TOKEN"] ??
+    process.env["Printify"] ??
+    null;
+  if (!raw) return null;
+  const clean = raw.replace(/\s+/g, "").replace(/^Bearer/i, "");
+  return clean || null;
+}
+
+/** Una credencial válida es un JWT de tres partes; si no, está mal copiada. */
+export function printifyTokenLooksValid(): boolean {
+  const t = printifyToken();
+  return !!t && t.split(".").filter(Boolean).length === 3;
 }
 
 export function isPrintifyConfigured(): boolean {
   return !!printifyToken();
 }
+
 
 export async function printify<T>(
   path: string,
