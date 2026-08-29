@@ -45,6 +45,50 @@ function redactEmail(email: string | null | undefined): string {
   return `${localPart[0]}***@${domain}`
 }
 
+// Destino final (dentro de la app pública de Datable) para cada tipo de correo.
+const ACTION_PATHS: Record<string, string> = {
+  signup: '/crear',
+  invite: '/crear',
+  magiclink: '/dashboard',
+  recovery: '/auth?type=recovery',
+  email_change: '/cuenta',
+}
+
+/**
+ * Garantiza que el enlace del correo apunte SIEMPRE al dominio público de
+ * Datable, sin depender del `redirect_to` que traiga el proveedor de auth
+ * (que puede apuntar a orígenes antiguos según su configuración).
+ *
+ * - Recuperación de contraseña: se construye un enlace directo a
+ *   `${APP_URL}/auth?type=recovery` con el código de un solo uso, que la app
+ *   canjea con `verifyOtp`. Así no interviene ninguna lista de redirecciones.
+ * - Resto de acciones: se reescribe el parámetro `redirect_to` del enlace
+ *   original al dominio público.
+ */
+function buildActionUrl(
+  emailType: string,
+  data: { url: string; token: string | null; email: string },
+): string {
+  const path = ACTION_PATHS[emailType]
+
+  if (emailType === 'recovery' && data.token) {
+    const url = new URL(`${APP_URL}/auth`)
+    url.searchParams.set('type', 'recovery')
+    url.searchParams.set('token', data.token)
+    url.searchParams.set('email', data.email)
+    return url.toString()
+  }
+
+  try {
+    const url = new URL(data.url)
+    if (path) url.searchParams.set('redirect_to', `${APP_URL}${path}`)
+    return url.toString()
+  } catch {
+    return data.url
+  }
+}
+
+
 export const Route = createFileRoute("/lovable/email/auth/webhook")({
   server: {
     handlers: {
@@ -138,12 +182,13 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           siteName: SITE_NAME,
           siteUrl: APP_URL,
           recipient: payload.data.email,
-          confirmationUrl: payload.data.url,
+          confirmationUrl: buildActionUrl(emailType, payload.data),
           token: payload.data.token,
           email: payload.data.email,
           oldEmail: payload.data.old_email,
           newEmail: payload.data.new_email,
         }
+
 
         // Render React Email to HTML and plain text
         const element = React.createElement(EmailTemplate, templateProps)
