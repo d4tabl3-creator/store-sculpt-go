@@ -297,9 +297,10 @@ export const printifyProvider: CommerceProvider = {
       }
       const position =
         product.design?.placement ||
-        chosen?.placeholders[0]?.position ||
-        variants.find((v) => v.placeholders.length)?.placeholders[0]?.position ||
+        chosen?.placeholders?.[0]?.position ||
+        variants.find((v) => v.placeholders?.length)?.placeholders?.[0]?.position ||
         "front";
+
 
       const created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
         method: "POST",
