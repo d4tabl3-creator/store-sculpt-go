@@ -474,6 +474,7 @@ export type Database = {
       }
       commission_ledger: {
         Row: {
+          base_cost_cents: number
           commission_cents: number
           created_at: string
           gross_cents: number
@@ -483,10 +484,12 @@ export type Database = {
           owner_id: string
           paid_at: string | null
           payout_ref: string | null
+          seller_margin_cents: number
           status: string
           store_id: string
         }
         Insert: {
+          base_cost_cents?: number
           commission_cents: number
           created_at?: string
           gross_cents: number
@@ -496,10 +499,12 @@ export type Database = {
           owner_id: string
           paid_at?: string | null
           payout_ref?: string | null
+          seller_margin_cents?: number
           status?: string
           store_id: string
         }
         Update: {
+          base_cost_cents?: number
           commission_cents?: number
           created_at?: string
           gross_cents?: number
@@ -509,6 +514,7 @@ export type Database = {
           owner_id?: string
           paid_at?: string | null
           payout_ref?: string | null
+          seller_margin_cents?: number
           status?: string
           store_id?: string
         }
@@ -914,6 +920,7 @@ export type Database = {
       }
       store_products: {
         Row: {
+          base_cost_cents: number
           created_at: string
           description: string | null
           design_url: string | null
@@ -932,6 +939,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          base_cost_cents?: number
           created_at?: string
           description?: string | null
           design_url?: string | null
@@ -950,6 +958,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          base_cost_cents?: number
           created_at?: string
           description?: string | null
           design_url?: string | null

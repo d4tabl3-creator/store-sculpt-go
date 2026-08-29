@@ -38,7 +38,7 @@ const HOME_FAQS_STATIC = [
   },
   {
     q: "¿Cuánto se queda DªTªBLe de cada venta?",
-    a: "10% si vendes en la modalidad gratuita y 0% si activas Pro por $499 MXN al mes. El resto es tuyo.",
+    a: "20% de tu ganancia si vendes en la modalidad gratuita y 0% si activas Pro por $499 MXN al mes. El resto es tuyo.",
   },
   {
     q: "¿Puedo cancelar cuando quiera?",
@@ -316,7 +316,7 @@ function Precios() {
     {
       name: t("GRATIS", "FREE"),
       price: "$0",
-      commission: t("10% de comisión por venta.", "10% commission per sale."),
+      commission: t("20% de comisión sobre tu ganancia.", "20% commission on your profit."),
       cta: t("Empezar gratis", "Start for free"),
       featured: false,
     },
@@ -345,7 +345,7 @@ function Precios() {
             {t("Tú vendes. Nosotros crecemos contigo.", "You sell. We grow with you.")}
           </p>
           <p className="text-base text-muted-foreground">
-            {t("Mientras utilizas esta modalidad, Datable recibe el 10% de cada venta.", "While using this mode, Datable receives 10% of every sale.")}
+            {t("Mientras utilizas esta modalidad, Datable recibe el 20% de tu ganancia (nunca de tus costos).", "While using this mode, Datable takes 20% of your profit, never of your costs.")}
           </p>
           <p className="text-base text-muted-foreground">
             {t(
@@ -398,8 +398,8 @@ function Precios() {
 
         <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-muted-foreground">
           {t(
-            "*La modalidad de $499 MXN al mes elimina la comisión del 10% por venta. Puedes elegir la modalidad que más te convenga.",
-            "*The $499 MXN monthly mode removes the 10% commission per sale. You can choose whichever mode suits you best."
+            "*La modalidad de $499 MXN al mes elimina la comisión del 20% sobre tu ganancia. Puedes elegir la modalidad que más te convenga.",
+            "*The $499 MXN monthly mode removes the 20% commission on your profit. You can choose whichever mode suits you best."
           )}
         </p>
       </div>
@@ -451,8 +451,8 @@ function FAQ() {
     {
       q: t("¿Cuánto se queda DªTªBLe de cada venta?", "How much does DªTªBLe keep from each sale?"),
       a: t(
-        "10% si vendes en la modalidad gratuita y 0% si activas Pro por $499 MXN al mes. El resto es tuyo.",
-        "10% on the free mode and 0% if you activate Pro for $499 MXN per month. The rest is yours."
+        "20% de tu ganancia si vendes en la modalidad gratuita y 0% si activas Pro por $499 MXN al mes. El resto es tuyo.",
+        "20% of your profit on the free mode and 0% if you activate Pro for $499 MXN per month. The rest is yours."
       ),
     },
 

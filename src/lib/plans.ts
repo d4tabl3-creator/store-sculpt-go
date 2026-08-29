@@ -20,12 +20,12 @@ export const PLANS: Array<{
     name: "Gratis",
     priceLabel: "$0 MXN / mes",
     monthlyMxn: 0,
-    commissionLabel: "10% por venta",
+    commissionLabel: "20% de tu ganancia",
     tagline: "Empieza sin invertir.",
     maxStores: null,
     features: [
       "Sin mensualidad",
-      "10% de comisión por venta",
+      "20% de comisión sobre tu ganancia",
       "Productos personalizados ilimitados",
       "Producción y envío incluidos",
 
@@ -53,13 +53,13 @@ export const PLANS: Array<{
 ];
 
 export const PLATFORM_COMMISSION_BPS = 0; // 0% para plan Pro
-export const FREE_COMMISSION_BPS = 1000; // 10% para la modalidad gratuita
+export const FREE_COMMISSION_BPS = 2000; // 20% sobre la ganancia del vendedor
 export const FREE_DRAFT_STORE_LIMIT = 1; // Sin plan puedes armar 1 tienda
 
 export function planLimit(plan: PlanId | null): number | null {
   if (plan === "pro") return null;
   if (plan === "starter") return null;
-  // Sin plan: puedes crear 1 tienda (publicable con comisión del 10%)
+  // Sin plan: puedes crear 1 tienda (publicable con comisión sobre la ganancia)
   return FREE_DRAFT_STORE_LIMIT;
 }
 
@@ -70,10 +70,10 @@ export function canPublish(_plan: PlanId | null): boolean {
 
 export function commissionBpsFor(plan: PlanId | null): number {
   if (plan === "pro") return PLATFORM_COMMISSION_BPS;
-  // starter (modalidad gratuita) y sin plan comparten 10%
+  // starter (modalidad gratuita) y sin plan comparten 20% sobre la ganancia
   return FREE_COMMISSION_BPS;
 }
 
 export function commissionLabelFor(plan: PlanId | null): string {
-  return plan === "pro" ? "0% por venta" : "10% por venta";
+  return plan === "pro" ? "0% de comisión" : "20% de tu ganancia";
 }

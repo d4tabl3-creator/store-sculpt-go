@@ -95,7 +95,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { getCatalogVariants } = await import("@/lib/catalog.server");
+    const { getCatalogVariants, catalogPrintProviderId } = await import("@/lib/catalog.server");
 
     const { data: store } = await supabaseAdmin
       .from("stores")
@@ -136,21 +136,30 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       if (!variant) continue;
 
       const mockup = item.mockupUrl ? await persistMockup(item.mockupUrl, product.id) : null;
+      const printProviderId = await catalogPrintProviderId(product.id);
+
+      // El precio nunca puede quedar por debajo del costo base (fabricación +
+      // envío): así la ganancia del vendedor jamás es negativa.
+      const requested =
+        typeof item.priceCents === "number" && item.priceCents > 0
+          ? Math.round(item.priceCents)
+          : variant.priceCents;
+      const priceCents = Math.max(requested, variant.costCents);
 
       rows.push({
         store_id: data.storeId,
         name: item.name?.trim() || product.title,
         description: item.description?.trim() || product.description,
-        price_cents:
-          typeof item.priceCents === "number" && item.priceCents > 0 ? Math.round(item.priceCents) : variant.priceCents,
+        price_cents: priceCents,
+        base_cost_cents: variant.costCents,
         image_url: mockup || variant.image || product.image,
         mockup_url: mockup,
         design_url: item.designUrl ?? null,
         placement: item.placement ?? null,
         stock: 999,
         sort_order: i++,
-        source_provider: "printful",
-        source_product_id: String(product.id),
+        source_provider: "printify",
+        source_product_id: `${product.id}:${printProviderId}`,
         source_variant_id: String(variant.id),
       });
     }

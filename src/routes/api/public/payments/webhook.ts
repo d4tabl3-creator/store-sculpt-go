@@ -31,8 +31,8 @@ async function handleStoreOrderPaid(session: any) {
   const sb = getSupabase();
 
   // Determinar comisión según el plan del dueño de la tienda:
-  // sin plan o modalidad Gratis (starter) = 10% (1000 bps), Pro = 0% (0 bps).
-  let commissionBps = 1000;
+  // sin plan o Gratis (starter) = 20% sobre la ganancia (2000 bps), Pro = 0%.
+  let commissionBps = 2000;
   const { data: orderRow } = await sb
     .from("store_orders")
     .select("store_id, stores(owner_id)")

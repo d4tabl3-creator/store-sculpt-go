@@ -17,7 +17,7 @@ import { useT } from "@/lib/i18n";
 export const Route = createFileRoute("/planes")({
   head: () => {
     const url = "https://store-sculpt-go.lovable.app/planes";
-    const desc = "Empieza gratis con Datable y paga 10% por venta, o activa Pro por $499 MXN al mes y conserva el 100% de tus ventas.";
+    const desc = "Empieza gratis con Datable y paga 20% de tu ganancia, o activa Pro por $499 MXN al mes y conserva el 100% de tus ventas.";
     return {
       meta: [
         { title: "Planes y precios — DªTªBLe" },

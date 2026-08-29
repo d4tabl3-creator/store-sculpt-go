@@ -1,6 +1,11 @@
 /**
  * Reglas de precio de DªTªBLe (client-safe).
- * El costo base viene del proveedor de fulfillment; aquí se aplica el margen.
+ *
+ * El costo base es lo que cuesta poner el producto en manos del cliente final:
+ * fabricación + envío. Sobre ese costo base se aplica el margen para sugerir
+ * el precio de venta. La ganancia del vendedor es siempre
+ * `precio de venta − costo base`, y es la única cifra sobre la que DªTªBLe
+ * calcula comisión.
  */
 
 /** Tipo de cambio conservador para convertir el costo del proveedor (USD → MXN). */
@@ -21,9 +26,9 @@ export function markupFor(costMxn: number): number {
   return (MARGIN_TIERS.find((t) => costMxn <= t.upToMxn) ?? MARGIN_TIERS[MARGIN_TIERS.length - 1]).markup;
 }
 
-/** Precio de venta sugerido en centavos MXN a partir del costo del proveedor en USD. */
-export function suggestedPriceCents(costUsd: number): number {
-  const costMxn = costUsd * USD_MXN;
+/** Precio de venta sugerido en centavos MXN a partir del costo base en USD. */
+export function suggestedPriceCents(costUsd: number, shippingUsd = 0): number {
+  const costMxn = (costUsd + shippingUsd) * USD_MXN;
   const mxn = costMxn * markupFor(costMxn);
   // Redondeo comercial a decenas terminadas en 9 (p. ej. 349, 599).
   const rounded = Math.round(mxn / 10) * 10 - 1;
@@ -31,25 +36,45 @@ export function suggestedPriceCents(costUsd: number): number {
 }
 
 export type PriceBreakdown = {
+  /** Costo de fabricación en USD. */
   costUsd: number;
+  /** Costo de envío en USD. */
+  shippingUsd: number;
+  /** Costo de fabricación en centavos MXN. */
+  productionCents: number;
+  /** Costo de envío en centavos MXN. */
+  shippingCents: number;
+  /** Costo base = fabricación + envío, en centavos MXN. */
   costCents: number;
+  /** Precio de venta sugerido en centavos MXN. */
   priceCents: number;
+  /** Ganancia del vendedor: precio de venta − costo base. */
   marginCents: number;
   marginPct: number;
   markup: number;
 };
 
-/** Desglose completo: costo del proveedor, precio final y margen resultante. */
-export function priceBreakdown(costUsd: number): PriceBreakdown {
-  const costCents = Math.round(costUsd * USD_MXN * 100);
-  const priceCents = suggestedPriceCents(costUsd);
+/** Desglose completo: fabricación, envío, precio final y ganancia del vendedor. */
+export function priceBreakdown(costUsd: number, shippingUsd = 0): PriceBreakdown {
+  const productionCents = Math.round(costUsd * USD_MXN * 100);
+  const shippingCents = Math.round(shippingUsd * USD_MXN * 100);
+  const costCents = productionCents + shippingCents;
+  const priceCents = suggestedPriceCents(costUsd, shippingUsd);
   const marginCents = priceCents - costCents;
   return {
     costUsd,
+    shippingUsd,
+    productionCents,
+    shippingCents,
     costCents,
     priceCents,
     marginCents,
     marginPct: priceCents > 0 ? Math.round((marginCents / priceCents) * 100) : 0,
-    markup: markupFor(costUsd * USD_MXN),
+    markup: markupFor((costUsd + shippingUsd) * USD_MXN),
   };
+}
+
+/** Ganancia del vendedor para un precio dado. Nunca negativa. */
+export function sellerMarginCents(priceCents: number, baseCostCents: number): number {
+  return Math.max(0, priceCents - baseCostCents);
 }
