@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { supabase } from "@/integrations/supabase/client";
 import { EmbeddedStripe } from "@/components/EmbeddedStripe";
 import { getStripeEnvironment } from "@/lib/stripe";
-import { startStoreCheckout } from "@/lib/payments.functions";
+import { startStoreCheckout, quoteStoreCart } from "@/lib/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useT } from "@/lib/i18n";
 import { publicUrlFor } from "@/lib/public-url";
