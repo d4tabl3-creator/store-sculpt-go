@@ -138,12 +138,13 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           siteName: SITE_NAME,
           siteUrl: APP_URL,
           recipient: payload.data.email,
-          confirmationUrl: payload.data.url,
+          confirmationUrl: buildActionUrl(emailType, payload.data),
           token: payload.data.token,
           email: payload.data.email,
           oldEmail: payload.data.old_email,
           newEmail: payload.data.new_email,
         }
+
 
         // Render React Email to HTML and plain text
         const element = React.createElement(EmailTemplate, templateProps)
