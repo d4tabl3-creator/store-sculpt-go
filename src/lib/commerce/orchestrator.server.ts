@@ -675,25 +675,52 @@ export async function handleInboundWebhook(
   }
 
 
-  let bindingQuery;
-  if (domain) {
-    bindingQuery = supabaseAdmin
-      .from("commerce_store_bindings")
+  // Algunos conectores comparten un mismo espacio externo entre varias tiendas,
+  // así que primero se intenta identificar la tienda por el pedido referido.
+  let storeId: string | null = null;
+  const externalOrderId = ((): string | null => {
+    try {
+      const p = JSON.parse(rawBody) as { resource?: { id?: string; type?: string } };
+      return p.resource?.type === "order" && p.resource.id ? String(p.resource.id) : null;
+    } catch {
+      return null;
+    }
+  })();
+  if (externalOrderId) {
+    const { data: ob } = await supabaseAdmin
+      .from("commerce_order_bindings")
       .select("store_id")
       .eq("provider", providerId)
-      .eq("external_domain", domain);
-  } else if (externalStoreId) {
-    bindingQuery = supabaseAdmin
-      .from("commerce_store_bindings")
-      .select("store_id")
-      .eq("provider", providerId)
-      .eq("external_store_id", externalStoreId);
-  } else {
-    bindingQuery = null;
+      .eq("external_order_id", externalOrderId)
+      .maybeSingle();
+    storeId = (ob?.store_id as string | undefined) ?? null;
   }
 
-  const { data: bindingRow } = bindingQuery ? await bindingQuery.maybeSingle() : { data: null };
-  if (!bindingRow) return { ok: false, reason: "unknown store" };
+  if (!storeId) {
+    let bindingQuery;
+    if (domain) {
+      bindingQuery = supabaseAdmin
+        .from("commerce_store_bindings")
+        .select("store_id")
+        .eq("provider", providerId)
+        .eq("external_domain", domain);
+    } else if (externalStoreId) {
+      bindingQuery = supabaseAdmin
+        .from("commerce_store_bindings")
+        .select("store_id")
+        .eq("provider", providerId)
+        .eq("external_store_id", externalStoreId)
+        .order("created_at", { ascending: true })
+        .limit(1);
+    } else {
+      bindingQuery = null;
+    }
+    const { data: rows } = bindingQuery ? await bindingQuery : { data: null };
+    storeId = ((rows as Array<{ store_id: string }> | null)?.[0]?.store_id as string | undefined) ?? null;
+  }
+
+  if (!storeId) return { ok: false, reason: "unknown store" };
+  const bindingRow = { store_id: storeId };
 
   const binding = await loadBinding(bindingRow.store_id as string);
   const parsed = await provider.verifyAndParseWebhook(rawBody, headers, binding?.credentials.webhookSecret ?? null);
