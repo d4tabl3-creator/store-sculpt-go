@@ -3,6 +3,7 @@ import { Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/lib/i18n";
+import { categoryLabel } from "@/lib/catalog-labels";
 import type { CatalogItem } from "@/lib/product-draft";
 
 /** Primera pantalla del flujo: explorar y elegir qué vender. */
