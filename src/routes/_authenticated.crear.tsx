@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { THEMES, slugify } from "@/lib/kits";
+import { slugify } from "@/lib/kits";
 import { getMyPlan } from "@/lib/plans.functions";
 import { planLimit } from "@/lib/plans";
 import { useT } from "@/lib/i18n";
@@ -42,8 +42,6 @@ function CreateStorePage() {
   const [storeName, setStoreName] = useState("");
   const [tagline, setTagline] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [themeId, setThemeId] = useState("berry");
-  const [primaryColor, setPrimaryColor] = useState("#CF3790");
   const [paymentEmail, setPaymentEmail] = useState("");
 
   const slug = useMemo(() => slugify(storeName), [storeName]);
@@ -119,8 +117,9 @@ function CreateStorePage() {
           name: storeName.trim(),
           niche: tagline.trim() || t("Mi tienda", "My store"),
           kit_id: "catalogo",
-          theme: themeId,
-          primary_color: primaryColor,
+          // Plantilla base única de Datable Stores: sin selector de color.
+          theme: "datable",
+          primary_color: "#6D4AFF",
           logo_url: logoUrl,
           shipping_options: [],
           status: "draft",
@@ -221,26 +220,6 @@ function CreateStorePage() {
                 {uploading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Upload className="mr-2 size-4" />}
                 {logoUrl ? t("Cambiar logo", "Change logo") : t("Subir logo", "Upload logo")}
               </Button>
-            </div>
-          </div>
-
-          <div>
-            <Label>{t("Estilo visual", "Visual style")}</Label>
-            <div className="mt-2 grid gap-3 sm:grid-cols-3">
-              {THEMES.map((th) => (
-                <button
-                  key={th.id}
-                  onClick={() => {
-                    setThemeId(th.id);
-                    setPrimaryColor(th.primary);
-                  }}
-                  className={`rounded-xl border-2 p-4 text-left transition-all ${themeId === th.id ? "border-primary" : "border-border"}`}
-                >
-                  <div className="h-12 rounded-md" style={{ background: th.primary }} />
-                  <div className="mt-3 font-bold">{th.name}</div>
-                  <div className="text-xs text-muted-foreground">{th.description}</div>
-                </button>
-              ))}
             </div>
           </div>
 

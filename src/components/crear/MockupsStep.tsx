@@ -31,8 +31,9 @@ export function MockupsStep({
           placement: draft.placement,
           imageUrl: draft.designUrl,
           scale: draft.scale,
-          offsetX: (1 - draft.scale) / 2,
+          offsetX: draft.offsetX,
           offsetY: draft.offsetY,
+          angle: draft.rotation,
           printProviderId: draft.printProviderId ?? undefined,
         },
       })) as Array<{ placement: string; url: string }>;

@@ -55,6 +55,7 @@ export const createProductMockup = createServerFn({ method: "POST" })
       scale?: number;
       offsetX?: number;
       offsetY?: number;
+      angle?: number;
       printProviderId?: number;
     }) => {
       if (!Number.isInteger(data.productId)) throw new Error("Producto inválido");

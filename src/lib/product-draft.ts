@@ -51,8 +51,13 @@ export type ProductDraft = {
   designUrl: string | null;
   designPreview: string | null;
   placement: string;
+  /** Ancho del diseño como fracción del área imprimible. */
   scale: number;
+  /** Centro del diseño dentro del área imprimible (0-1). */
+  offsetX: number;
   offsetY: number;
+  /** Giro del diseño en grados. */
+  rotation: number;
   mockups: string[];
   mockupUrl: string | null;
   name: string;
@@ -100,7 +105,9 @@ export function newDraft(item: CatalogItem): ProductDraft {
     designPreview: null,
     placement: "front",
     scale: 0.8,
-    offsetY: 0.1,
+    offsetX: 0.5,
+    offsetY: 0.5,
+    rotation: 0,
     mockups: [],
     mockupUrl: null,
     name: item.title,

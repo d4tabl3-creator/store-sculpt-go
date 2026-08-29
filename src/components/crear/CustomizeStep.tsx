@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, RotateCcw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
+import { DesignCanvas } from "@/components/crear/DesignCanvas";
 import { getCatalogProduct, getProductPlacements } from "@/lib/catalog.functions";
 import { useT } from "@/lib/i18n";
+import { placementLabel, productionOptionLabel } from "@/lib/catalog-labels";
 import { SIZE_ORDER, currentVariant, money, type DraftPlacement, type DraftProvider, type DraftVariant, type ProductDraft } from "@/lib/product-draft";
 
-/** Paso 2: preparar diseño, variantes y opciones disponibles. */
+
+/** Paso 2: lienzo de diseño, variantes y opciones disponibles. */
 export function CustomizeStep({
   draft,
   update,
@@ -65,7 +68,7 @@ export function CustomizeStep({
     };
   }, [draft.productId, draft.printProviderId]);
 
-  /** Cambiar de taller recarga variantes, áreas y costos reales de ese taller. */
+  /** Cambiar de opción de producción recarga variantes, áreas y costos reales. */
   function chooseProvider(id: number) {
     if (id === draft.printProviderId) return;
     update({
@@ -92,6 +95,7 @@ export function CustomizeStep({
   }, [draft.variants, draft.color]);
 
   const current = currentVariant(draft);
+  const area = draft.placements.find((p) => p.id === draft.placement) ?? draft.placements[0];
 
   async function upload(file: File) {
     setUploading(true);
@@ -130,22 +134,30 @@ export function CustomizeStep({
     <section>
       <h1 className="font-display text-3xl font-extrabold uppercase">{t("Personalizar", "Customize")}</h1>
       <p className="mt-1 text-muted-foreground">
-        {t("Prepara tu diseño y define las opciones que verán tus clientes.", "Prepare your design and set the options your customers will see.")}
+        {t(
+          "Coloca tu diseño dentro de la zona de impresión. La vista de venta se genera en el siguiente paso.",
+          "Place your design inside the print area. The sales preview is generated in the next step.",
+        )}
       </p>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <div>
-          <div className="relative aspect-square overflow-hidden rounded-2xl border-2 border-border bg-muted">
-            <img src={draft.mockupUrl || current?.image || draft.image} alt={draft.catalogTitle} className="size-full object-cover" />
-            {!draft.mockupUrl && draft.designPreview && (
-              <img
-                src={draft.designPreview}
-                alt={t("Tu diseño", "Your design")}
-                className="pointer-events-none absolute left-1/2 -translate-x-1/2 object-contain opacity-90"
-                style={{ width: `${draft.scale * 55}%`, top: `${18 + draft.offsetY * 50}%` }}
-              />
-            )}
-          </div>
+          {draft.placements.length > 0 ? (
+            <DesignCanvas
+              productImage={current?.image || draft.image}
+              designUrl={draft.designPreview || draft.designUrl}
+              placementId={draft.placement}
+              areaWidth={area?.areaWidth ?? 0}
+              areaHeight={area?.areaHeight ?? 0}
+              state={{ offsetX: draft.offsetX, offsetY: draft.offsetY, scale: draft.scale, rotation: draft.rotation }}
+              onChange={(patch) => update({ ...patch, mockups: [], mockupUrl: null })}
+            />
+          ) : (
+            <div className="aspect-square overflow-hidden rounded-2xl border-2 border-border bg-muted">
+              <img src={current?.image || draft.image} alt={draft.catalogTitle} className="size-full object-cover" />
+            </div>
+          )}
+
           {current && (
             <div className="mt-3 rounded-xl border border-border bg-card p-3 text-xs">
               <div className="flex justify-between">
@@ -156,6 +168,9 @@ export function CustomizeStep({
                 <span className="text-muted-foreground">{t("Costo de producción y envío", "Production and shipping cost")}</span>
                 <span>{money(current.costCents)} MXN</span>
               </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {t("El costo lo define la producción y no se puede editar.", "The cost is set by production and cannot be edited.")}
+              </p>
             </div>
           )}
         </div>
@@ -163,9 +178,9 @@ export function CustomizeStep({
         <div className="grid gap-4">
           {draft.providers.length > 1 && (
             <div>
-              <Label>{t("Taller de producción", "Production workshop")}</Label>
+              <Label>{t("Opciones de producción", "Production options")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
-                {draft.providers.map((pv) => (
+                {draft.providers.map((pv, i) => (
                   <button
                     key={pv.id}
                     onClick={() => chooseProvider(pv.id)}
@@ -173,13 +188,13 @@ export function CustomizeStep({
                       draft.printProviderId === pv.id ? "border-primary bg-primary-soft" : "border-border bg-card"
                     }`}
                   >
-                    {pv.name}
+                    {productionOptionLabel(i, t)}
                     {pv.location ? <span className="block font-normal text-muted-foreground">{pv.location}</span> : null}
                   </button>
                 ))}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("Cada taller tiene sus propios costos, tallas y colores.", "Each workshop has its own costs, sizes and colors.")}
+                {t("Cada opción tiene sus propios costos, tallas y colores.", "Each option has its own costs, sizes and colors.")}
               </p>
             </div>
           )}
@@ -234,7 +249,7 @@ export function CustomizeStep({
                         draft.placement === p.id ? "border-primary bg-primary-soft" : "border-border bg-card"
                       }`}
                     >
-                      {p.label}
+                      {placementLabel(p.id, p.label, t)}
                     </button>
                   ))}
                 </div>
@@ -260,28 +275,39 @@ export function CustomizeStep({
 
               {draft.designUrl && (
                 <>
+                  <p className="text-xs text-muted-foreground">
+                    {t("Arrastra tu diseño dentro de la zona punteada para colocarlo.", "Drag your design inside the dotted area to position it.")}
+                  </p>
                   <div>
                     <Label>{t("Tamaño del diseño", "Design size")}</Label>
                     <Slider
                       className="mt-3"
                       value={[draft.scale]}
-                      min={0.2}
+                      min={0.1}
                       max={1}
                       step={0.05}
                       onValueChange={([v]) => update({ scale: v, mockups: [], mockupUrl: null })}
                     />
                   </div>
                   <div>
-                    <Label>{t("Altura del diseño", "Design height")}</Label>
+                    <Label>{t("Giro del diseño", "Design rotation")}</Label>
                     <Slider
                       className="mt-3"
-                      value={[draft.offsetY]}
-                      min={0}
-                      max={Math.max(0, 1 - draft.scale)}
-                      step={0.02}
-                      onValueChange={([v]) => update({ offsetY: v, mockups: [], mockupUrl: null })}
+                      value={[draft.rotation]}
+                      min={-180}
+                      max={180}
+                      step={1}
+                      onValueChange={([v]) => update({ rotation: v, mockups: [], mockupUrl: null })}
                     />
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="justify-self-start"
+                    onClick={() => update({ offsetX: 0.5, offsetY: 0.5, scale: 0.8, rotation: 0, mockups: [], mockupUrl: null })}
+                  >
+                    <RotateCcw className="mr-2 size-4" /> {t("Centrar diseño", "Center design")}
+                  </Button>
                 </>
               )}
             </>
