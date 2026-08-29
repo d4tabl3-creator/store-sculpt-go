@@ -261,6 +261,12 @@ export interface CommerceProvider {
   deleteProduct(binding: ProviderBinding, externalProductId: string): Promise<void>;
   setInventory(binding: ProviderBinding, product: ProviderProduct, stock: number): Promise<void>;
   createOrder(binding: ProviderBinding, order: ProviderOrder): Promise<ProviderOrderResult>;
+  /**
+   * Manda a fabricar un pedido ya creado. Paso separado a propósito:
+   * el orquestador sólo lo invoca cuando el pago está confirmado.
+   */
+  sendOrderToProduction?(binding: ProviderBinding, externalOrderId: string): Promise<void>;
+
   /** Verifica firma y normaliza un webhook entrante. Devuelve null si la firma es inválida. */
   verifyAndParseWebhook(
     rawBody: string,
