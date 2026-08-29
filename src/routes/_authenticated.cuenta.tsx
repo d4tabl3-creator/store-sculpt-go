@@ -161,7 +161,7 @@ function AccountPage() {
           <div className="mt-3">
             <Label htmlFor="np">{t("Nueva contraseña", "New password")}</Label>
             <div className="flex gap-2">
-              <PasswordInput id="np" showLabel={t("Mostrar contraseña", "Show password")} hideLabel={t("Ocultar contraseña", "Hide password")} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t("Mínimo 8 caracteres", "Minimum 8 characters")} />
+              <div className="flex-1"><PasswordInput id="np" showLabel={t("Mostrar contraseña", "Show password")} hideLabel={t("Ocultar contraseña", "Hide password")} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t("Mínimo 8 caracteres", "Minimum 8 characters")} /></div>
               <Button onClick={changePassword} disabled={changingPass || !newPassword}>
                 {changingPass && <Loader2 className="mr-2 size-4 animate-spin" />} {t("Cambiar", "Change")}
               </Button>
