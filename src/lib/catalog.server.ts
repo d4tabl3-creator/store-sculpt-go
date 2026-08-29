@@ -1,11 +1,24 @@
 /**
- * Catálogo abierto del proveedor de fulfillment.
+ * Catálogo abierto del proveedor de fabricación bajo demanda.
  * Server-only: usa el token privado y nunca lo expone al navegador.
+ *
+ * La forma de los datos (CatalogItem / CatalogVariant / Placement / MockupResult)
+ * es neutral y no cambió al migrar de proveedor: la interfaz sigue igual.
  */
 
 import { priceBreakdown, suggestedPriceCents } from "@/lib/pricing";
-
-const BASE_URL = "https://api.printful.com";
+import {
+  getBlueprint,
+  getStandardShippingCosts,
+  getVariantCosts,
+  listBlueprintVariants,
+  listBlueprints,
+  printify,
+  printifyShopId,
+  resolvePrintProviderId,
+  uploadImageByUrl,
+  type PrintifyProduct,
+} from "@/lib/printify.server";
 
 export { suggestedPriceCents };
 
@@ -31,10 +44,14 @@ export type CatalogVariant = {
   colorCode: string | null;
   image: string;
   costUsd: number;
-  /** Costo del proveedor convertido a centavos MXN. */
+  /** Costo base (fabricación + envío) en centavos MXN. */
   costCents: number;
+  /** Sólo fabricación, en centavos MXN. */
+  productionCents: number;
+  /** Sólo envío, en centavos MXN. */
+  shippingCents: number;
   priceCents: number;
-  /** Ganancia bruta en centavos MXN y su porcentaje sobre el precio final. */
+  /** Ganancia del vendedor en centavos MXN y su porcentaje sobre el precio final. */
   marginCents: number;
   marginPct: number;
   markup: number;
@@ -49,230 +66,225 @@ export type Placement = {
   areaHeight: number;
 };
 
-let cache: { at: number; items: CatalogItem[] } | null = null;
-let catCache: { at: number; roots: Map<number, string> } | null = null;
-let storeIdCache: number | null = null;
 const TTL_MS = 30 * 60 * 1000;
+let itemsCache: { at: number; items: CatalogItem[] } | null = null;
 
-/** Nombres de categorías del proveedor traducidos al español de DªTªBLe. */
-const CATEGORY_ES: Record<string, string> = {
-  "Men's clothing": "Ropa de hombre",
-  "Women's clothing": "Ropa de mujer",
-  "Kids' & youth clothing": "Ropa de niños",
-  Accessories: "Accesorios",
-  "Home & living": "Hogar y decoración",
-  "Hats & caps": "Gorras y sombreros",
-  Sports: "Deportes",
-  "Wall art": "Cuadros y pósters",
-  Drinkware: "Tazas y termos",
-  Stationery: "Papelería",
-  "Phone cases": "Fundas de celular",
-  Bags: "Bolsas y mochilas",
-  Shoes: "Calzado",
-  Jewelry: "Joyería",
-};
+/**
+ * Categorías de DªTªBLe. El catálogo del proveedor no expone un árbol de
+ * categorías, así que se clasifican por palabras clave del título/modelo.
+ */
+const CATEGORY_RULES: Array<{ id: number; name: string; re: RegExp }> = [
+  { id: 1, name: "Playeras y camisetas", re: /\b(tee|t-shirt|shirt|jersey|tank|polo)\b/i },
+  { id: 2, name: "Sudaderas y abrigos", re: /\b(hoodie|sweatshirt|sweater|jacket|crewneck|fleece)\b/i },
+  { id: 3, name: "Gorras y sombreros", re: /\b(hat|cap|beanie|visor|bucket)\b/i },
+  { id: 4, name: "Tazas y termos", re: /\b(mug|tumbler|bottle|can cooler|glass|flask)\b/i },
+  { id: 5, name: "Bolsas y mochilas", re: /\b(bag|tote|backpack|pouch|duffle)\b/i },
+  { id: 6, name: "Fundas de celular", re: /\b(phone case|iphone|samsung|case)\b/i },
+  { id: 7, name: "Cuadros y pósters", re: /\b(poster|canvas|print|framed|wall)\b/i },
+  { id: 8, name: "Hogar y decoración", re: /\b(pillow|blanket|towel|mat|apron|curtain|magnet|coaster)\b/i },
+  { id: 9, name: "Papelería", re: /\b(sticker|notebook|journal|card|calendar|mouse pad)\b/i },
+  { id: 10, name: "Ropa de niños", re: /\b(kids|youth|toddler|baby|infant)\b/i },
+  { id: 11, name: "Accesorios", re: /\b(socks|scarf|gloves|keychain|apparel accessory|bandana)\b/i },
+];
 
-function token(): string {
-  const t = process.env["PRINTFUL_API_TOKEN"];
-  if (!t) throw new Error("El catálogo no está disponible por ahora.");
-  return t;
+function classify(title: string, model: string | null): { category: string; categoryId: number } {
+  const text = `${title} ${model ?? ""}`;
+  for (const rule of CATEGORY_RULES) {
+    if (rule.re.test(text)) return { category: rule.name, categoryId: rule.id };
+  }
+  return { category: "Otros", categoryId: 99 };
 }
 
-async function api<T>(path: string, init?: { method?: string; body?: unknown; withStore?: boolean }): Promise<T> {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${token()}`,
-    "Content-Type": "application/json",
-  };
-  if (init?.withStore) headers["X-PF-Store-Id"] = String(await storeId());
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: init?.method ?? "GET",
-    headers,
-    body: init?.body ? JSON.stringify(init.body) : undefined,
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    let msg = `Catálogo no disponible (${res.status})`;
-    try {
-      const j = JSON.parse(text) as { error?: { message?: string } };
-      if (j.error?.message) msg = j.error.message;
-    } catch {
-      /* respuesta no JSON */
-    }
-    throw new Error(msg);
-  }
-  const json = JSON.parse(text) as { result?: T };
-  return (json.result ?? (json as unknown)) as T;
-}
-
-async function storeId(): Promise<number> {
-  if (storeIdCache) return storeIdCache;
-  const envId = Number(process.env["PRINTFUL_STORE_ID"] || 0);
-  if (envId) {
-    storeIdCache = envId;
-    return envId;
-  }
-  const res = await fetch(`${BASE_URL}/stores`, { headers: { Authorization: `Bearer ${token()}` } });
-  const json = (await res.json()) as { result?: Array<{ id: number }> };
-  const id = json.result?.[0]?.id;
-  if (!id) throw new Error("El estudio de diseño no está disponible por ahora.");
-  storeIdCache = id;
-  return id;
-}
-
-/** Mapa categoría → nombre de su categoría raíz (ya en español cuando existe traducción). */
-async function rootCategories(): Promise<Map<number, string>> {
-  if (catCache && Date.now() - catCache.at < TTL_MS) return catCache.roots;
-  const cats = await api<Array<{ id: number; parent_id: number; title: string }>>("/categories");
-  const byId = new Map(cats.map((c) => [c.id, c]));
-  const roots = new Map<number, string>();
-  for (const c of cats) {
-    let cur = c;
-    let guard = 0;
-    while (cur.parent_id && byId.has(cur.parent_id) && guard++ < 10) cur = byId.get(cur.parent_id)!;
-    roots.set(c.id, CATEGORY_ES[cur.title] ?? cur.title);
-  }
-  catCache = { at: Date.now(), roots };
-  return roots;
+function typeOf(title: string): string {
+  return classify(title, null).category;
 }
 
 export async function listCatalog(): Promise<CatalogItem[]> {
-  if (cache && Date.now() - cache.at < TTL_MS) return cache.items;
-  const [raw, roots] = await Promise.all([
-    api<
-      Array<{
-        id: number;
-        title: string;
-        brand: string | null;
-        type: string;
-        type_name: string;
-        main_category_id: number;
-        image: string;
-        variant_count: number;
-        description: string;
-        is_discontinued: boolean;
-      }>
-    >("/products"),
-    rootCategories().catch(() => new Map<number, string>()),
-  ]);
-  const items = raw
-    .filter((p) => !p.is_discontinued)
-    .map((p) => ({
-      id: p.id,
-      title: p.title,
-      brand: p.brand ?? null,
-      type: p.type,
-      typeName: p.type_name,
-      image: p.image,
-      variantCount: p.variant_count,
-      description: (p.description || "").slice(0, 400),
-      categoryId: p.main_category_id,
-      category: roots.get(p.main_category_id) ?? "Otros",
-    }));
-  cache = { at: Date.now(), items };
+  if (itemsCache && Date.now() - itemsCache.at < TTL_MS) return itemsCache.items;
+  const blueprints = await listBlueprints();
+  const items = blueprints.map((b) => {
+    const c = classify(b.title, b.model);
+    return {
+      id: b.id,
+      title: b.title,
+      brand: b.brand,
+      type: String(c.categoryId),
+      typeName: c.category,
+      image: b.images[0] ?? "",
+      variantCount: 0,
+      description: (b.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 400),
+      category: c.category,
+      categoryId: c.categoryId,
+    };
+  });
+  itemsCache = { at: Date.now(), items };
   return items;
+}
+
+/** Color aproximado a partir del nombre que da el proveedor (no publica hex). */
+const COLOR_HEX: Record<string, string> = {
+  black: "#111111",
+  white: "#ffffff",
+  navy: "#1b2a4a",
+  red: "#c0272d",
+  scarlet: "#c0272d",
+  blue: "#2a5db0",
+  royal: "#2a5db0",
+  green: "#2f7a45",
+  forest: "#1e4d2b",
+  grey: "#9aa0a6",
+  gray: "#9aa0a6",
+  charcoal: "#4a4a4a",
+  heather: "#b9bcc0",
+  sand: "#d9c9a8",
+  cream: "#f2e9d8",
+  natural: "#efe6d3",
+  pink: "#e58bb0",
+  purple: "#6d4aff",
+  yellow: "#f2c744",
+  orange: "#e4762c",
+  brown: "#6b4a34",
+  chocolate: "#4b3225",
+  maroon: "#5c1f28",
+  indigo: "#39406e",
+  silver: "#cfd3d6",
+  gold: "#c9a227",
+};
+
+function hexFor(color: string | null): string | null {
+  if (!color) return null;
+  const key = color.toLowerCase();
+  for (const [name, hex] of Object.entries(COLOR_HEX)) {
+    if (key.includes(name)) return hex;
+  }
+  return null;
 }
 
 export async function getCatalogVariants(productId: number): Promise<{
   product: CatalogItem;
   variants: CatalogVariant[];
 }> {
-  const data = await api<{
-    product: {
-      id: number;
-      title: string;
-      brand: string | null;
-      type: string;
-      type_name: string;
-      main_category_id: number;
-      image: string;
-      variant_count: number;
-      description: string;
-    };
-    variants: Array<{
-      id: number;
-      name: string;
-      size: string | null;
-      color: string | null;
-      color_code: string | null;
-      image: string;
-      price: string;
-      in_stock: boolean;
-    }>;
-  }>(`/products/${productId}`);
+  const printProviderId = await resolvePrintProviderId(productId);
+  const [blueprint, rawVariants] = await Promise.all([
+    getBlueprint(productId),
+    listBlueprintVariants(productId, printProviderId),
+  ]);
 
-  const roots = await rootCategories().catch(() => new Map<number, string>());
+  const ids = rawVariants.map((v) => v.id);
+  const [costs, shipping] = await Promise.all([
+    getVariantCosts(productId, printProviderId, ids),
+    getStandardShippingCosts(productId, printProviderId, "MX"),
+  ]);
 
-  return {
-    product: {
-      id: data.product.id,
-      title: data.product.title,
-      brand: data.product.brand ?? null,
-      type: data.product.type,
-      typeName: data.product.type_name,
-      image: data.product.image,
-      variantCount: data.product.variant_count,
-      description: (data.product.description || "").slice(0, 400),
-      categoryId: data.product.main_category_id,
-      category: roots.get(data.product.main_category_id) ?? "Otros",
-    },
-    variants: data.variants.map((v) => {
-      const costUsd = Number(v.price) || 0;
-      const money = priceBreakdown(costUsd);
-      return {
-        id: v.id,
-        name: v.name,
-        size: v.size ?? null,
-        color: v.color ?? null,
-        colorCode: v.color_code ?? null,
-        image: v.image,
-        costUsd,
-        costCents: money.costCents,
-        priceCents: money.priceCents,
-        marginCents: money.marginCents,
-        marginPct: money.marginPct,
-        markup: money.markup,
-        inStock: v.in_stock,
-      };
-    }),
+  // Si el proveedor no publica envío para alguna variante se usa el promedio
+  // conocido: el costo base nunca queda subestimado.
+  const shippingValues = [...shipping.values()];
+  const fallbackShipping = shippingValues.length
+    ? Math.round(shippingValues.reduce((a, b) => a + b, 0) / shippingValues.length)
+    : 0;
+
+  const c = classify(blueprint.title, blueprint.model);
+  const product: CatalogItem = {
+    id: blueprint.id,
+    title: blueprint.title,
+    brand: blueprint.brand,
+    type: String(c.categoryId),
+    typeName: c.category,
+    image: blueprint.images[0] ?? "",
+    variantCount: rawVariants.length,
+    description: (blueprint.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 400),
+    category: c.category,
+    categoryId: c.categoryId,
   };
+
+  const variants: CatalogVariant[] = rawVariants.map((v, index) => {
+    const costCentsUsd = costs.get(v.id) ?? 0;
+    const shipCentsUsd = shipping.get(v.id) ?? fallbackShipping;
+    const money = priceBreakdown(costCentsUsd / 100, shipCentsUsd / 100);
+    const color = v.options["color"] ?? null;
+    const size = v.options["size"] ?? null;
+    return {
+      id: v.id,
+      name: v.title,
+      size,
+      color,
+      colorCode: hexFor(color),
+      image: blueprint.images[index % Math.max(1, blueprint.images.length)] ?? product.image,
+      costUsd: money.costUsd + money.shippingUsd,
+      costCents: money.costCents,
+      productionCents: money.productionCents,
+      shippingCents: money.shippingCents,
+      priceCents: money.priceCents,
+      marginCents: money.marginCents,
+      marginPct: money.marginPct,
+      markup: money.markup,
+      // El catálogo consultado ya excluye variantes agotadas.
+      inStock: costs.size === 0 ? true : costs.has(v.id),
+    };
+  });
+
+  return { product, variants };
 }
 
 const PLACEMENT_ES: Record<string, string> = {
   front: "Frente",
-  front_large: "Frente grande",
   back: "Espalda",
-  sleeve_left: "Manga izquierda",
-  sleeve_right: "Manga derecha",
-  label_inside: "Etiqueta interior",
-  label_outside: "Etiqueta exterior",
+  neck: "Cuello",
+  "sleeve-left": "Manga izquierda",
+  "sleeve-right": "Manga derecha",
+  left: "Lado izquierdo",
+  right: "Lado derecho",
+  top: "Arriba",
+  bottom: "Abajo",
+  inside: "Interior",
+  outside: "Exterior",
   default: "Área principal",
-  embroidery_front: "Bordado frente",
-  embroidery_back: "Bordado espalda",
+  cover: "Portada",
+  wrap: "Alrededor",
 };
+
+function placementLabel(id: string): string {
+  return (
+    PLACEMENT_ES[id] ??
+    id.replace(/[-_]/g, " ").replace(/^\w/, (m) => m.toUpperCase())
+  );
+}
 
 /** Zonas de estampado disponibles para un producto, con el tamaño real del área. */
 export async function getPlacements(productId: number, variantId?: number): Promise<Placement[]> {
-  const data = await api<{
-    available_placements: Record<string, string>;
-    printfiles: Array<{ printfile_id: number; width: number; height: number }>;
-    variant_printfiles: Array<{ variant_id: number; placements: Record<string, number> }>;
-  }>(`/mockup-generator/printfiles/${productId}`, { withStore: true });
-
-  const files = new Map(data.printfiles.map((f) => [f.printfile_id, f]));
-  const vp = (variantId && data.variant_printfiles.find((v) => v.variant_id === variantId)) || data.variant_printfiles[0];
-  const out: Placement[] = [];
-  for (const [id, label] of Object.entries(data.available_placements)) {
-    const f = vp ? files.get(vp.placements[id]!) : undefined;
-    if (!f) continue;
-    out.push({ id, label: PLACEMENT_ES[id] ?? label, areaWidth: f.width, areaHeight: f.height });
-  }
-  return out;
+  const printProviderId = await resolvePrintProviderId(productId);
+  const variants = await listBlueprintVariants(productId, printProviderId);
+  const chosen = (variantId && variants.find((v) => v.id === variantId)) || variants.find((v) => v.placeholders.length);
+  if (!chosen) return [];
+  return chosen.placeholders.map((p) => ({
+    id: p.position,
+    label: placementLabel(p.position),
+    areaWidth: p.width,
+    areaHeight: p.height,
+  }));
 }
 
 export type MockupResult = { placement: string; variantIds: number[]; url: string };
 
+/** Borra maquetas técnicas antiguas para no dejar basura en el proveedor. */
+async function cleanupDraftMockups(shopId: number) {
+  try {
+    const res = await printify<{ data: Array<{ id: string; title: string; created_at: string }> }>(
+      `/v1/shops/${shopId}/products.json?limit=50`,
+    );
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    for (const p of res.data || []) {
+      if (!p.title?.startsWith("DATABLE-MOCKUP")) continue;
+      if (new Date(p.created_at).getTime() > cutoff) continue;
+      await printify(`/v1/shops/${shopId}/products/${p.id}.json`, { method: "DELETE" }).catch(() => null);
+    }
+  } catch {
+    /* limpieza best-effort */
+  }
+}
+
 /**
- * Genera las maquetas (fotos del producto con el diseño puesto) y espera el resultado.
+ * Genera las maquetas (fotos del producto con el diseño puesto).
  * scale/offset vienen en fracción (0-1) del área imprimible.
  */
 export async function generateMockups(input: {
@@ -284,43 +296,57 @@ export async function generateMockups(input: {
   offsetX?: number;
   offsetY?: number;
 }): Promise<MockupResult[]> {
+  const printProviderId = await resolvePrintProviderId(input.productId);
+  const shopId = await printifyShopId();
   const placements = await getPlacements(input.productId, input.variantIds[0]);
   const area = placements.find((p) => p.id === input.placement) ?? placements[0];
   if (!area) throw new Error("Este producto no admite diseño personalizado.");
 
-  const scale = Math.min(Math.max(input.scale ?? 0.8, 0.1), 1);
-  const width = Math.round(area.areaWidth * scale);
-  const height = Math.round(area.areaHeight * scale);
-  const left = Math.round(Math.min(Math.max(input.offsetX ?? (1 - scale) / 2, 0), 1 - scale) * area.areaWidth);
-  const top = Math.round(Math.min(Math.max(input.offsetY ?? (1 - scale) / 2, 0), 1 - scale) * area.areaHeight);
+  const upload = await uploadImageByUrl(input.imageUrl, `datable-${Date.now()}.png`);
 
-  const task = await api<{ task_key: string }>(`/mockup-generator/create-task/${input.productId}`, {
+  const scale = Math.min(Math.max(input.scale ?? 0.8, 0.1), 1);
+  const x = Math.min(Math.max(input.offsetX ?? 0.5, 0.05), 0.95);
+  const y = Math.min(Math.max((input.offsetY ?? 0.1) + scale / 2, 0.05), 0.95);
+  const variantIds = input.variantIds.slice(0, 10);
+
+  const created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
     method: "POST",
-    withStore: true,
     body: {
-      variant_ids: input.variantIds.slice(0, 10),
-      format: "jpg",
-      files: [
+      title: `DATABLE-MOCKUP ${Date.now()}`,
+      description: "Vista previa generada por DªTªBLe.",
+      blueprint_id: input.productId,
+      print_provider_id: printProviderId,
+      variants: variantIds.map((id) => ({ id, price: 10000, is_enabled: true })),
+      print_areas: [
         {
-          placement: area.id,
-          image_url: input.imageUrl,
-          position: { area_width: area.areaWidth, area_height: area.areaHeight, width, height, top, left },
+          variant_ids: variantIds,
+          placeholders: [
+            { position: area.id, images: [{ id: upload.id, x, y, scale, angle: 0 }] },
+          ],
         },
       ],
     },
   });
 
-  for (let i = 0; i < 20; i++) {
-    await new Promise((r) => setTimeout(r, 3000));
-    const res = await api<{
-      status: string;
-      error?: string;
-      mockups?: Array<{ placement: string; variant_ids: number[]; mockup_url: string }>;
-    }>(`/mockup-generator/task?task_key=${task.task_key}`, { withStore: true });
-    if (res.status === "completed") {
-      return (res.mockups ?? []).map((m) => ({ placement: m.placement, variantIds: m.variant_ids, url: m.mockup_url }));
-    }
-    if (res.status === "failed") throw new Error(res.error || "No se pudo generar la maqueta.");
+  // La maqueta vive en el CDN del proveedor: el producto técnico se limpia
+  // después (nunca se publica y no genera costo).
+  void cleanupDraftMockups(shopId);
+
+  const images = (created.images || []).filter((img) => !area.id || img.position === area.id);
+  const source = images.length ? images : created.images || [];
+  const seen = new Set<string>();
+  const out: MockupResult[] = [];
+  for (const img of source) {
+    if (seen.has(img.src)) continue;
+    seen.add(img.src);
+    out.push({ placement: img.position || area.id, variantIds: img.variant_ids || variantIds, url: img.src });
+    if (out.length >= 8) break;
   }
-  throw new Error("La maqueta está tardando de más. Inténtalo otra vez.");
+  if (!out.length) throw new Error("No se pudo generar la maqueta. Inténtalo otra vez.");
+  return out;
+}
+
+/** Fabricante asignado a un producto del catálogo (lo usa el conector). */
+export async function catalogPrintProviderId(productId: number): Promise<number> {
+  return resolvePrintProviderId(productId);
 }
