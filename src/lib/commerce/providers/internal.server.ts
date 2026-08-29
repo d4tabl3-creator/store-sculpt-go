@@ -3,7 +3,7 @@
  *
  * Es el proveedor por defecto y el fallback siempre disponible: la base de
  * datos de DªTªBLe ES la tienda. No hace llamadas externas, por eso nunca
- * bloquea el lanzamiento de un Activo Digital.
+ * bloquea el lanzamiento de una tienda.
  */
 import type {
   CommerceProvider,

@@ -2,7 +2,7 @@
  * Commerce Orchestrator — contratos de dominio.
  *
  * Este archivo es client-safe: sólo tipos y constantes. La UI lo usa para
- * mostrar el progreso de preparación de un Activo Digital sin conocer jamás
+ * mostrar el progreso de preparación de una tienda sin conocer jamás
  * qué proveedor está detrás.
  */
 
@@ -34,7 +34,7 @@ export const PROVISION_STEPS: Array<{
   { key: "linking", label: "Conectando proveedores y pagos", progress: 50 },
   { key: "seeding", label: "Cargando catálogo e inventario", progress: 74 },
   { key: "webhooks", label: "Activando pedidos y sincronización", progress: 92 },
-  { key: "ready", label: "Tu Activo Digital está listo", progress: 100 },
+  { key: "ready", label: "Tu tienda está lista", progress: 100 },
 ];
 
 export function stepLabel(status: ProvisioningStatus): string {
@@ -273,7 +273,7 @@ export interface CommerceProvider {
     headers: Headers,
     secret: string | null,
   ): Promise<NormalizedWebhook | null>;
-  /** Libera recursos del proveedor cuando se elimina el Activo Digital. */
+  /** Libera recursos del proveedor cuando se elimina la tienda. */
   teardown(binding: ProviderBinding): Promise<void>;
 
   // --- Opcionales: sólo si la capacidad correspondiente está declarada ---

@@ -71,7 +71,7 @@ async function assertOwner(storeId: string, userId: string) {
   return data.owner_id as string;
 }
 
-/** Arranca la preparación del Activo Digital. Idempotente. */
+/** Arranca la preparación de la tienda. Idempotente. */
 export const startProvisioning = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { storeId: string }) => {

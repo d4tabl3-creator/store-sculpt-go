@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/preparando/$id")({
   head: () => ({
     meta: [
-      { title: "Preparando tu Activo Digital — DªTªBLe" },
+      { title: "Preparando tu tienda — DªTªBLe" },
       { name: "description", content: "Estamos ensamblando tu tienda automatizada. Tarda menos de un minuto." },
     ],
   }),
@@ -69,7 +69,7 @@ function Preparando() {
           </div>
 
           <h1 className="mt-4 font-display text-3xl font-extrabold leading-tight">
-            {t("Estamos preparando tu Activo Digital", "We're preparing your Digital Asset")}
+            {t("Estamos preparando tu tienda", "We're getting your store ready")}
           </h1>
           <p className="mt-2 text-muted-foreground">
             {t(
