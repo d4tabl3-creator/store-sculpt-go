@@ -38,7 +38,6 @@ export const Route = createFileRoute("/_authenticated/producto/$storeId")({
 
 type Stage = "catalog" | "customize" | "mockups" | "info" | "price";
 const STAGES: Stage[] = ["catalog", "customize", "mockups", "info", "price"];
-const MAX_PRODUCTS = 40;
 
 type StoreRow = { id: string; name: string; status: string; logo_url: string | null };
 type StoreProductRow = { id: string; name: string; price_cents: number; image_url: string | null };
@@ -118,10 +117,6 @@ function StoreProductsPage() {
   }
 
   function pick(item: CatalogItem) {
-    if (products.length >= MAX_PRODUCTS) {
-      toast.error(t(`Máximo ${MAX_PRODUCTS} productos por tienda.`, `Maximum ${MAX_PRODUCTS} products per store.`));
-      return;
-    }
     setDraft(newDraft(item));
     setStage("customize");
   }
