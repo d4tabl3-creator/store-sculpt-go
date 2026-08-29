@@ -95,7 +95,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { getCatalogVariants } = await import("@/lib/catalog.server");
+    const { getCatalogVariants, catalogPrintProviderId } = await import("@/lib/catalog.server");
 
     const { data: store } = await supabaseAdmin
       .from("stores")
