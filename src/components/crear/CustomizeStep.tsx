@@ -6,13 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { DesignCanvas } from "@/components/crear/DesignCanvas";
-import { supabase as sb } from "@/integrations/supabase/client";
 import { getCatalogProduct, getProductPlacements } from "@/lib/catalog.functions";
 import { useT } from "@/lib/i18n";
 import { placementLabel, productionOptionLabel } from "@/lib/catalog-labels";
 import { SIZE_ORDER, currentVariant, money, type DraftPlacement, type DraftProvider, type DraftVariant, type ProductDraft } from "@/lib/product-draft";
 
-void sb;
 
 /** Paso 2: lienzo de diseño, variantes y opciones disponibles. */
 export function CustomizeStep({
