@@ -42,8 +42,11 @@ function AuthPage() {
   useEffect(() => {
     const hash = typeof window !== "undefined" ? window.location.hash : "";
     const search = typeof window !== "undefined" ? window.location.search : "";
+    const query = new URLSearchParams(search);
+    const otpToken = query.get("token");
+    const otpEmail = query.get("email");
     const isRecovery = hash.includes("type=recovery") || search.includes("type=recovery");
-    // Enlace caducado o ya usado: Supabase vuelve con error_code en la URL.
+    // Enlace caducado o ya usado: el servicio de auth vuelve con error_code en la URL.
     const params = new URLSearchParams((hash.startsWith("#") ? hash.slice(1) : hash) || search);
     const linkError = params.get("error_code") || params.get("error_description");
     if (linkError) {
@@ -62,6 +65,26 @@ function AuthPage() {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setMode("update");
     });
+    // Enlace de recuperación con código de un solo uso emitido por Datable:
+    // lo canjeamos aquí mismo, sin depender de redirecciones externas.
+    if (isRecovery && otpToken && otpEmail) {
+      setMode("update");
+      supabase.auth
+        .verifyOtp({ email: otpEmail, token: otpToken, type: "recovery" })
+        .then(({ error }) => {
+          if (typeof window !== "undefined") window.history.replaceState({}, "", "/auth?type=recovery");
+          if (error) {
+            setMode("reset");
+            toast.error(
+              t(
+                "El enlace de recuperación caducó o ya fue usado. Solicita uno nuevo.",
+                "The recovery link expired or was already used. Request a new one.",
+              ),
+            );
+          }
+        });
+      return () => sub.subscription.unsubscribe();
+    }
     if (isRecovery) {
       setMode("update");
       return () => sub.subscription.unsubscribe();
@@ -71,6 +94,7 @@ function AuthPage() {
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
+
 
   function mensajeError(err: unknown): string {
     const raw = err instanceof Error ? err.message : String(err ?? "");
