@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { runDiagnostics } from "@/lib/diagnostics.functions";
 
-export const Route = createFileRoute("/_authenticated/admin/diagnostico")({
+export const Route = createFileRoute("/_authenticated/diagnostico")({
   head: () => ({
     meta: [
       { title: "Diagnóstico interno — DªTªBLe" },
