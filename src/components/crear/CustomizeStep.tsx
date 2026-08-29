@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { getCatalogProduct, getProductPlacements } from "@/lib/catalog.functions";
 import { useT } from "@/lib/i18n";
-import { SIZE_ORDER, currentVariant, money, type DraftPlacement, type DraftVariant, type ProductDraft } from "@/lib/product-draft";
+import { SIZE_ORDER, currentVariant, money, type DraftPlacement, type DraftProvider, type DraftVariant, type ProductDraft } from "@/lib/product-draft";
 
 /** Paso 2: preparar diseño, variantes y opciones disponibles. */
 export function CustomizeStep({
@@ -28,16 +28,24 @@ export function CustomizeStep({
     setLoading(true);
     (async () => {
       try {
-        const detail = (await getCatalogProduct({ data: { productId: draft.productId } })) as {
+        const detail = (await getCatalogProduct({
+          data: { productId: draft.productId, printProviderId: draft.printProviderId ?? undefined },
+        })) as {
           product: { title: string; description: string };
           variants: DraftVariant[];
+          providers: DraftProvider[];
+          printProviderId: number;
         };
         if (!alive) return;
         const first = detail.variants.find((v) => v.inStock) || detail.variants[0];
-        const pl = (await getProductPlacements({ data: { productId: draft.productId, variantId: first?.id } })) as DraftPlacement[];
+        const pl = (await getProductPlacements({
+          data: { productId: draft.productId, variantId: first?.id, printProviderId: detail.printProviderId },
+        })) as DraftPlacement[];
         if (!alive) return;
         update({
           variants: detail.variants,
+          providers: detail.providers ?? [],
+          printProviderId: detail.printProviderId,
           placements: pl,
           placement: pl[0]?.id ?? "front",
           color: first?.color ?? null,
@@ -55,7 +63,22 @@ export function CustomizeStep({
     return () => {
       alive = false;
     };
-  }, [draft.productId]);
+  }, [draft.productId, draft.printProviderId]);
+
+  /** Cambiar de taller recarga variantes, áreas y costos reales de ese taller. */
+  function chooseProvider(id: number) {
+    if (id === draft.printProviderId) return;
+    update({
+      printProviderId: id,
+      variants: [],
+      placements: [],
+      variantId: null,
+      selectedVariantIds: [],
+      mockups: [],
+      mockupUrl: null,
+      priceCents: null,
+    });
+  }
 
   const colors = useMemo(() => {
     const map = new Map<string, DraftVariant>();
@@ -138,6 +161,29 @@ export function CustomizeStep({
         </div>
 
         <div className="grid gap-4">
+          {draft.providers.length > 1 && (
+            <div>
+              <Label>{t("Taller de producción", "Production workshop")}</Label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {draft.providers.map((pv) => (
+                  <button
+                    key={pv.id}
+                    onClick={() => chooseProvider(pv.id)}
+                    className={`rounded-lg border-2 px-3 py-1 text-left text-xs font-bold ${
+                      draft.printProviderId === pv.id ? "border-primary bg-primary-soft" : "border-border bg-card"
+                    }`}
+                  >
+                    {pv.name}
+                    {pv.location ? <span className="block font-normal text-muted-foreground">{pv.location}</span> : null}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("Cada taller tiene sus propios costos, tallas y colores.", "Each workshop has its own costs, sizes and colors.")}
+              </p>
+            </div>
+          )}
+
           {colors.length > 0 && (
             <div>
               <Label>{t("Color", "Color")}</Label>
