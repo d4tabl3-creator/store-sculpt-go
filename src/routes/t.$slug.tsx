@@ -282,12 +282,27 @@ function CheckoutForm({
   const [submitting, setSubmitting] = useState(false);
   const [orderInfo, setOrderInfo] = useState<{ orderId: string; clientSecret: string } | null>(null);
 
-  // Envío separado: suma del costo real de envío de cada producto.
-  const shippingCents = useMemo(
+  // Envío separado: el servidor es la única fuente de verdad del total.
+  // Mientras responde se muestra el estimado local con los costos ya conocidos.
+  const localShipping = useMemo(
     () => cart.reduce((acc, c) => acc + (c.product.shipping_cost_cents || 0) * c.qty, 0),
     [cart],
   );
-  const total = subtotal + shippingCents;
+  const [quote, setQuote] = useState<{ subtotalCents: number; shippingCents: number; totalCents: number } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    quoteStoreCart({ data: { storeId: store.id, items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })) } })
+      .then((r) => {
+        if (alive && r && !("error" in r)) setQuote(r);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [store.id, cart]);
+  const shippingCents = quote?.shippingCents ?? localShipping;
+  const total = quote?.totalCents ?? subtotal + shippingCents;
+
 
   const fetchClientSecret = useCallback(async () => {
     if (!orderInfo) throw new Error(t("Sin sesión", "No session"));
