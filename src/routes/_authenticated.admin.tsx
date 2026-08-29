@@ -90,6 +90,8 @@ function Admin() {
         <div className="flex gap-2">
           <Button variant={tab === "coupons" ? "default" : "outline"} onClick={() => setTab("coupons")}>{t("Cupones demo", "Demo coupons")}</Button>
           <Button variant={tab === "payouts" ? "default" : "outline"} onClick={() => setTab("payouts")}>{t("Comisiones a pagar", "Commissions to pay")}</Button>
+          <Button variant="outline" asChild><Link to="/diagnostico">{t("Diagnóstico", "Diagnostics")}</Link></Button>
+
         </div>
       </div>
 
