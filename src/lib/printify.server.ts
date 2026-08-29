@@ -264,23 +264,18 @@ export async function getBlueprint(blueprintId: number): Promise<PrintifyBluepri
 
 export type PrintProviderOption = { id: number; title: string; location: string | null };
 
-const providerListCache = new Map<number, { at: number; list: PrintProviderOption[] }>();
-const providerCache = new Map<number, number>();
-
 /** Fabricantes disponibles para un producto del catálogo. */
 export async function listPrintProviders(blueprintId: number): Promise<PrintProviderOption[]> {
-  const cached = providerListCache.get(blueprintId);
-  if (cached && Date.now() - cached.at < TTL_MS) return cached.list;
-  const raw = await printify<Array<{ id: number; title: string; location?: { country?: string } }>>(
-    `/v1/catalog/blueprints/${blueprintId}/print_providers.json`,
-  );
-  const list = (raw || []).map((p) => ({
-    id: p.id,
-    title: p.title,
-    location: p.location?.country ?? null,
-  }));
-  providerListCache.set(blueprintId, { at: Date.now(), list });
-  return list;
+  return cached<PrintProviderOption[]>(`catalog:providers:${blueprintId}`, CATALOG_TTL_MS, async () => {
+    const raw = await printify<Array<{ id: number; title: string; location?: { country?: string } }>>(
+      `/v1/catalog/blueprints/${blueprintId}/print_providers.json`,
+    );
+    return (raw || []).map((p) => ({
+      id: p.id,
+      title: p.title,
+      location: p.location?.country ?? null,
+    }));
+  });
 }
 
 /**
@@ -289,34 +284,64 @@ export async function listPrintProviders(blueprintId: number): Promise<PrintProv
  * el costo mostrado al comerciante y el costo real del pedido coincidan.
  */
 export async function resolvePrintProviderId(blueprintId: number): Promise<number> {
-  const cached = providerCache.get(blueprintId);
-  if (cached) return cached;
   const providers = await listPrintProviders(blueprintId);
   const id = providers[0]?.id;
   if (!id) throw new PrintifyError("Este producto no tiene fabricante disponible.", 0, false);
-  providerCache.set(blueprintId, id);
   return id;
 }
 
+type RawVariant = {
+  id: number;
+  title: string;
+  options?: Record<string, string>;
+  placeholders?: Array<{ position: string; width: number; height: number }>;
+};
+
+/**
+ * Variantes de un producto del catálogo, marcando cuáles están agotadas.
+ *
+ * El catálogo omite por omisión las variantes sin existencias. Se pide también
+ * la lista completa (`show-out-of-stock=1`) para poder MOSTRAR la talla/color
+ * agotado sin dejar que se compre. Las existencias cambian seguido, así que
+ * esta consulta se guarda menos tiempo que el resto del catálogo.
+ */
+const STOCK_TTL_MS = 60 * 60 * 1000;
 
 export async function listBlueprintVariants(
   blueprintId: number,
   printProviderId: number,
 ): Promise<PrintifyVariant[]> {
-  const res = await printify<{ variants: PrintifyVariant[] }>(
-    `/v1/catalog/blueprints/${blueprintId}/print_providers/${printProviderId}/variants.json`,
+  return cached<PrintifyVariant[]>(
+    `catalog:variants:${blueprintId}:${printProviderId}`,
+    STOCK_TTL_MS,
+    async () => {
+      const base = `/v1/catalog/blueprints/${blueprintId}/print_providers/${printProviderId}/variants.json`;
+      const [all, inStock] = await Promise.all([
+        printify<{ variants: RawVariant[] }>(`${base}?show-out-of-stock=1`),
+        printify<{ variants: RawVariant[] }>(base).catch(() => ({ variants: [] as RawVariant[] })),
+      ]);
+
+      const list = all.variants?.length ? all.variants : inStock.variants || [];
+      const availableIds = new Set((inStock.variants || []).map((v) => v.id));
+      // Si la consulta de existencias falló, no se marca nada como agotado:
+      // más vale mostrar todo que ocultar catálogo por un error temporal.
+      const knowsStock = (inStock.variants || []).length > 0;
+
+      return (list || []).map((v) => ({
+        id: v.id,
+        title: v.title,
+        options: v.options || {},
+        placeholders: (v.placeholders || []).map((p) => ({
+          position: p.position,
+          width: p.width,
+          height: p.height,
+        })),
+        available: knowsStock ? availableIds.has(v.id) : true,
+      }));
+    },
   );
-  return (res.variants || []).map((v) => ({
-    id: v.id,
-    title: v.title,
-    options: v.options || {},
-    placeholders: (v.placeholders || []).map((p) => ({
-      position: p.position,
-      width: p.width,
-      height: p.height,
-    })),
-  }));
 }
+
 
 // ---------------------------------------------------------------------------
 // Costos reales de fabricación
