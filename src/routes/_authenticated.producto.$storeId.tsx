@@ -204,8 +204,9 @@ function StoreProductsPage() {
     setPublishing(true);
     try {
       if (!products.length) throw new Error(t("Agrega al menos un producto", "Add at least one product"));
-      // El envío se calcula en el checkout con el costo real de cada producto.
-      await supabase.from("stores").update({ shipping_options: [] }).eq("id", storeId);
+      // El envío ya no es una tarifa fija de la tienda: el checkout cobra el
+      // costo real de envío del proveedor por pedido, como concepto separado.
+
       await startProvisioning({ data: { storeId } });
       navigate({ to: "/preparando/$id", params: { id: storeId } });
     } catch (err) {
