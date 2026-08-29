@@ -11,6 +11,7 @@ import { slugify } from "@/lib/kits";
 import { getMyPlan } from "@/lib/plans.functions";
 import { planLimit } from "@/lib/plans";
 import { useT } from "@/lib/i18n";
+import { publicUrlFor } from "@/lib/public-url";
 
 export const Route = createFileRoute("/_authenticated/crear")({
   head: () => ({
@@ -179,8 +180,8 @@ function CreateStorePage() {
             />
             {slug && (
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("Dirección pública:", "Public address:")}{" "}
-                <span className="font-mono text-foreground">datable.app/t/{slug}</span>
+              {t("Dirección pública:", "Public address:")}{" "}
+                <span className="font-mono text-foreground">{publicUrlFor(`/t/${slug}`)}</span>
               </p>
             )}
           </div>

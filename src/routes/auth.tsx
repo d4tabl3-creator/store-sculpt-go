@@ -7,7 +7,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useT } from "@/lib/i18n";
-import { publicUrlFor, authRedirectUrl } from "@/lib/public-url";
+import { publicUrlFor } from "@/lib/public-url";
 
 const AUTH_URL = publicUrlFor("/auth");
 const AUTH_DESC = "Entra o crea tu cuenta DªTªBLe para armar tu tienda online en 4 pasos.";
@@ -147,7 +147,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: authRedirectUrl("/crear"),
+            emailRedirectTo: publicUrlFor("/crear"),
             data: { full_name: fullName },
           },
         });
