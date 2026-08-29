@@ -34,8 +34,8 @@ export function supports(id: ProviderId | string | null | undefined, cap: keyof 
  */
 export function pickProvider(preferred?: ProviderId): CommerceProvider {
   const candidates: ProviderId[] = preferred
-    ? [preferred, "printful", "shopify", "internal"]
-    : ["printful", "shopify", "internal"];
+    ? [preferred, "printify", "printful", "shopify", "internal"]
+    : ["printify", "printful", "shopify", "internal"];
   for (const id of candidates) {
     const p = REGISTRY[id];
     if (p && p.isConfigured()) return p;
