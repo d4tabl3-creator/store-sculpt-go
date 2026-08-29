@@ -15,6 +15,7 @@ import {
   listWebhooks,
   printify,
   printifyShopId,
+  printifyTokenLooksValid,
   type PrintifyProduct,
 } from "@/lib/printify.server";
 import { listCatalog } from "@/lib/catalog.server";
