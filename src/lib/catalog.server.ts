@@ -45,7 +45,10 @@ export type CatalogVariant = {
   colorCode: string | null;
   image: string;
   costUsd: number;
-  /** Costo base (fabricación + envío) en centavos MXN. */
+  /**
+   * Precio mínimo del producto = costo de fabricación, centavos MXN.
+   * (Nombre conservado por compatibilidad; NO incluye envío.)
+   */
   costCents: number;
   /** Sólo fabricación, en centavos MXN. */
   productionCents: number;
@@ -225,7 +228,7 @@ export async function getCatalogVariants(
       color,
       colorCode: hexFor(color),
       image: blueprint.images[index % Math.max(1, blueprint.images.length)] ?? product.image,
-      costUsd: money.costUsd + money.shippingUsd,
+      costUsd: money.costUsd,
       costCents: money.costCents,
       productionCents: money.productionCents,
       shippingCents: money.shippingCents,
