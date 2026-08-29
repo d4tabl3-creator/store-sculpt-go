@@ -4,21 +4,21 @@ import { useT } from "@/lib/i18n";
 /**
  * Lienzo de diseño.
  *
- * Muestra la foto del producto y, ENCIMA, la zona imprimible real como área
- * delimitada. El diseño del comerciante se coloca, mueve, escala y rota
- * DENTRO de esa zona. Este lienzo nunca es una maqueta promocional: la
- * maqueta se genera aparte, en el paso siguiente.
+ * IMPORTANTE: el lienzo NO es la fotografía promocional del producto. El
+ * lienzo es la ZONA IMPRIMIBLE real, dibujada aparte, con la relación de
+ * aspecto exacta que entrega el proveedor (areaWidth × areaHeight en px).
+ * La foto del producto aparece únicamente como referencia pequeña al lado,
+ * con la zona resaltada, para que el comerciante ubique dónde caerá su
+ * diseño. La maqueta de venta se genera en el paso siguiente.
  *
- * FALLBACK INTERNO (documentado a propósito): el proveedor entrega el tamaño
- * del área imprimible en píxeles (areaWidth/areaHeight) pero NO entrega las
- * coordenadas de esa área sobre la foto del producto. Por eso la caja se
- * ubica con proporciones estándar por tipo de posición (frente, espalda,
- * mangas…), conservando la relación de aspecto REAL del área del proveedor.
- * Las coordenadas que se envían para fabricar/maquetar son relativas al área
- * imprimible, así que el fallback sólo afecta la referencia visual.
+ * FALLBACK DOCUMENTADO: el proveedor entrega el TAMAÑO del área imprimible
+ * pero no sus coordenadas sobre la foto del producto. Por eso la referencia
+ * usa proporciones estándar por tipo de posición. Las coordenadas que se
+ * envían a fabricación son relativas al área imprimible, así que el fallback
+ * sólo afecta la miniatura de referencia, nunca el resultado impreso.
  */
 
-/** Caja de referencia visual: fracciones del alto/ancho de la foto del producto. */
+/** Referencia visual: fracciones del alto/ancho de la foto del producto. */
 const AREA_BOX: Record<string, { cx: number; cy: number; w: number }> = {
   front: { cx: 0.5, cy: 0.44, w: 0.34 },
   back: { cx: 0.5, cy: 0.44, w: 0.34 },
@@ -48,6 +48,7 @@ export function DesignCanvas({
   productImage,
   designUrl,
   placementId,
+  placementLabel,
   areaWidth,
   areaHeight,
   state,
@@ -56,6 +57,7 @@ export function DesignCanvas({
   productImage: string;
   designUrl: string | null;
   placementId: string;
+  placementLabel?: string;
   areaWidth: number;
   areaHeight: number;
   state: DesignPlacementState;
@@ -67,10 +69,8 @@ export function DesignCanvas({
 
   const box = AREA_BOX[placementId] ?? AREA_BOX.default;
   const ratio = areaWidth > 0 && areaHeight > 0 ? areaHeight / areaWidth : 1.25;
-  // El lienzo es cuadrado, así que el alto en % se deriva del ancho por la
-  // relación de aspecto real del área del proveedor.
-  const areaW = box.w;
-  const areaH = Math.min(0.9, box.w * ratio);
+  const refW = box.w;
+  const refH = Math.min(0.9, box.w * ratio);
 
   const move = useCallback(
     (clientX: number, clientY: number) => {
@@ -97,51 +97,88 @@ export function DesignCanvas({
   }, [dragging, move]);
 
   return (
-    <div className="relative aspect-square select-none overflow-hidden rounded-2xl border-2 border-border bg-muted">
-      <img src={productImage} alt="" className="pointer-events-none size-full object-cover" draggable={false} />
-
-      {/* Zona imprimible real del producto */}
-      <div
-        ref={boxRef}
-        onPointerDown={(e) => {
-          if (!designUrl) return;
-          setDragging(true);
-          move(e.clientX, e.clientY);
-        }}
-        className={`absolute rounded-sm border-2 border-dashed border-primary/80 bg-primary/5 ${designUrl ? "cursor-move" : ""}`}
-        style={{
-          left: `${(box.cx - areaW / 2) * 100}%`,
-          top: `${(box.cy - areaH / 2) * 100}%`,
-          width: `${areaW * 100}%`,
-          height: `${areaH * 100}%`,
-        }}
-      >
-        <span className="pointer-events-none absolute -top-6 left-0 whitespace-nowrap rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase text-primary-foreground">
-          {t("Zona de impresión", "Print area")}
-        </span>
-
-        {designUrl ? (
-          <img
-            src={designUrl}
-            alt={t("Tu diseño", "Your design")}
-            draggable={false}
-            className="pointer-events-none absolute object-contain"
-            style={{
-              left: `${state.offsetX * 100}%`,
-              top: `${state.offsetY * 100}%`,
-              width: `${state.scale * 100}%`,
-              transform: `translate(-50%, -50%) rotate(${state.rotation}deg)`,
-            }}
-          />
-        ) : (
-          <span className="pointer-events-none absolute inset-0 grid place-items-center px-2 text-center text-[11px] font-semibold text-primary">
-            {t("Aquí va tu diseño", "Your design goes here")}
+    <div className="space-y-3">
+      {/* LIENZO: zona de impresión real, independiente de la foto del producto */}
+      <div className="rounded-2xl border-2 border-border bg-card p-3">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <span className="rounded bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
+            {t("Zona de impresión", "Print area")}
+            {placementLabel ? ` · ${placementLabel}` : ""}
           </span>
-        )}
+          <span className="text-[10px] text-muted-foreground">
+            {areaWidth > 0 ? `${areaWidth} × ${areaHeight} px` : t("Medida no publicada", "Size not published")}
+          </span>
+        </div>
+
+        <div className="grid place-items-center">
+          <div
+            ref={boxRef}
+            onPointerDown={(e) => {
+              if (!designUrl) return;
+              setDragging(true);
+              move(e.clientX, e.clientY);
+            }}
+            className={`relative w-full max-w-[320px] overflow-hidden rounded-lg border-2 border-dashed border-primary/70 ${
+              designUrl ? "cursor-move" : ""
+            }`}
+            style={{
+              aspectRatio: `${areaWidth > 0 ? areaWidth : 100} / ${areaHeight > 0 ? areaHeight : 125}`,
+              backgroundColor: "hsl(var(--card))",
+              backgroundImage:
+                "linear-gradient(45deg, hsl(var(--muted)) 25%, transparent 25%, transparent 75%, hsl(var(--muted)) 75%), linear-gradient(45deg, hsl(var(--muted)) 25%, transparent 25%, transparent 75%, hsl(var(--muted)) 75%)",
+              backgroundSize: "18px 18px",
+              backgroundPosition: "0 0, 9px 9px",
+            }}
+          >
+            {designUrl ? (
+              <img
+                src={designUrl}
+                alt={t("Tu diseño", "Your design")}
+                draggable={false}
+                className="pointer-events-none absolute object-contain"
+                style={{
+                  left: `${state.offsetX * 100}%`,
+                  top: `${state.offsetY * 100}%`,
+                  width: `${state.scale * 100}%`,
+                  transform: `translate(-50%, -50%) rotate(${state.rotation}deg)`,
+                }}
+              />
+            ) : (
+              <span className="pointer-events-none absolute inset-0 grid place-items-center px-3 text-center text-xs font-semibold text-muted-foreground">
+                {t("Sube tu diseño y aparecerá aquí", "Upload your design and it will appear here")}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <p className="mt-2 text-center text-[11px] text-muted-foreground">
+          {t(
+            "Todo lo que quede dentro de este recuadro es lo que se imprime.",
+            "Everything inside this frame is what gets printed.",
+          )}
+        </p>
       </div>
 
-      <div className="pointer-events-none absolute bottom-2 left-2 rounded bg-background/85 px-2 py-1 text-[10px] text-muted-foreground">
-        {areaWidth > 0 ? `${areaWidth} × ${areaHeight} px` : t("Área de impresión", "Print area")}
+      {/* REFERENCIA: foto del producto con la zona resaltada (no es el lienzo) */}
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+        <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-muted">
+          <img src={productImage} alt="" className="size-full object-cover" draggable={false} />
+          <div
+            className="absolute rounded-[2px] border-2 border-primary bg-primary/15"
+            style={{
+              left: `${(box.cx - refW / 2) * 100}%`,
+              top: `${(box.cy - refH / 2) * 100}%`,
+              width: `${refW * 100}%`,
+              height: `${refH * 100}%`,
+            }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {t(
+            "Referencia: aquí va aproximadamente la zona de impresión sobre el producto. La vista final de venta se genera en el paso de maquetas.",
+            "Reference: this is roughly where the print area sits on the product. The final sales view is generated in the mockup step.",
+          )}
+        </p>
       </div>
     </div>
   );

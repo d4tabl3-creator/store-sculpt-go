@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Check, Circle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import type { GuideState } from "@/lib/guides/types";
 
 type Props = {
@@ -16,6 +16,8 @@ type Props = {
 /** Lista de pasos del acompañamiento. Reutilizable por cualquier tipo de activo. */
 export function GuideChecklist({ storeId, state, busyStepId, onToggle, compact }: Props) {
   const t = useT();
+  const { lang } = useLang();
+  const pick = (es: string, en?: string) => (lang === "en" && en ? en : es);
   const steps = compact ? state.steps.filter((s) => !s.completed).slice(0, 1) : state.steps;
 
   return (
@@ -41,7 +43,7 @@ export function GuideChecklist({ storeId, state, busyStepId, onToggle, compact }
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-display text-base font-bold">
                     {compact ? "" : `${i + 1}. `}
-                    {step.title}
+                    {pick(step.title, step.titleEn)}
                   </h3>
                   {isCurrent && <Badge>{t("Tu paso actual", "Your current step")}</Badge>}
                   {step.auto && (
@@ -50,15 +52,15 @@ export function GuideChecklist({ storeId, state, busyStepId, onToggle, compact }
                     </Badge>
                   )}
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{step.body}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{pick(step.body, step.bodyEn)}</p>
                 {step.done && (
-                  <p className="mt-1 text-xs text-muted-foreground">{t("Sabrás que terminó cuando: ", "You'll know it's done when: ")}{step.done}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("Sabrás que terminó cuando: ", "You'll know it's done when: ")}{pick(step.done, step.doneEn)}</p>
                 )}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {step.action && (
                     <Button asChild size="sm" variant={isCurrent ? "default" : "outline"}>
                       <Link to={step.action.to} params={{ id: storeId }}>
-                        {step.action.label}
+                        {pick(step.action.label, step.action.labelEn)}
                       </Link>
                     </Button>
                   )}

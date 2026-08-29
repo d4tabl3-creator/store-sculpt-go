@@ -202,3 +202,28 @@ export const getCommerceHealth = createServerFn({ method: "GET" })
       erroredProducts: errored ?? 0,
     };
   });
+
+/**
+ * Estado de sincronización producto por producto, con el motivo real del
+ * error para que el administrador pueda entenderlo y reintentar.
+ */
+export const getProductSyncIssues = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { storeId: string }) => {
+    if (!UUID.test(data.storeId)) throw new Error("storeId inválido");
+    return data;
+  })
+  .handler(async ({ data, context }) => {
+    await assertOwner(data.storeId, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows } = await supabaseAdmin
+      .from("commerce_product_bindings")
+      .select("product_id, sync_status, sync_error, last_synced_at")
+      .eq("store_id", data.storeId);
+    return (rows || []).map((r) => ({
+      productId: r.product_id as string,
+      status: r.sync_status as string,
+      error: (r.sync_error as string | null) ?? null,
+      lastSyncedAt: (r.last_synced_at as string | null) ?? null,
+    }));
+  });

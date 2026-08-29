@@ -73,8 +73,12 @@ export async function computeGuideState(
   return {
     guideId: guide.id,
     title: guide.title,
+    titleEn: guide.titleEn,
     intro: guide.intro,
+    introEn: guide.introEn,
     help: guide.help,
+    helpEn: guide.helpEn,
+
     steps,
     currentStepId,
     completedCount,

@@ -147,11 +147,13 @@ export function CustomizeStep({
               productImage={current?.image || draft.image}
               designUrl={draft.designPreview || draft.designUrl}
               placementId={draft.placement}
+              placementLabel={area ? placementLabel(area.id, area.label, t) : undefined}
               areaWidth={area?.areaWidth ?? 0}
               areaHeight={area?.areaHeight ?? 0}
               state={{ offsetX: draft.offsetX, offsetY: draft.offsetY, scale: draft.scale, rotation: draft.rotation }}
               onChange={(patch) => update({ ...patch, mockups: [], mockupUrl: null })}
             />
+
           ) : (
             <div className="aspect-square overflow-hidden rounded-2xl border-2 border-border bg-muted">
               <img src={current?.image || draft.image} alt={draft.catalogTitle} className="size-full object-cover" />

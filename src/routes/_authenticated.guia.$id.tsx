@@ -4,7 +4,7 @@ import { ArrowLeft, Download, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GuideChecklist } from "@/components/GuideChecklist";
 import { getGuideState, setGuideStep } from "@/lib/guides.functions";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import type { GuideState } from "@/lib/guides/types";
 
 export const Route = createFileRoute("/_authenticated/guia/$id")({
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/guia/$id")({
 
 function GuidePage() {
   const t = useT();
+  const { lang } = useLang();
   const { id } = Route.useParams();
   const [state, setState] = useState<GuideState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,8 +66,8 @@ function GuidePage() {
                 <Sparkles className="size-4" />
                 <span className="text-xs font-bold uppercase tracking-wide">{t("Acompañamiento", "Guidance")}</span>
               </div>
-              <h1 className="mt-2 font-display text-3xl font-extrabold">{state.title}</h1>
-              <p className="mt-2 text-muted-foreground">{state.intro}</p>
+              <h1 className="mt-2 font-display text-3xl font-extrabold">{lang === "en" && state.titleEn ? state.titleEn : state.title}</h1>
+              <p className="mt-2 text-muted-foreground">{lang === "en" && state.introEn ? state.introEn : state.intro}</p>
               <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div className="h-full bg-progress transition-all" style={{ width: `${state.progress}%` }} />
               </div>
@@ -88,7 +89,7 @@ function GuidePage() {
             </div>
 
             <p className="mt-8 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-              {state.help}
+              {lang === "en" && state.helpEn ? state.helpEn : state.help}
             </p>
           </>
         )}
