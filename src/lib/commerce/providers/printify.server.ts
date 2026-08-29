@@ -371,12 +371,11 @@ export const printifyProvider: CommerceProvider = {
         },
       });
 
-      // Enviar a producción inmediatamente: el cliente ya pagó.
-      await printify(`/v1/shops/${shopId}/orders/${created.id}/send_to_production.json`, {
-        method: "POST",
-      }).catch(() => null);
+      // NUNCA se manda a fabricar aquí. El pedido queda en espera hasta que
+      // DªTªBLe confirme el pago del cliente y el orquestador llame a
+      // `sendOrderToProduction`.
+      return { externalOrderId: String(created.id), fulfillmentStatus: "on_hold" };
 
-      return { externalOrderId: String(created.id), fulfillmentStatus: "in_production" };
     } catch (err) {
       wrap(err);
     }
