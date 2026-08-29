@@ -9,7 +9,6 @@
 export type ProviderId =
   | "internal"
   | "shopify"
-  | "printful"
   | "printify"
   | "woocommerce"
   | "mercadolibre";

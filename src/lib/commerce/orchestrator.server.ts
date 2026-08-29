@@ -754,7 +754,7 @@ export async function handleInboundWebhook(
   // Otros conectores mandan el id de tienda dentro del cuerpo, con distinta
   // forma según el proveedor. Se extrae aquí sin que el núcleo asuma nada.
   let externalStoreId: string | null = null;
-  if (providerId === "printful" || providerId === "printify") {
+  if (providerId === "printify") {
     try {
       const payload = JSON.parse(rawBody) as {
         store_id?: number;
@@ -831,7 +831,7 @@ export async function handleInboundWebhook(
 
   const topic = parsed.topic.toLowerCase();
   if (topic.includes("fulfill") || topic.includes("package_shipped") || topic.includes("shipment")) {
-    // Printful envuelve el evento en `data`; Shopify manda el objeto plano.
+    // Algunos conectores envuelven el evento en `data`; otros mandan el objeto plano.
     const root = parsed.payload as Record<string, unknown>;
     const body = (root["data"] as Record<string, unknown> | undefined) ?? root;
     const order = (body["order"] as Record<string, unknown> | undefined) ?? root;

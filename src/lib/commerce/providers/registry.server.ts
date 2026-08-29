@@ -6,10 +6,9 @@ import { printifyProvider } from "./printify.server";
 /**
  * Conectores activos en runtime.
  *
- * `printify` es la infraestructura de fabricación de DªTªBLe Stores.
- * El conector de la infraestructura anterior (printful) permanece en el
- * repositorio como referencia histórica, pero NO se registra: no participa en
- * runtime ni sirve de respaldo.
+ * `printify` es la infraestructura de fabricación de DªTªBLe Stores y el
+ * único proveedor de impresión contemplado. El conector anterior (printful)
+ * fue eliminado por completo: no participa en runtime ni sirve de respaldo.
  */
 const REGISTRY: Partial<Record<ProviderId, CommerceProvider>> = {
   internal: internalProvider,
