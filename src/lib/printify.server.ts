@@ -7,6 +7,8 @@
  * sigue hablando en términos neutrales (catálogo, variante, área, maqueta).
  */
 
+import { cached, mapToRecord, recordToMap } from "@/lib/provider-cache.server";
+
 const BASE_URL = "https://api.printify.com";
 
 /** Imagen mínima válida usada sólo para sondear costos reales del catálogo. */
@@ -18,7 +20,10 @@ export type PrintifyVariant = {
   title: string;
   options: Record<string, string>;
   placeholders: Array<{ position: string; width: number; height: number }>;
+  /** false cuando el fabricante la reporta agotada: no se puede vender. */
+  available: boolean;
 };
+
 
 export type PrintifyBlueprint = {
   id: number;
