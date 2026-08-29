@@ -136,7 +136,7 @@ function StoreProductsPage() {
     (stage === "customize" && !!draft && draft.variants.length > 0) ||
     (stage === "mockups" && !!draft) ||
     (stage === "info" && !!draft && draft.name.trim().length >= 2) ||
-    (stage === "price" && price > 0);
+    (stage === "price" && price >= cost && price > 0);
 
   async function addToStore() {
     if (!draft) return;
@@ -352,16 +352,30 @@ function StoreProductsPage() {
                 <Input
                   id="price"
                   type="number"
-                  min={1}
+                  min={Math.ceil(cost / 100)}
                   value={price ? Math.round(price / 100) : ""}
                   onChange={(e) => update({ priceCents: Math.max(0, Math.round(Number(e.target.value) * 100)) })}
                 />
+                {price < cost && (
+                  <p className="mt-1 text-xs text-destructive">
+                    {t(
+                      `El precio no puede ser menor al costo de producción (${money(cost)} MXN).`,
+                      `The price cannot be lower than the production cost (${money(cost)} MXN).`,
+                    )}
+                  </p>
+                )}
               </div>
               <div className="rounded-xl border-2 border-border bg-card p-4 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("Costo de producción y envío", "Production and shipping cost")}</span>
                   <span>{money(cost)} MXN</span>
                 </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t(
+                    "Este costo lo define la producción: es fijo y no se puede editar.",
+                    "This cost is set by production: it is fixed and cannot be edited.",
+                  )}
+                </p>
                 <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-bold text-primary">
                   <span>{t("Tu ganancia por venta", "Your profit per sale")}</span>
                   <span>
