@@ -154,32 +154,9 @@ async function probeImage(): Promise<string> {
 
 const TTL_MS = 30 * 60 * 1000;
 
-let blueprintsCache: { at: number; items: PrintifyBlueprint[] } | null = null;
+type RawBlueprint = { id: number; title: string; description: string; brand: string; model: string; images: string[] };
 
-export async function listBlueprints(): Promise<PrintifyBlueprint[]> {
-  if (blueprintsCache && Date.now() - blueprintsCache.at < TTL_MS) return blueprintsCache.items;
-  const raw = await printify<
-    Array<{ id: number; title: string; description: string; brand: string; model: string; images: string[] }>
-  >("/v1/catalog/blueprints.json");
-  const items = (raw || []).map((b) => ({
-    id: b.id,
-    title: b.title,
-    description: b.description || "",
-    brand: b.brand || null,
-    model: b.model || null,
-    images: Array.isArray(b.images) ? b.images : [],
-  }));
-  blueprintsCache = { at: Date.now(), items };
-  return items;
-}
-
-export async function getBlueprint(blueprintId: number): Promise<PrintifyBlueprint> {
-  const all = await listBlueprints();
-  const found = all.find((b) => b.id === blueprintId);
-  if (found) return found;
-  const b = await printify<{ id: number; title: string; description: string; brand: string; model: string; images: string[] }>(
-    `/v1/catalog/blueprints/${blueprintId}.json`,
-  );
+function mapBlueprint(b: RawBlueprint): PrintifyBlueprint {
   return {
     id: b.id,
     title: b.title,
@@ -190,7 +167,107 @@ export async function getBlueprint(blueprintId: number): Promise<PrintifyBluepri
   };
 }
 
+export type BlueprintFetch = {
+  items: PrintifyBlueprint[];
+  /** Páginas realmente solicitadas al catálogo. */
+  pagesFetched: number;
+  /** true si el catálogo respondió con envoltura paginada ({data, last_page}). */
+  paginated: boolean;
+  /** last_page informado por el catálogo, cuando existe. */
+  reportedLastPage: number | null;
+  fromCache: boolean;
+};
+
+let blueprintsCache: { at: number; fetch: BlueprintFetch } | null = null;
+
+const PAGE_SIZE = 100;
+const MAX_PAGES = 60;
+
+/**
+ * Recorre TODAS las páginas del catálogo base.
+ *
+ * El endpoint del catálogo puede responder de dos formas según la cuenta:
+ * un arreglo completo, o una envoltura paginada `{ data, current_page,
+ * last_page }`. Aquí se soportan ambas y se deduplica por id, de modo que
+ * DªTªBLe siempre termine con el catálogo íntegro disponible para la cuenta.
+ */
+export async function fetchAllBlueprints(force = false): Promise<BlueprintFetch> {
+  if (!force && blueprintsCache && Date.now() - blueprintsCache.at < TTL_MS) {
+    return { ...blueprintsCache.fetch, fromCache: true };
+  }
+
+  const items: PrintifyBlueprint[] = [];
+  const seen = new Set<number>();
+  let pagesFetched = 0;
+  let paginated = false;
+  let reportedLastPage: number | null = null;
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const raw = await printify<RawBlueprint[] | { data?: RawBlueprint[]; last_page?: number; current_page?: number }>(
+      `/v1/catalog/blueprints.json?page=${page}&limit=${PAGE_SIZE}`,
+    );
+    pagesFetched = page;
+
+    const isArray = Array.isArray(raw);
+    const list: RawBlueprint[] = isArray ? raw : Array.isArray(raw?.data) ? raw.data! : [];
+    if (!isArray) {
+      paginated = true;
+      const last = (raw as { last_page?: number }).last_page;
+      if (typeof last === "number") reportedLastPage = last;
+    }
+
+    let added = 0;
+    for (const b of list) {
+      if (!b || typeof b.id !== "number" || seen.has(b.id)) continue;
+      seen.add(b.id);
+      items.push(mapBlueprint(b));
+      added++;
+    }
+
+    if (!list.length) break;
+    // El catálogo ignoró la paginación y devolvió todo de una vez.
+    if (!added) break;
+    if (reportedLastPage !== null && page >= reportedLastPage) break;
+    if (isArray && list.length < PAGE_SIZE) break;
+  }
+
+  const result: BlueprintFetch = { items, pagesFetched, paginated, reportedLastPage, fromCache: false };
+  blueprintsCache = { at: Date.now(), fetch: result };
+  return result;
+}
+
+export async function listBlueprints(): Promise<PrintifyBlueprint[]> {
+  return (await fetchAllBlueprints()).items;
+}
+
+export async function getBlueprint(blueprintId: number): Promise<PrintifyBlueprint> {
+  const all = await listBlueprints();
+  const found = all.find((b) => b.id === blueprintId);
+  if (found) return found;
+  const b = await printify<RawBlueprint>(`/v1/catalog/blueprints/${blueprintId}.json`);
+  return mapBlueprint(b);
+}
+
+export type PrintProviderOption = { id: number; title: string; location: string | null };
+
+const providerListCache = new Map<number, { at: number; list: PrintProviderOption[] }>();
 const providerCache = new Map<number, number>();
+
+/** Fabricantes disponibles para un producto del catálogo. */
+export async function listPrintProviders(blueprintId: number): Promise<PrintProviderOption[]> {
+  const cached = providerListCache.get(blueprintId);
+  if (cached && Date.now() - cached.at < TTL_MS) return cached.list;
+  const raw = await printify<Array<{ id: number; title: string; location?: { country?: string } }>>(
+    `/v1/catalog/blueprints/${blueprintId}/print_providers.json`,
+  );
+  const list = (raw || []).map((p) => ({
+    id: p.id,
+    title: p.title,
+    location: p.location?.country ?? null,
+  }));
+  providerListCache.set(blueprintId, { at: Date.now(), list });
+  return list;
+}
 
 /**
  * Fabricante asignado a un producto del catálogo.
@@ -200,14 +277,13 @@ const providerCache = new Map<number, number>();
 export async function resolvePrintProviderId(blueprintId: number): Promise<number> {
   const cached = providerCache.get(blueprintId);
   if (cached) return cached;
-  const providers = await printify<Array<{ id: number; title: string }>>(
-    `/v1/catalog/blueprints/${blueprintId}/print_providers.json`,
-  );
-  const id = providers?.[0]?.id;
+  const providers = await listPrintProviders(blueprintId);
+  const id = providers[0]?.id;
   if (!id) throw new PrintifyError("Este producto no tiene fabricante disponible.", 0, false);
   providerCache.set(blueprintId, id);
   return id;
 }
+
 
 export async function listBlueprintVariants(
   blueprintId: number,
