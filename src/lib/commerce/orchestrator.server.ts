@@ -880,7 +880,88 @@ export async function handleInboundWebhook(
       });
     }
   }
+  // El fabricante borró el producto de su lado: se marca el enlace como roto
+  // para que la tienda deje de venderlo como si estuviera disponible.
+  if (topic.includes("product") && topic.includes("delet")) {
+    const root = parsed.payload as Record<string, unknown>;
+    const raw = (root["raw"] as Record<string, unknown> | undefined) ?? root;
+    const resource = (raw["resource"] as Record<string, unknown> | undefined) ?? {};
+    const externalProductId = resource["id"] != null ? String(resource["id"]) : null;
+    if (externalProductId) {
+      await supabaseAdmin
+        .from("commerce_product_bindings")
+        .update({
+          sync_status: "error",
+          sync_error: "El fabricante eliminó este producto. Vuelve a publicarlo desde tu tienda.",
+          last_synced_at: new Date().toISOString(),
+        })
+        .eq("provider", providerId)
+        .eq("external_product_id", externalProductId);
+    }
+  }
 
+  // Se perdió la conexión con el espacio de fabricación: se deja constancia y
+  // el enlace de tienda queda marcado para que no se prometan envíos.
+  if (topic.includes("shop") && topic.includes("disconnect")) {
+    await supabaseAdmin
+      .from("commerce_store_bindings")
+      .update({
+        provisioning_status: "error",
+        provisioning_error: "Se desconectó el espacio de fabricación. Es necesario reconectarlo.",
+      })
+      .eq("store_id", bindingRow.store_id as string)
+      .eq("provider", providerId);
+  }
 
   return { ok: true };
 }
+
+/**
+ * Reconciliación: pregunta directamente al fabricante en qué va el pedido.
+ *
+ * Se usa cuando un aviso automático se pierde (o llega mal firmado) y el
+ * pedido se queda estancado en la vista del vendedor.
+ */
+export async function reconcileProviderOrder(
+  orderId: string,
+): Promise<{ ok: boolean; status?: string; reason?: string }> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: ob } = await supabaseAdmin
+    .from("commerce_order_bindings")
+    .select("store_id, provider, external_order_id")
+    .eq("order_id", orderId)
+    .maybeSingle();
+
+  const externalOrderId = (ob?.external_order_id as string | null) ?? null;
+  if (!ob || !externalOrderId) return { ok: false, reason: "El pedido no está enlazado con el fabricante" };
+
+  const provider = getProvider(ob.provider as never);
+  if (!provider?.fetchOrderState) return { ok: false, reason: "El fabricante no permite consultar el estado" };
+
+  const binding = await loadBinding(ob.store_id as string);
+  if (!binding) return { ok: false, reason: "La tienda no está enlazada" };
+
+  const state = await provider.fetchOrderState(binding, externalOrderId);
+  if (!state) return { ok: false, reason: "El fabricante no reconoce este pedido" };
+
+  const shipped = /ship|fulfill|deliver/i.test(state.status);
+  await supabaseAdmin
+    .from("commerce_order_bindings")
+    .update({
+      fulfillment_status: shipped ? "fulfilled" : state.status,
+      tracking_number: state.trackingNumber,
+      tracking_url: state.trackingUrl,
+      sync_status: "ok",
+      sync_error: null,
+      last_synced_at: new Date().toISOString(),
+    })
+    .eq("order_id", orderId)
+    .eq("provider", ob.provider as string);
+
+  if (shipped) {
+    await supabaseAdmin.from("store_orders").update({ status: "shipped" }).eq("id", orderId);
+  }
+
+  return { ok: true, status: state.status };
+}
+
