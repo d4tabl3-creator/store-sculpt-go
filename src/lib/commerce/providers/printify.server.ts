@@ -426,6 +426,35 @@ export const printifyProvider: CommerceProvider = {
     }
   },
 
+  async cancelOrder(binding: ProviderBinding, externalOrderId: string): Promise<boolean> {
+    const shopId = Number(binding.externalStoreId);
+    if (!shopId || !externalOrderId) return false;
+    try {
+      return await cancelProviderOrder(shopId, externalOrderId);
+    } catch {
+      return false;
+    }
+  },
+
+  async fetchOrderState(binding: ProviderBinding, externalOrderId: string) {
+    const shopId = Number(binding.externalStoreId);
+    if (!shopId || !externalOrderId) return null;
+    try {
+      const order = await getOrder(shopId, externalOrderId);
+      if (!order) return null;
+      const shipment = order.shipments?.[0];
+      return {
+        status: order.status ?? "unknown",
+        trackingNumber: shipment?.number ?? null,
+        trackingUrl: shipment?.url ?? null,
+      };
+    } catch {
+      return null;
+    }
+  },
+
+
+
 
 
   async estimateShipping(
