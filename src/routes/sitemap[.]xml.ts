@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
+import { publicUrl } from "@/lib/public-url";
 
-const BASE_URL = "https://store-sculpt-go.lovable.app";
+const BASE_URL = publicUrl();
 
 interface SitemapEntry {
   path: string;

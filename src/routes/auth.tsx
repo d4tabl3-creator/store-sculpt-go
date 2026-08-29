@@ -7,8 +7,9 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useT } from "@/lib/i18n";
+import { publicUrlFor } from "@/lib/public-url";
 
-const AUTH_URL = "https://store-sculpt-go.lovable.app/auth";
+const AUTH_URL = publicUrlFor("/auth");
 const AUTH_DESC = "Entra o crea tu cuenta DªTªBLe para armar tu tienda online en 4 pasos.";
 
 export const Route = createFileRoute("/auth")({

@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
+import { publicUrl } from "@/lib/public-url";
 
 function NotFoundComponent() {
   return (
@@ -99,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "DªTªBLe",
-          url: "https://store-sculpt-go.lovable.app",
+          url: publicUrl(),
           description: "Crea y vende tus productos personalizados en tu propia tienda online. Tú diseñas y pones el precio; Datable produce y envía cada pedido.",
         }),
       },

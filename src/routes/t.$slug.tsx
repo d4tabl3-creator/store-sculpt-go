@@ -13,6 +13,7 @@ import { getStripeEnvironment } from "@/lib/stripe";
 import { startStoreCheckout } from "@/lib/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useT } from "@/lib/i18n";
+import { publicUrlFor } from "@/lib/public-url";
 
 type Store = {
   id: string;
@@ -48,7 +49,7 @@ export const Route = createFileRoute("/t/$slug")({
     return { store: store as Store, products: (products as Product[]) || [] };
   },
   head: ({ params, loaderData }) => {
-    const url = `https://store-sculpt-go.lovable.app/t/${params.slug}`;
+    const url = publicUrlFor(`/t/${params.slug}`);
     const title = loaderData ? `${loaderData.store.name} — Tienda online` : "Tienda";
     const desc = loaderData
       ? `${loaderData.store.name}: catálogo de ${loaderData.store.niche}. Compra directo con envío incluido.`
