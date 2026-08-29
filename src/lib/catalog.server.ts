@@ -317,6 +317,7 @@ export async function generateMockups(input: {
   scale?: number;
   offsetX?: number;
   offsetY?: number;
+  angle?: number;
   printProviderId?: number;
 }): Promise<MockupResult[]> {
   const printProviderId =
@@ -331,8 +332,10 @@ export async function generateMockups(input: {
   const upload = await uploadImageByUrl(input.imageUrl, `datable-${Date.now()}.png`);
 
   const scale = Math.min(Math.max(input.scale ?? 0.8, 0.1), 1);
+  // offsetX/offsetY son el CENTRO del diseño dentro del área imprimible.
   const x = Math.min(Math.max(input.offsetX ?? 0.5, 0.05), 0.95);
-  const y = Math.min(Math.max((input.offsetY ?? 0.1) + scale / 2, 0.05), 0.95);
+  const y = Math.min(Math.max(input.offsetY ?? 0.5, 0.05), 0.95);
+  const angle = Math.round(input.angle ?? 0);
   const variantIds = input.variantIds.slice(0, 10);
 
   const created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
@@ -347,7 +350,7 @@ export async function generateMockups(input: {
         {
           variant_ids: variantIds,
           placeholders: [
-            { position: area.id, images: [{ id: upload.id, x, y, scale, angle: 0 }] },
+            { position: area.id, images: [{ id: upload.id, x, y, scale, angle }] },
           ],
         },
       ],
