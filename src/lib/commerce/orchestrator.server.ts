@@ -558,6 +558,8 @@ export async function pushOrderToProvider(orderId: string) {
     shippingAddress: (order.shipping_address as string | null) ?? null,
     shipping: normalizeShipping(order.shipping_details as Record<string, unknown> | null),
     totalCents: order.total_cents as number,
+    // Ya pasó la guarda de pago de arriba.
+    paymentConfirmed: true,
     lines: rawItems.map((i) => ({
       productId: i.productId ?? "",
       name: i.name,
@@ -584,6 +586,10 @@ export async function pushOrderToProvider(orderId: string) {
       },
       { onConflict: "order_id,provider" },
     );
+    if (res.externalOrderId) {
+      await authorizeProduction(binding, orderId, res.externalOrderId, provider);
+    }
+
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error al enviar pedido";
     await supabaseAdmin.from("commerce_order_bindings").upsert(
