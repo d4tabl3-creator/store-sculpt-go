@@ -415,3 +415,22 @@ export async function getStandardShippingCosts(
   shippingCache.set(key, { at: Date.now(), costs });
   return costs;
 }
+
+// ---------------------------------------------------------------------------
+// Producción
+// ---------------------------------------------------------------------------
+
+/**
+ * Manda un pedido ya creado a la línea de producción.
+ *
+ * Se aísla aquí a propósito: crear el pedido en el proveedor NO debe producirlo.
+ * Sólo el orquestador, después de confirmar el pago, puede llamar a esto.
+ */
+export async function sendOrderToProduction(shopId: number, externalOrderId: string): Promise<void> {
+  await printify(`/v1/shops/${shopId}/orders/${externalOrderId}/send_to_production.json`, { method: "POST" });
+}
+
+/** Webhooks registrados en el espacio de fabricación (para diagnóstico interno). */
+export async function listWebhooks(shopId: number): Promise<Array<{ id: string; topic: string; url: string }>> {
+  return printify<Array<{ id: string; topic: string; url: string }>>(`/v1/shops/${shopId}/webhooks.json`);
+}
