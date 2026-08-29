@@ -29,6 +29,7 @@ type Product = {
   price_cents: number;
   image_url: string | null;
   stock: number;
+  shipping_cost_cents: number;
 };
 
 export const Route = createFileRoute("/t/$slug")({
@@ -42,7 +43,7 @@ export const Route = createFileRoute("/t/$slug")({
     if (!store) throw notFound();
     const { data: products } = await supabase
       .from("store_products")
-      .select("id, name, description, price_cents, image_url, stock")
+      .select("id, name, description, price_cents, image_url, stock, shipping_cost_cents")
       .eq("store_id", store.id)
       .order("sort_order");
     return { store: store as Store, products: (products as Product[]) || [] };
@@ -278,15 +279,15 @@ function CheckoutForm({
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const [shippingId, setShippingId] = useState(store.shipping_options[0]?.id || "");
   const [submitting, setSubmitting] = useState(false);
   const [orderInfo, setOrderInfo] = useState<{ orderId: string; clientSecret: string } | null>(null);
 
-  const shipping = useMemo(
-    () => store.shipping_options.find((o) => o.id === shippingId),
-    [shippingId, store.shipping_options],
+  // Envío separado: suma del costo real de envío de cada producto.
+  const shippingCents = useMemo(
+    () => cart.reduce((acc, c) => acc + (c.product.shipping_cost_cents || 0) * c.qty, 0),
+    [cart],
   );
-  const total = subtotal + (shipping?.price_cents || 0);
+  const total = subtotal + shippingCents;
 
   const fetchClientSecret = useCallback(async () => {
     if (!orderInfo) throw new Error(t("Sin sesión", "No session"));
@@ -300,7 +301,6 @@ function CheckoutForm({
       data: {
         storeId: store.id,
         items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })),
-        shippingId: shippingId || undefined,
         customer: { name, email, phone: phone || undefined, address, notes: notes || undefined },
         returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}&slug=${store.slug}`,
         environment: getStripeEnvironment(),
@@ -330,25 +330,11 @@ function CheckoutForm({
         <div><Label htmlFor="e">{t("Email", "Email")}</Label><Input id="e" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
         <div><Label htmlFor="p">{t("Teléfono", "Phone")}</Label><Input id="p" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
         <div><Label htmlFor="a">{t("Dirección de envío", "Shipping address")}</Label><Textarea id="a" required value={address} onChange={(e) => setAddress(e.target.value)} /></div>
-        {store.shipping_options.length > 0 && (
-          <div>
-            <Label>{t("Método de envío", "Shipping method")}</Label>
-            <div className="mt-1 space-y-1">
-              {store.shipping_options.map((o) => (
-                <label key={o.id} className="flex items-center gap-2 rounded border border-border p-2 text-sm">
-                  <input type="radio" checked={shippingId === o.id} onChange={() => setShippingId(o.id)} />
-                  <span className="flex-1">{o.label}</span>
-                  <span className="font-bold">${(o.price_cents / 100).toFixed(2)}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
         <div><Label htmlFor="nt">{t("Notas (opcional)", "Notes (optional)")}</Label><Textarea id="nt" value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
       </div>
       <div className="mt-4 border-t border-border pt-3">
         <div className="flex justify-between text-sm"><span>{t("Subtotal", "Subtotal")}</span><span>${(subtotal / 100).toFixed(2)}</span></div>
-        {shipping && <div className="flex justify-between text-sm"><span>{t("Envío", "Shipping")}</span><span>${(shipping.price_cents / 100).toFixed(2)}</span></div>}
+        <div className="flex justify-between text-sm"><span>{t("Envío", "Shipping")}</span><span>${(shippingCents / 100).toFixed(2)}</span></div>
         <div className="mt-1 flex justify-between text-lg font-bold"><span>{t("Total", "Total")}</span><span>${(total / 100).toFixed(2)}</span></div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
