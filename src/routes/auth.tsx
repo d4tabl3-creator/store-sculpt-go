@@ -7,7 +7,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useT } from "@/lib/i18n";
-import { publicUrlFor } from "@/lib/public-url";
+import { publicUrlFor, authRedirectUrl } from "@/lib/public-url";
 
 const AUTH_URL = publicUrlFor("/auth");
 const AUTH_DESC = "Entra o crea tu cuenta DªTªBLe para armar tu tienda online en 4 pasos.";
@@ -87,7 +87,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?type=recovery`,
+        redirectTo: authRedirectUrl("/auth?type=recovery"),
       });
       if (error) throw error;
       toast.success(
@@ -129,7 +129,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/crear`,
+            emailRedirectTo: authRedirectUrl("/crear"),
             data: { full_name: fullName },
           },
         });
