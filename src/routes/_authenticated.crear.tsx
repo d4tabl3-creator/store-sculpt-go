@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/lib/kits";
 import { getMyPlan } from "@/lib/plans.functions";
-import { planLimit } from "@/lib/plans";
+import { planLimit, type PlanId } from "@/lib/plans";
 import { useT } from "@/lib/i18n";
 import { publicUrlFor } from "@/lib/public-url";
 
