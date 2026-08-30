@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/lib/kits";
 import { getMyPlan } from "@/lib/plans.functions";
-import { planLimit } from "@/lib/plans";
+import { planLimit, type PlanId } from "@/lib/plans";
 import { useT } from "@/lib/i18n";
 import { publicUrlFor } from "@/lib/public-url";
 
@@ -48,35 +48,58 @@ function CreateStorePage() {
   const slug = useMemo(() => slugify(storeName), [storeName]);
 
   useEffect(() => {
-    (async () => {
-      const u = (await supabase.auth.getUser()).data.user;
-      if (!u) {
-        navigate({ to: "/auth" });
-        return;
+    let cancelled = false;
+
+    async function fetchPlanWithTimeout() {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("plan_timeout")), 4000),
+      );
+      try {
+        return await Promise.race([getMyPlan(), timeout]);
+      } catch {
+        return { plan: null as null | PlanId, status: null, source: null, current_period_end: null, cancel_at_period_end: false, stripe_subscription_id: null };
       }
-      const plan = await getMyPlan();
-      const limit = planLimit(plan.plan);
-      if (limit !== null) {
-        const { count } = await supabase.from("stores").select("id", { count: "exact", head: true }).eq("owner_id", u.id);
-        if ((count || 0) >= limit) {
-          toast.error(
-            plan.plan
-              ? t(
-                  `Tu plan actual permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`,
-                  `Your current plan allows ${limit} store${limit === 1 ? "" : "s"}. Upgrade to Pro for more.`,
-                )
-              : t(
-                  "Sin plan solo puedes tener 1 tienda. Activa Pro para crear más.",
-                  "Without a plan you can only have 1 store. Activate Pro to create more.",
-                ),
-          );
-          navigate({ to: plan.plan ? "/planes" : "/dashboard" });
+    }
+
+    (async () => {
+      try {
+        const u = (await supabase.auth.getUser()).data.user;
+        if (!u) {
+          navigate({ to: "/auth" });
           return;
         }
+
+        const plan = await fetchPlanWithTimeout();
+        const limit = planLimit(plan.plan);
+        if (limit !== null) {
+          const { count } = await supabase.from("stores").select("id", { count: "exact", head: true }).eq("owner_id", u.id);
+          if ((count || 0) >= limit) {
+            toast.error(
+              plan.plan
+                ? t(
+                    `Tu plan actual permite ${limit} tienda${limit === 1 ? "" : "s"}. Sube a Pro para más.`,
+                    `Your current plan allows ${limit} store${limit === 1 ? "" : "s"}. Upgrade to Pro for more.`,
+                  )
+                : t(
+                    "Sin plan solo puedes tener 1 tienda. Activa Pro para crear más.",
+                    "Without a plan you can only have 1 store. Activate Pro to create more.",
+                  ),
+            );
+            navigate({ to: plan.plan ? "/planes" : "/dashboard" });
+            return;
+          }
+        }
+        if (!cancelled && u.email) setPaymentEmail((prev) => prev || u.email!);
+        if (!cancelled) setGateChecked(true);
+      } catch (err) {
+        console.error("Error inicializando creación de tienda:", err);
+        if (!cancelled) setGateChecked(true);
       }
-      if (u.email) setPaymentEmail((prev) => prev || u.email!);
-      setGateChecked(true);
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [navigate]);
 
   async function uploadLogo(file: File) {
