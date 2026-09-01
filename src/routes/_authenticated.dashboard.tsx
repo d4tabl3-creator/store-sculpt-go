@@ -37,33 +37,70 @@ function Dashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [guide, setGuide] = useState<{ storeId: string; state: GuideState } | null>(null);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await load();
+      } catch {
+        // Los errores ya se manejan dentro de load(); esto es un último blindaje.
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
+    return Promise.race([
+      p.catch(() => null),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+    ]);
+  }
 
   async function load() {
     setLoading(true);
     const user = (await supabase.auth.getUser()).data.user;
-    if (!user) return;
-    const [{ data: storesData }, planRes, { data: adminRes }] = await Promise.all([
-      supabase.from("stores").select("id, slug, name, niche, primary_color, status, created_at").eq("owner_id", user.id).order("created_at", { ascending: false }),
-      getMyPlan(),
-      supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
-    ]);
-    setPlan(planRes);
-    setIsAdmin(!!adminRes);
-    const enriched = await Promise.all(
-      (storesData || []).map(async (st) => {
-        const { count } = await supabase.from("store_orders").select("id", { count: "exact", head: true }).eq("store_id", st.id);
-        return { ...st, order_count: count || 0 };
-      }),
-    );
-    setStores(enriched);
-    setLoading(false);
-    const first = (storesData || [])[0];
-    if (first) {
-      try {
-        const state = await getGuideState({ data: { storeId: first.id } });
-        if (state) setGuide({ storeId: first.id, state });
-      } catch { /* el acompañamiento no bloquea el panel */ }
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
+
+    // Plan con límite de 4s y respaldo null: un fallo del plan nunca bloquea el panel.
+    const planRes = await withTimeout(getMyPlan(), 4000);
+    setPlan(planRes ?? null);
+
+    // Chequeo de admin con su propio catch.
+    try {
+      const { data: adminRes } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
+      setIsAdmin(!!adminRes);
+    } catch {
+      setIsAdmin(false);
+    }
+
+    // Las tiendas cargan aunque el plan o el admin hayan fallado.
+    try {
+      const { data: storesData } = await supabase
+        .from("stores")
+        .select("id, slug, name, niche, primary_color, status, created_at")
+        .eq("owner_id", user.id)
+        .order("created_at", { ascending: false });
+      const enriched = await Promise.all(
+        (storesData || []).map(async (st) => {
+          const { count } = await supabase.from("store_orders").select("id", { count: "exact", head: true }).eq("store_id", st.id);
+          return { ...st, order_count: count || 0 };
+        }),
+      );
+      setStores(enriched);
+      const first = (storesData || [])[0];
+      if (first) {
+        try {
+          const state = await getGuideState({ data: { storeId: first.id } });
+          if (state) setGuide({ storeId: first.id, state });
+        } catch { /* el acompañamiento no bloquea el panel */ }
+      }
+    } catch {
+      setStores([]);
     }
   }
 
