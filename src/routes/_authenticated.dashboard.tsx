@@ -92,12 +92,13 @@ function Dashboard() {
         }),
       );
       setStores(enriched);
+      setLoading(false);
       const first = (storesData || [])[0];
       if (first) {
-        try {
-          const state = await getGuideState({ data: { storeId: first.id } });
-          if (state) setGuide({ storeId: first.id, state });
-        } catch { /* el acompañamiento no bloquea el panel */ }
+        // El acompañamiento se carga en segundo plano y nunca bloquea el panel.
+        getGuideState({ data: { storeId: first.id } })
+          .then((state) => { if (state) setGuide({ storeId: first.id, state }); })
+          .catch(() => {});
       }
     } catch {
       setStores([]);
