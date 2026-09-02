@@ -273,7 +273,40 @@ function placementLabel(id: string): string {
   );
 }
 
-/** Zonas de estampado disponibles para un producto, con el tamaño real del área. */
+/**
+ * Orden natural en el que se le presentan las zonas al comerciante:
+ * frente, espalda, mangas, etiqueta/cuello y por último el área completa.
+ */
+const PLACEMENT_ORDER = [
+  "front",
+  "back",
+  "sleeve-left",
+  "sleeve-right",
+  "left",
+  "right",
+  "top",
+  "bottom",
+  "neck",
+  "inside",
+  "outside",
+  "cover",
+  "default",
+  "wrap",
+];
+
+function orderIndex(id: string): number {
+  const i = PLACEMENT_ORDER.indexOf(id);
+  return i === -1 ? PLACEMENT_ORDER.length : i;
+}
+
+/**
+ * Zonas de estampado disponibles para un producto, con el tamaño real del área.
+ *
+ * Se unen las zonas de TODAS las variantes (una playera puede traer espalda o
+ * etiqueta sólo en algunas tallas/colores, y una corbata trae el área completa).
+ * Cada zona guarda qué variantes la admiten, para no ofrecer zonas imposibles.
+ * `variantId` sólo se usa para priorizar el tamaño real de esa variante.
+ */
 export async function getPlacements(
   productId: number,
   variantId?: number,
@@ -282,15 +315,35 @@ export async function getPlacements(
   const printProviderId =
     requestedProviderId && requestedProviderId > 0 ? requestedProviderId : await resolvePrintProviderId(productId);
   const variants = await listBlueprintVariants(productId, printProviderId);
-  const chosen = (variantId && variants.find((v) => v.id === variantId)) || variants.find((v) => v.placeholders.length);
-  if (!chosen) return [];
-  return chosen.placeholders.map((p) => ({
-    id: p.position,
-    label: placementLabel(p.position),
-    areaWidth: p.width,
-    areaHeight: p.height,
-  }));
+  if (!variants.length) return [];
+
+  const map = new Map<string, Placement>();
+  for (const v of variants) {
+    const preferred = variantId ? v.id === variantId : false;
+    for (const p of v.placeholders || []) {
+      const found = map.get(p.position);
+      if (!found) {
+        map.set(p.position, {
+          id: p.position,
+          label: placementLabel(p.position),
+          areaWidth: p.width,
+          areaHeight: p.height,
+          variantIds: [v.id],
+        });
+        continue;
+      }
+      found.variantIds.push(v.id);
+      // Se conserva la medida de la variante pedida; si no, la mayor publicada.
+      if (preferred || p.width * p.height > found.areaWidth * found.areaHeight) {
+        found.areaWidth = p.width;
+        found.areaHeight = p.height;
+      }
+    }
+  }
+
+  return [...map.values()].sort((a, b) => orderIndex(a.id) - orderIndex(b.id) || a.id.localeCompare(b.id));
 }
+
 
 export type MockupResult = { placement: string; variantIds: number[]; url: string };
 
