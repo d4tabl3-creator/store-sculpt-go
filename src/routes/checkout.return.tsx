@@ -54,7 +54,7 @@ function CheckoutReturn() {
             ? t("Tu banco rechazó el cobro. Puedes intentar con otra tarjeta.", "Your bank declined the charge. You can try another card.")
             : paid
               ? t("Gracias por tu compra. El vendedor recibió tu pedido y te contactará.", "Thanks for your purchase. The seller received your order and will contact you.")
-              : t("Estamos validando con Stripe. No cierres esta ventana.", "We're confirming with Stripe. Don't close this window.")}
+              : t("Estamos confirmando tu pago. No cierres esta ventana.", "We are confirming your payment. Don’t close this window.")}
         </p>
         {session_id && <p className="mt-3 text-xs text-muted-foreground">{t("Ref:", "Ref:")} {session_id.slice(-12)}</p>}
         <div className="mt-6">
