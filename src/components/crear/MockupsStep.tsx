@@ -35,6 +35,8 @@ export function MockupsStep({
           offsetX: draft.offsetX,
           offsetY: draft.offsetY,
           angle: draft.rotation,
+          fitMode: draft.fitMode,
+          tileScale: draft.tileScale,
           printProviderId: draft.printProviderId ?? undefined,
         },
       })) as Array<{ placement: string; url: string }>;

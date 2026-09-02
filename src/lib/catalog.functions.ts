@@ -57,6 +57,8 @@ export const createProductMockup = createServerFn({ method: "POST" })
       offsetX?: number;
       offsetY?: number;
       angle?: number;
+      fitMode?: "fit" | "fill" | "tile";
+      tileScale?: number;
       printProviderId?: number;
     }) => {
       if (!Number.isInteger(data.productId)) throw new Error("Producto inválido");
