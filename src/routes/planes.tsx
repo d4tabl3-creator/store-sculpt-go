@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Check, Loader2, Sparkles, Ticket } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,7 +73,7 @@ function PlansPage() {
     setRedeeming(true);
     const res = await redeemDemoCoupon({ data: { code } });
     setRedeeming(false);
-    if ("error" in res) { toast.error(res.error); return; }
+    if ("error" in res) { toast.error(mensajeUsuario(res.error)); return; }
     toast.success(
       t(
         `Plan ${res.plan.toUpperCase()} activo hasta ${new Date(res.expires).toLocaleDateString()}`,

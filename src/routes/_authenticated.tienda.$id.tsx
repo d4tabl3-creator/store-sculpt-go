@@ -16,6 +16,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -164,7 +165,7 @@ function StoreManage() {
       setStore((s) => (s ? { ...s, logo_url: signed.data!.signedUrl } : s));
       toast.success(t("Logo listo. Guarda los cambios.", "Logo ready. Save your changes."));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("No se pudo subir el logo", "Could not upload the logo"));
+      toast.error(mensajeUsuario(err, t("No se pudo subir el logo. Intenta de nuevo en unos minutos.", "Could not upload the logo. Please try again in a few minutes.")));
     }
   }
 
@@ -186,12 +187,12 @@ function StoreManage() {
         .upsert({ store_id: id, payment_email: paymentEmail || null }, { onConflict: "store_id" });
       if (pe) {
         setSaving(false);
-        toast.error(pe.message);
+        toast.error(mensajeUsuario(pe));
         return;
       }
     }
     setSaving(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(mensajeUsuario(error));
     else toast.success(t("Cambios guardados", "Changes saved"));
   }
 
@@ -237,7 +238,7 @@ function StoreManage() {
     const { error } = await supabase.from("stores").update({ status: nextStatus }).eq("id", id);
     setPublishing(false);
     if (error) {
-      toast.error(error.message);
+      toast.error(mensajeUsuario(error));
       return;
     }
     setStore({ ...store, status: nextStatus });
@@ -267,7 +268,7 @@ function StoreManage() {
       .update({ name: p.name, price_cents: p.price_cents, stock: p.stock })
       .eq("id", p.id);
     if (error) {
-      toast.error(error.message);
+      toast.error(mensajeUsuario(error));
       return;
     }
     toast.success(t("Producto actualizado", "Product updated"));
@@ -281,7 +282,7 @@ function StoreManage() {
       await refreshHealth();
       if (notify) toast.success(t("Sincronización reintentada.", "Sync retried."));
     } catch (err) {
-      if (notify) toast.error(err instanceof Error ? err.message : t("No se pudo reintentar", "Could not retry"));
+      if (notify) toast.error(mensajeUsuario(err, t("No se pudo reintentar. Intenta de nuevo en unos minutos.", "Could not retry. Please try again in a few minutes.")));
     } finally {
       setRetrying(null);
     }

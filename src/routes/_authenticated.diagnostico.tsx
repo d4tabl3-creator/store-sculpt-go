@@ -1,3 +1,4 @@
+import { mensajeUsuario } from "@/lib/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2, RefreshCw } from "lucide-react";
@@ -43,7 +44,7 @@ function DiagnosticsPage() {
     try {
       setReport((await run({ data: { productTest: withProductTest } })) as Report);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo ejecutar el diagnóstico");
+      setError(mensajeUsuario(err, "No se pudo ejecutar el diagnóstico. Intenta de nuevo en unos minutos."));
     } finally {
       setLoading(false);
     }

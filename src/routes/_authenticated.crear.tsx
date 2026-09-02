@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Loader2, Store as StoreIcon, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,7 +116,7 @@ function CreateStorePage() {
       if (!signed.data?.signedUrl) throw new Error(t("No se pudo preparar tu logo", "Could not prepare your logo"));
       setLogoUrl(signed.data.signedUrl);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("No se pudo subir el logo", "Could not upload the logo"));
+      toast.error(mensajeUsuario(err, t("No se pudo subir el logo. Intenta de nuevo en unos minutos.", "Could not upload the logo. Please try again in a few minutes.")));
     } finally {
       setUploading(false);
     }
@@ -156,7 +157,7 @@ function CreateStorePage() {
 
       navigate({ to: "/producto/$storeId", params: { storeId: store.id } });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("No se pudo crear tu tienda", "Could not create your store"));
+      toast.error(mensajeUsuario(err, t("No se pudo crear tu tienda. Intenta de nuevo en unos minutos.", "Could not create your store. Please try again in a few minutes.")));
     } finally {
       setSaving(false);
     }

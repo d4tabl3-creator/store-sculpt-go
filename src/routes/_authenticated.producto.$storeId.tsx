@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-r
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Loader2, Plus, Rocket } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -104,7 +105,7 @@ function StoreProductsPage() {
         setCatalog((await getCatalog()) as CatalogItem[]);
       } catch (err) {
         setCatalogError(
-          err instanceof Error ? err.message : t("No se pudieron cargar los productos", "Could not load products"),
+          mensajeUsuario(err, t("No se pudieron cargar los productos. Intenta de nuevo en unos minutos.", "Could not load products. Please try again in a few minutes.")),
         );
       } finally {
         setLoadingCatalog(false);
@@ -170,7 +171,7 @@ function StoreProductsPage() {
           : t("Producto agregado a tu tienda.", "Product added to your store."),
       );
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("No se pudo agregar", "Could not add it"));
+      toast.error(mensajeUsuario(err, t("No se pudo agregar. Intenta de nuevo en unos minutos.", "Could not add it. Please try again in a few minutes.")));
     } finally {
       setSaving(false);
     }
@@ -205,7 +206,7 @@ function StoreProductsPage() {
       await startProvisioning({ data: { storeId } });
       navigate({ to: "/preparando/$id", params: { id: storeId } });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("No se pudo publicar", "Could not publish"));
+      toast.error(mensajeUsuario(err, t("No se pudo publicar. Intenta de nuevo en unos minutos.", "Could not publish. Please try again in a few minutes.")));
     } finally {
       setPublishing(false);
     }

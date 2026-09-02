@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowLeft, Loader2, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -56,7 +57,7 @@ function AccountPage() {
     setSavingBank(true);
     const res = await updateMyBankInfo({ data: profile });
     setSavingBank(false);
-    if ("error" in res) toast.error(res.error); else toast.success(t("Datos bancarios guardados", "Bank details saved"));
+    if ("error" in res) toast.error(mensajeUsuario(res.error)); else toast.success(t("Datos bancarios guardados", "Bank details saved"));
   }
 
   async function changePassword() {
@@ -64,21 +65,21 @@ function AccountPage() {
     setChangingPass(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setChangingPass(false);
-    if (error) toast.error(error.message); else { toast.success(t("Contraseña actualizada", "Password updated")); setNewPassword(""); }
+    if (error) toast.error(mensajeUsuario(error)); else { toast.success(t("Contraseña actualizada", "Password updated")); setNewPassword(""); }
   }
 
   async function cancel() {
     setCanceling(true);
     const res = await cancelMyPlan({ data: { environment: getStripeEnvironment() } });
     setCanceling(false);
-    if ("error" in res) toast.error(res.error);
+    if ("error" in res) toast.error(mensajeUsuario(res.error));
     else { toast.success(t("Plan cancelado", "Plan canceled")); setPlan(await getMyPlan()); }
   }
 
   async function removeAccount() {
     setDeleting(true);
     const res = await deleteMyAccount();
-    if ("error" in res) { toast.error(res.error); setDeleting(false); return; }
+    if ("error" in res) { toast.error(mensajeUsuario(res.error)); setDeleting(false); return; }
     await supabase.auth.signOut();
     toast.success(t("Cuenta eliminada", "Account deleted"));
     navigate({ to: "/" });
