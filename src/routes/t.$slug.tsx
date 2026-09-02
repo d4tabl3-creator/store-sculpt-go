@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -330,7 +331,7 @@ function CheckoutForm({
       },
     });
     setSubmitting(false);
-    if ("error" in res) { toast.error(res.error); return; }
+    if ("error" in res) { toast.error(mensajeUsuario(res.error)); return; }
     setOrderInfo({ orderId: res.orderId, clientSecret: res.clientSecret });
   }
 
@@ -371,7 +372,7 @@ function CheckoutForm({
           {t("Ir a pagar", "Go to payment")}
         </Button>
       </div>
-      <p className="mt-2 text-center text-[10px] text-muted-foreground">{t("Pago seguro procesado por Stripe.", "Secure payment processed by Stripe.")}</p>
+      <p className="mt-2 text-center text-[10px] text-muted-foreground">{t("Pago seguro y cifrado.", "Secure, encrypted payment.")}</p>
     </form>
   );
 }

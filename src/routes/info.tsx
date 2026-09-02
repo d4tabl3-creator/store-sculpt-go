@@ -12,7 +12,6 @@ import { useT } from "@/lib/i18n";
 import { publicUrlFor } from "@/lib/public-url";
 
 const HOME_URL = publicUrlFor("/info");
-const HOME_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7a5cde6c-c205-4518-a846-8c583529d0db/id-preview-cf54571e--6109d9a1-8043-4081-8fd7-c0751533960a.lovable.app-1782854219214.png";
 const HOME_TITLE = "DªTªBLe — Crea y vende tus productos personalizados";
 const HOME_DESC = "Diseña tus productos, ponles tu precio y publícalos en tu propia tienda online en minutos. Nosotros producimos y enviamos cada pedido a tu cliente.";
 
@@ -57,11 +56,9 @@ export const Route = createFileRoute("/info")({
       { property: "og:title", content: HOME_TITLE },
       { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: HOME_URL },
-      { property: "og:image", content: HOME_OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: HOME_TITLE },
       { name: "twitter:description", content: HOME_DESC },
-      { name: "twitter:image", content: HOME_OG_IMAGE },
     ],
     links: [{ rel: "canonical", href: HOME_URL }],
     scripts: [

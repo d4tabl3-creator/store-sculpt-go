@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,7 +50,7 @@ function Admin() {
     setSaving(true);
     const res = await createCoupon({ data: form });
     setSaving(false);
-    if ("error" in res) return toast.error(res.error);
+    if ("error" in res) return toast.error(mensajeUsuario(res.error));
     toast.success(t("Cupón creado", "Coupon created"));
     setForm({ code: "", plan: "pro", days_valid: 30, max_uses: 10, notes: "" });
     refresh();
@@ -58,7 +59,7 @@ function Admin() {
   async function markPaid() {
     if (!selected.size) return;
     const res = await adminMarkPayoutPaid({ data: { ids: Array.from(selected) } });
-    if ("error" in res) return toast.error(res.error);
+    if ("error" in res) return toast.error(mensajeUsuario(res.error));
     toast.success(t(`Marcados como pagados: ${selected.size}`, `Marked as paid: ${selected.size}`));
     setSelected(new Set());
     refresh();
