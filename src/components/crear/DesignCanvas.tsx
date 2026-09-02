@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useT } from "@/lib/i18n";
 
 /**
@@ -42,6 +42,10 @@ export type DesignPlacementState = {
   scale: number;
   /** Giro en grados. */
   rotation: number;
+  /** Ajustar, Rellenar o Repetir patrón. */
+  fitMode?: "fit" | "fill" | "tile";
+  /** Tamaño de cada repetición (fracción del ancho del área). */
+  tileScale?: number;
 };
 
 export function DesignCanvas({
@@ -55,6 +59,8 @@ export function DesignCanvas({
   onChange,
   onRetryDesign,
   onReupload,
+  onNaturalSize,
+  children,
 }: {
   productImage: string;
   designUrl: string | null;
@@ -68,6 +74,10 @@ export function DesignCanvas({
   onRetryDesign?: () => Promise<boolean>;
   /** Abre el selector de archivos para volver a subir el diseño. */
   onReupload?: () => void;
+  /** Medidas reales del archivo subido, para avisar de baja resolución. */
+  onNaturalSize?: (w: number, h: number) => void;
+  /** Controles pegados al lienzo (tamaño, giro, modo). */
+  children?: ReactNode;
 }) {
   const t = useT();
   const boxRef = useRef<HTMLDivElement>(null);
@@ -95,6 +105,8 @@ export function DesignCanvas({
   }
 
 
+  const mode = state.fitMode ?? "fit";
+  const tile = state.tileScale ?? 0.25;
   const box = AREA_BOX[placementId] ?? AREA_BOX.default;
   const ratio = areaWidth > 0 && areaHeight > 0 ? areaHeight / areaWidth : 1.25;
   const refW = box.w;
@@ -168,19 +180,46 @@ export function DesignCanvas({
             }}
           >
             {designUrl && !failed ? (
-              <img
-                src={designUrl}
-                alt={t("Tu diseño", "Your design")}
-                draggable={false}
-                onError={() => void handleImgError()}
-                className="pointer-events-none absolute object-contain"
-                style={{
-                  left: `${state.offsetX * 100}%`,
-                  top: `${state.offsetY * 100}%`,
-                  width: `${state.scale * 100}%`,
-                  transform: `translate(-50%, -50%) rotate(${state.rotation}deg)`,
-                }}
-              />
+              mode === "tile" ? (
+                <>
+                  <div
+                    className="pointer-events-none absolute inset-[-50%]"
+                    style={{
+                      backgroundImage: `url("${designUrl}")`,
+                      backgroundRepeat: "repeat",
+                      // El contenedor mide el doble del área (inset -50%), por eso la mitad.
+                      backgroundSize: `${tile * 50}% auto`,
+                      backgroundPosition: `${state.offsetX * 100}% ${state.offsetY * 100}%`,
+                      transform: `rotate(${state.rotation}deg)`,
+                    }}
+                  />
+                  {/* Copia oculta: detecta carga fallida y medidas reales del archivo. */}
+                  <img
+                    src={designUrl}
+                    alt=""
+                    className="hidden"
+                    onError={() => void handleImgError()}
+                    onLoad={(e) => onNaturalSize?.(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)}
+                  />
+                </>
+              ) : (
+                <img
+                  src={designUrl}
+                  alt={t("Tu diseño", "Your design")}
+                  draggable={false}
+                  onError={() => void handleImgError()}
+                  onLoad={(e) => onNaturalSize?.(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)}
+                  className="pointer-events-none absolute"
+                  style={{
+                    left: `${state.offsetX * 100}%`,
+                    top: `${state.offsetY * 100}%`,
+                    width: `${state.scale * 100}%`,
+                    height: mode === "fill" ? `${state.scale * 100}%` : undefined,
+                    objectFit: mode === "fill" ? "cover" : "contain",
+                    transform: `translate(-50%, -50%) rotate(${state.rotation}deg)`,
+                  }}
+                />
+              )
             ) : designUrl && failed ? (
               <div className="absolute inset-0 grid place-items-center gap-2 px-3 text-center">
                 <p className="text-xs font-semibold text-muted-foreground">
@@ -214,6 +253,8 @@ export function DesignCanvas({
             "Everything inside this frame is what gets printed.",
           )}
         </p>
+
+        {children ? <div className="mt-3 border-t border-border pt-3">{children}</div> : null}
       </div>
 
       {/* REFERENCIA: foto del producto con la zona resaltada (no es el lienzo) */}

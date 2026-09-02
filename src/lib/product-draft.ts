@@ -45,6 +45,9 @@ export type DraftPlacement = {
   variantIds?: number[];
 };
 
+/** Modo de llenado del diseño dentro de la zona. */
+export type FitMode = "fit" | "fill" | "tile";
+
 /** Diseño colocado en una zona concreta: cada zona tiene el suyo. */
 export type ZoneDesign = {
   designUrl: string | null;
@@ -53,6 +56,10 @@ export type ZoneDesign = {
   offsetY: number;
   scale: number;
   rotation: number;
+  /** Ajustar (completa), Rellenar (cubre) o Repetir patrón. */
+  fitMode: FitMode;
+  /** Tamaño de cada repetición como fracción del ancho del área. */
+  tileScale: number;
 };
 
 
@@ -79,6 +86,10 @@ export type ProductDraft = {
   offsetY: number;
   /** Giro del diseño en grados. */
   rotation: number;
+  /** Modo de llenado de la zona activa. */
+  fitMode: FitMode;
+  /** Tamaño de la repetición (modo patrón) de la zona activa. */
+  tileScale: number;
   mockups: string[];
   mockupUrl: string | null;
   name: string;
@@ -99,6 +110,8 @@ export const EMPTY_ZONE: ZoneDesign = {
   offsetY: 0.5,
   scale: 0.8,
   rotation: 0,
+  fitMode: "fit",
+  tileScale: 0.25,
 };
 
 /** Diseño de la zona activa tal como está en el borrador. */
@@ -110,6 +123,8 @@ export function activeZone(d: ProductDraft): ZoneDesign {
     offsetY: d.offsetY,
     scale: d.scale,
     rotation: d.rotation,
+    fitMode: d.fitMode ?? "fit",
+    tileScale: d.tileScale ?? 0.25,
   };
 }
 
@@ -142,6 +157,8 @@ export function switchZone(d: ProductDraft, next: string): Partial<ProductDraft>
     offsetY: target.offsetY,
     scale: target.scale,
     rotation: target.rotation,
+    fitMode: target.fitMode ?? "fit",
+    tileScale: target.tileScale ?? 0.25,
     mockups: [],
     mockupUrl: null,
   };
@@ -191,6 +208,8 @@ export function newDraft(item: CatalogItem): ProductDraft {
     offsetX: 0.5,
     offsetY: 0.5,
     rotation: 0,
+    fitMode: "fit",
+    tileScale: 0.25,
     mockups: [],
     mockupUrl: null,
     name: item.title,

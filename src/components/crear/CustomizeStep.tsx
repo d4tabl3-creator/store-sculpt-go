@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, RotateCcw, Upload } from "lucide-react";
+import { AlertTriangle, Loader2, RotateCcw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   money,
   switchZone,
   zoneHasDesign,
+  type FitMode,
   type DraftPlacement,
   type DraftProvider,
   type DraftVariant,
@@ -36,6 +37,8 @@ export function CustomizeStep({
   const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(draft.variants.length === 0);
   const [uploading, setUploading] = useState(false);
+  /** Medidas reales del archivo subido, para avisar de baja resolución. */
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
 
   useEffect(() => {
     if (draft.variants.length) return;
@@ -116,6 +119,32 @@ export function CustomizeStep({
 
   const area = zonas.find((p) => p.id === draft.placement) ?? zonas[0] ?? draft.placements[0];
 
+  /** Cuando el producto publica una sola zona, ésa es el área completa. */
+  function etiquetaZona(p: DraftPlacement) {
+    if (zonas.length === 1) return t("Área completa", "All-over");
+    return placementLabel(p.id, p.label, t);
+  }
+
+  const modo: FitMode = draft.fitMode ?? "fit";
+  const tile = draft.tileScale ?? 0.25;
+
+  /** Cambia de modo dejando una escala coherente con el modo elegido. */
+  function elegirModo(m: FitMode) {
+    const patch: Partial<ProductDraft> = { fitMode: m, mockups: [], mockupUrl: null };
+    if (m === "fill" && draft.scale < 1) patch.scale = 1;
+    if (m === "fit" && draft.scale > 1) patch.scale = 1;
+    if (m === "tile") {
+      patch.offsetX = 0.5;
+      patch.offsetY = 0.5;
+    }
+    update(patch);
+  }
+
+  /** Ancho impreso real (px) de la imagen con la configuración actual. */
+  const anchoImpreso = Math.round((area?.areaWidth ?? 0) * (modo === "tile" ? tile : draft.scale));
+  /** Se avisa cuando el archivo no alcanza la calidad de impresión del tamaño elegido. */
+  const bajaResolucion = Boolean(natural && anchoImpreso > 0 && natural.w < anchoImpreso * 0.8);
+
   // Si la zona activa no existe para esta variante, se pasa a una válida.
   useEffect(() => {
     if (!zonas.length) return;
@@ -160,6 +189,7 @@ export function CustomizeStep({
       if (error) throw new Error(error.message);
       const signed = await supabase.storage.from("disenos").createSignedUrl(path, FIRMA_SEGUNDOS);
       if (!signed.data?.signedUrl) throw new Error(t("No se pudo preparar tu diseño", "Could not prepare your design"));
+      setNatural(null);
       update({ designUrl: signed.data.signedUrl, designPreview: URL.createObjectURL(file), mockups: [], mockupUrl: null });
     } catch (err) {
       toast.error(mensajeUsuario(err, t("No se pudo subir el diseño. Intenta de nuevo en unos minutos.", "Could not upload the design. Please try again in a few minutes.")));
@@ -200,14 +230,114 @@ export function CustomizeStep({
               productImage={current?.image || draft.image}
               designUrl={draft.designUrl || draft.designPreview}
               placementId={draft.placement}
-              placementLabel={area ? placementLabel(area.id, area.label, t) : undefined}
+              placementLabel={area ? etiquetaZona(area) : undefined}
               areaWidth={area?.areaWidth ?? 0}
               areaHeight={area?.areaHeight ?? 0}
-              state={{ offsetX: draft.offsetX, offsetY: draft.offsetY, scale: draft.scale, rotation: draft.rotation }}
+              state={{
+                offsetX: draft.offsetX,
+                offsetY: draft.offsetY,
+                scale: draft.scale,
+                rotation: draft.rotation,
+                fitMode: modo,
+                tileScale: tile,
+              }}
               onChange={(patch) => update({ ...patch, mockups: [], mockupUrl: null })}
               onRetryDesign={renovarEnlace}
               onReupload={() => fileRef.current?.click()}
-            />
+              onNaturalSize={(w, h) => setNatural({ w, h })}
+            >
+              {draft.designUrl && (
+                <div className="grid gap-3">
+                  <div>
+                    <Label>{t("Cómo llenar la zona", "How to fill the area")}</Label>
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {([
+                        ["fit", t("Ajustar", "Fit")],
+                        ["fill", t("Rellenar", "Fill")],
+                        ["tile", t("Repetir patrón", "Tile")],
+                      ] as Array<[FitMode, string]>).map(([m, label]) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => elegirModo(m)}
+                          className={`rounded-lg border-2 px-2 py-2 text-xs font-bold ${
+                            modo === m ? "border-primary bg-primary-soft" : "border-border bg-card"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {modo === "tile" ? (
+                    <div>
+                      <Label>{t("Tamaño de la repetición", "Repeat size")}</Label>
+                      <Slider
+                        className="mt-3"
+                        value={[tile]}
+                        min={0.05}
+                        max={1}
+                        step={0.05}
+                        onValueChange={([v]) => update({ tileScale: v, mockups: [], mockupUrl: null })}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label>{t("Tamaño del diseño", "Design size")}</Label>
+                      <Slider
+                        className="mt-3"
+                        value={[draft.scale]}
+                        min={0.1}
+                        max={3}
+                        step={0.05}
+                        onValueChange={([v]) => update({ scale: v, mockups: [], mockupUrl: null })}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label>{t("Giro del diseño", "Design rotation")}</Label>
+                    <Slider
+                      className="mt-3"
+                      value={[draft.rotation]}
+                      min={-180}
+                      max={180}
+                      step={1}
+                      onValueChange={([v]) => update({ rotation: v, mockups: [], mockupUrl: null })}
+                    />
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="justify-self-start"
+                    onClick={() =>
+                      update({
+                        offsetX: 0.5,
+                        offsetY: 0.5,
+                        scale: modo === "fill" ? 1 : 0.8,
+                        rotation: 0,
+                        mockups: [],
+                        mockupUrl: null,
+                      })
+                    }
+                  >
+                    <RotateCcw className="mr-2 size-4" /> {t("Centrar diseño", "Center design")}
+                  </Button>
+
+                  {bajaResolucion && (
+                    <p className="flex items-start gap-2 rounded-lg border-2 border-primary/40 bg-primary-soft p-2 text-[11px] font-semibold">
+                      <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                      {t(
+                        `Tu imagen mide ${natural?.w} px y a este tamaño se imprimiría a ${anchoImpreso} px. Puede verse borrosa: reduce el tamaño o sube un archivo de mayor resolución.`,
+                        `Your image is ${natural?.w} px and at this size it would print at ${anchoImpreso} px. It may look blurry: reduce the size or upload a higher-resolution file.`,
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
+            </DesignCanvas>
 
 
           ) : (
@@ -327,7 +457,7 @@ export function CustomizeStep({
                           )}
                         </div>
                         <span className="mt-1 block truncate px-1 text-[11px] font-bold leading-tight">
-                          {placementLabel(p.id, p.label, t)}
+                          {etiquetaZona(p)}
                         </span>
                         <span className={`block px-1 pb-1 text-[10px] ${conDiseno ? "text-primary" : "text-muted-foreground"}`}>
                           {conDiseno ? t("con diseño", "with design") : t("vacía", "empty")}
@@ -363,41 +493,12 @@ export function CustomizeStep({
               </div>
 
               {draft.designUrl && (
-                <>
-                  <p className="text-xs text-muted-foreground">
-                    {t("Arrastra tu diseño dentro de la zona punteada para colocarlo.", "Drag your design inside the dotted area to position it.")}
-                  </p>
-                  <div>
-                    <Label>{t("Tamaño del diseño", "Design size")}</Label>
-                    <Slider
-                      className="mt-3"
-                      value={[draft.scale]}
-                      min={0.1}
-                      max={1}
-                      step={0.05}
-                      onValueChange={([v]) => update({ scale: v, mockups: [], mockupUrl: null })}
-                    />
-                  </div>
-                  <div>
-                    <Label>{t("Giro del diseño", "Design rotation")}</Label>
-                    <Slider
-                      className="mt-3"
-                      value={[draft.rotation]}
-                      min={-180}
-                      max={180}
-                      step={1}
-                      onValueChange={([v]) => update({ rotation: v, mockups: [], mockupUrl: null })}
-                    />
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="justify-self-start"
-                    onClick={() => update({ offsetX: 0.5, offsetY: 0.5, scale: 0.8, rotation: 0, mockups: [], mockupUrl: null })}
-                  >
-                    <RotateCcw className="mr-2 size-4" /> {t("Centrar diseño", "Center design")}
-                  </Button>
-                </>
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    "Arrastra tu diseño dentro de la zona punteada para colocarlo. El tamaño, el giro y el modo de llenado están junto al lienzo.",
+                    "Drag your design inside the dotted area to position it. Size, rotation and fill mode are next to the canvas.",
+                  )}
+                </p>
               )}
             </>
           ) : (
