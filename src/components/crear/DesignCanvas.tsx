@@ -59,6 +59,8 @@ export function DesignCanvas({
   onChange,
   onRetryDesign,
   onReupload,
+  onNaturalSize,
+  children,
 }: {
   productImage: string;
   designUrl: string | null;
@@ -72,6 +74,10 @@ export function DesignCanvas({
   onRetryDesign?: () => Promise<boolean>;
   /** Abre el selector de archivos para volver a subir el diseño. */
   onReupload?: () => void;
+  /** Medidas reales del archivo subido, para avisar de baja resolución. */
+  onNaturalSize?: (w: number, h: number) => void;
+  /** Controles pegados al lienzo (tamaño, giro, modo). */
+  children?: React.ReactNode;
 }) {
   const t = useT();
   const boxRef = useRef<HTMLDivElement>(null);
