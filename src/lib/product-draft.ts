@@ -157,6 +157,8 @@ export function switchZone(d: ProductDraft, next: string): Partial<ProductDraft>
     offsetY: target.offsetY,
     scale: target.scale,
     rotation: target.rotation,
+    fitMode: target.fitMode ?? "fit",
+    tileScale: target.tileScale ?? 0.25,
     mockups: [],
     mockupUrl: null,
   };
