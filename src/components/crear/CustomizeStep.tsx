@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, RotateCcw, Upload } from "lucide-react";
+import { AlertTriangle, Loader2, RotateCcw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   money,
   switchZone,
   zoneHasDesign,
+  type FitMode,
   type DraftPlacement,
   type DraftProvider,
   type DraftVariant,
@@ -36,6 +37,8 @@ export function CustomizeStep({
   const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(draft.variants.length === 0);
   const [uploading, setUploading] = useState(false);
+  /** Medidas reales del archivo subido, para avisar de baja resolución. */
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
 
   useEffect(() => {
     if (draft.variants.length) return;
@@ -116,6 +119,32 @@ export function CustomizeStep({
 
   const area = zonas.find((p) => p.id === draft.placement) ?? zonas[0] ?? draft.placements[0];
 
+  /** Cuando el producto publica una sola zona, ésa es el área completa. */
+  function etiquetaZona(p: DraftPlacement) {
+    if (zonas.length === 1) return t("Área completa", "All-over");
+    return placementLabel(p.id, p.label, t);
+  }
+
+  const modo: FitMode = draft.fitMode ?? "fit";
+  const tile = draft.tileScale ?? 0.25;
+
+  /** Cambia de modo dejando una escala coherente con el modo elegido. */
+  function elegirModo(m: FitMode) {
+    const patch: Partial<ProductDraft> = { fitMode: m, mockups: [], mockupUrl: null };
+    if (m === "fill" && draft.scale < 1) patch.scale = 1;
+    if (m === "fit" && draft.scale > 1) patch.scale = 1;
+    if (m === "tile") {
+      patch.offsetX = 0.5;
+      patch.offsetY = 0.5;
+    }
+    update(patch);
+  }
+
+  /** Ancho impreso real (px) de la imagen con la configuración actual. */
+  const anchoImpreso = Math.round((area?.areaWidth ?? 0) * (modo === "tile" ? tile : draft.scale));
+  /** Se avisa cuando el archivo no alcanza la calidad de impresión del tamaño elegido. */
+  const bajaResolucion = Boolean(natural && anchoImpreso > 0 && natural.w < anchoImpreso * 0.8);
+
   // Si la zona activa no existe para esta variante, se pasa a una válida.
   useEffect(() => {
     if (!zonas.length) return;
@@ -160,6 +189,7 @@ export function CustomizeStep({
       if (error) throw new Error(error.message);
       const signed = await supabase.storage.from("disenos").createSignedUrl(path, FIRMA_SEGUNDOS);
       if (!signed.data?.signedUrl) throw new Error(t("No se pudo preparar tu diseño", "Could not prepare your design"));
+      setNatural(null);
       update({ designUrl: signed.data.signedUrl, designPreview: URL.createObjectURL(file), mockups: [], mockupUrl: null });
     } catch (err) {
       toast.error(mensajeUsuario(err, t("No se pudo subir el diseño. Intenta de nuevo en unos minutos.", "Could not upload the design. Please try again in a few minutes.")));
@@ -200,7 +230,7 @@ export function CustomizeStep({
               productImage={current?.image || draft.image}
               designUrl={draft.designUrl || draft.designPreview}
               placementId={draft.placement}
-              placementLabel={area ? placementLabel(area.id, area.label, t) : undefined}
+              placementLabel={area ? etiquetaZona(area) : undefined}
               areaWidth={area?.areaWidth ?? 0}
               areaHeight={area?.areaHeight ?? 0}
               state={{ offsetX: draft.offsetX, offsetY: draft.offsetY, scale: draft.scale, rotation: draft.rotation }}
@@ -327,7 +357,7 @@ export function CustomizeStep({
                           )}
                         </div>
                         <span className="mt-1 block truncate px-1 text-[11px] font-bold leading-tight">
-                          {placementLabel(p.id, p.label, t)}
+                          {etiquetaZona(p)}
                         </span>
                         <span className={`block px-1 pb-1 text-[10px] ${conDiseno ? "text-primary" : "text-muted-foreground"}`}>
                           {conDiseno ? t("con diseño", "with design") : t("vacía", "empty")}
