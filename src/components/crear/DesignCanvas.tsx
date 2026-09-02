@@ -178,19 +178,45 @@ export function DesignCanvas({
             }}
           >
             {designUrl && !failed ? (
-              <img
-                src={designUrl}
-                alt={t("Tu diseño", "Your design")}
-                draggable={false}
-                onError={() => void handleImgError()}
-                className="pointer-events-none absolute object-contain"
-                style={{
-                  left: `${state.offsetX * 100}%`,
-                  top: `${state.offsetY * 100}%`,
-                  width: `${state.scale * 100}%`,
-                  transform: `translate(-50%, -50%) rotate(${state.rotation}deg)`,
-                }}
-              />
+              mode === "tile" ? (
+                <>
+                  <div
+                    className="pointer-events-none absolute inset-[-50%]"
+                    style={{
+                      backgroundImage: `url("${designUrl}")`,
+                      backgroundRepeat: "repeat",
+                      backgroundSize: `${tile * 100 * 2}% auto`,
+                      backgroundPosition: `${state.offsetX * 100}% ${state.offsetY * 100}%`,
+                      transform: `rotate(${state.rotation}deg)`,
+                    }}
+                  />
+                  {/* Copia oculta: detecta carga fallida y medidas reales del archivo. */}
+                  <img
+                    src={designUrl}
+                    alt=""
+                    className="hidden"
+                    onError={() => void handleImgError()}
+                    onLoad={(e) => onNaturalSize?.(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)}
+                  />
+                </>
+              ) : (
+                <img
+                  src={designUrl}
+                  alt={t("Tu diseño", "Your design")}
+                  draggable={false}
+                  onError={() => void handleImgError()}
+                  onLoad={(e) => onNaturalSize?.(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)}
+                  className="pointer-events-none absolute"
+                  style={{
+                    left: `${state.offsetX * 100}%`,
+                    top: `${state.offsetY * 100}%`,
+                    width: `${state.scale * 100}%`,
+                    height: mode === "fill" ? `${state.scale * 100}%` : undefined,
+                    objectFit: mode === "fill" ? "cover" : "contain",
+                    transform: `translate(-50%, -50%) rotate(${state.rotation}deg)`,
+                  }}
+                />
+              )
             ) : designUrl && failed ? (
               <div className="absolute inset-0 grid place-items-center gap-2 px-3 text-center">
                 <p className="text-xs font-semibold text-muted-foreground">
