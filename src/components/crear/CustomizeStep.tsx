@@ -107,7 +107,22 @@ export function CustomizeStep({
   }, [draft.variants, draft.color]);
 
   const current = currentVariant(draft);
-  const area = draft.placements.find((p) => p.id === draft.placement) ?? draft.placements[0];
+
+  /** Sólo se ofrecen las zonas que admite la variante elegida. */
+  const zonas = useMemo(() => {
+    const id = current?.id;
+    return draft.placements.filter((p) => !p.variantIds?.length || !id || p.variantIds.includes(id));
+  }, [draft.placements, current?.id]);
+
+  const area = zonas.find((p) => p.id === draft.placement) ?? zonas[0] ?? draft.placements[0];
+
+  // Si la zona activa no existe para esta variante, se pasa a una válida.
+  useEffect(() => {
+    if (!zonas.length) return;
+    if (zonas.some((p) => p.id === draft.placement)) return;
+    update(switchZone(draft, zonas.find((p) => p.id === "front")?.id ?? zonas[0].id));
+  }, [zonas, draft.placement]);
+
 
   /** Vigencia corta del enlace del diseño; se renueva cuando hace falta. */
   const FIRMA_SEGUNDOS = 60 * 60 * 24 * 7;
