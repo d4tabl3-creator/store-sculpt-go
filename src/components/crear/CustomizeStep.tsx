@@ -298,24 +298,51 @@ export function CustomizeStep({
             </div>
           )}
 
-          {draft.placements.length > 0 ? (
+          {zonas.length > 0 ? (
             <>
               <div>
                 <Label>{t("¿Dónde va tu diseño?", "Where does your design go?")}</Label>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {draft.placements.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => update({ placement: p.id, mockups: [], mockupUrl: null })}
-                      className={`rounded-lg border-2 px-3 py-1 text-xs font-bold ${
-                        draft.placement === p.id ? "border-primary bg-primary-soft" : "border-border bg-card"
-                      }`}
-                    >
-                      {placementLabel(p.id, p.label, t)}
-                    </button>
-                  ))}
+                <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {zonas.map((p) => {
+                    const on = draft.placement === p.id;
+                    const conDiseno = zoneHasDesign(draft, p.id);
+                    const zona = p.id === draft.placement ? draft.designUrl || draft.designPreview : draft.zones?.[p.id]?.designUrl ?? null;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => update(switchZone(draft, p.id))}
+                        className={`overflow-hidden rounded-xl border-2 bg-card p-1 text-left transition-all ${
+                          on ? "border-primary bg-primary-soft" : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+                          <img
+                            src={current?.image || draft.image}
+                            alt=""
+                            loading="lazy"
+                            className="size-full object-cover opacity-70"
+                          />
+                          {zona && (
+                            <img src={zona} alt="" className="absolute inset-0 m-auto max-h-[60%] max-w-[60%] object-contain" />
+                          )}
+                        </div>
+                        <span className="mt-1 block truncate px-1 text-[11px] font-bold leading-tight">
+                          {placementLabel(p.id, p.label, t)}
+                        </span>
+                        <span className={`block px-1 pb-1 text-[10px] ${conDiseno ? "text-primary" : "text-muted-foreground"}`}>
+                          {conDiseno ? t("con diseño", "with design") : t("vacía", "empty")}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+                {area && (
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {t("Área imprimible", "Print area")}: {area.areaWidth} × {area.areaHeight} px
+                  </p>
+                )}
               </div>
+
 
               <div>
                 <Label>{t("Tu diseño (PNG con fondo transparente, mínimo 1500 px)", "Your design (PNG with transparent background, minimum 1500 px)")}</Label>
