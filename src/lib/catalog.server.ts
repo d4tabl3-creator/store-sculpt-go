@@ -70,7 +70,10 @@ export type Placement = {
   /** Medidas del área imprimible en píxeles. */
   areaWidth: number;
   areaHeight: number;
+  /** Variantes del producto que sí admiten esta zona. */
+  variantIds: number[];
 };
+
 
 const TTL_MS = 30 * 60 * 1000;
 let itemsCache: { at: number; items: CatalogItem[] } | null = null;
