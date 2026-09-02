@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -119,7 +120,10 @@ function AuthPage() {
 
     if (m.includes("email not confirmed")) return t("Confirma tu correo con el enlace que te enviamos.", "Confirm your email with the link we sent you.");
     if (m.includes("rate limit")) return t("Demasiados intentos. Espera un minuto e inténtalo de nuevo.", "Too many attempts. Wait a minute and try again.");
-    return raw || t("Ocurrió un error. Inténtalo de nuevo.", "Something went wrong. Please try again.");
+    return mensajeUsuario(
+      err,
+      t("Tuvimos un problema temporal. Intenta de nuevo en unos minutos.", "We had a temporary problem. Please try again in a few minutes."),
+    );
   }
 
   async function handleReset(e: React.FormEvent) {
