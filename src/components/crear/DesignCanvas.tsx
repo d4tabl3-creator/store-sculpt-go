@@ -187,7 +187,8 @@ export function DesignCanvas({
                     style={{
                       backgroundImage: `url("${designUrl}")`,
                       backgroundRepeat: "repeat",
-                      backgroundSize: `${tile * 100 * 2}% auto`,
+                      // El contenedor mide el doble del área (inset -50%), por eso la mitad.
+                      backgroundSize: `${tile * 50}% auto`,
                       backgroundPosition: `${state.offsetX * 100}% ${state.offsetY * 100}%`,
                       transform: `rotate(${state.rotation}deg)`,
                     }}
