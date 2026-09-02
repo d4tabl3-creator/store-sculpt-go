@@ -36,7 +36,25 @@ export type DraftVariant = {
 
 export type DraftProvider = { id: number; name: string; location: string | null };
 
-export type DraftPlacement = { id: string; label: string; areaWidth: number; areaHeight: number };
+export type DraftPlacement = {
+  id: string;
+  label: string;
+  areaWidth: number;
+  areaHeight: number;
+  /** Variantes que admiten esta zona (vacío = todas, productos ya guardados). */
+  variantIds?: number[];
+};
+
+/** Diseño colocado en una zona concreta: cada zona tiene el suyo. */
+export type ZoneDesign = {
+  designUrl: string | null;
+  designPreview: string | null;
+  offsetX: number;
+  offsetY: number;
+  scale: number;
+  rotation: number;
+};
+
 
 export type ProductDraft = {
   productId: number;
@@ -66,7 +84,69 @@ export type ProductDraft = {
   name: string;
   description: string;
   priceCents: number | null;
+  /**
+   * Diseño guardado por zona (frente, espalda, área completa…). La zona activa
+   * se refleja además en los campos de arriba para no romper nada existente.
+   */
+  zones: Record<string, ZoneDesign>;
 };
+
+/** Diseño vacío de una zona. */
+export const EMPTY_ZONE: ZoneDesign = {
+  designUrl: null,
+  designPreview: null,
+  offsetX: 0.5,
+  offsetY: 0.5,
+  scale: 0.8,
+  rotation: 0,
+};
+
+/** Diseño de la zona activa tal como está en el borrador. */
+export function activeZone(d: ProductDraft): ZoneDesign {
+  return {
+    designUrl: d.designUrl,
+    designPreview: d.designPreview,
+    offsetX: d.offsetX,
+    offsetY: d.offsetY,
+    scale: d.scale,
+    rotation: d.rotation,
+  };
+}
+
+/** Diseño guardado de una zona (la activa se lee de los campos de arriba). */
+export function zoneDesign(d: ProductDraft, id: string): ZoneDesign {
+  if (id === d.placement) return activeZone(d);
+  return d.zones?.[id] ?? EMPTY_ZONE;
+}
+
+/** ¿Esa zona ya tiene diseño puesto? */
+export function zoneHasDesign(d: ProductDraft, id: string): boolean {
+  const z = zoneDesign(d, id);
+  return Boolean(z.designUrl || z.designPreview);
+}
+
+/**
+ * Cambia de zona guardando el diseño de la anterior y cargando el de la nueva.
+ * Devuelve el parche listo para `update()`.
+ */
+export function switchZone(d: ProductDraft, next: string): Partial<ProductDraft> {
+  if (next === d.placement) return {};
+  const zones = { ...(d.zones ?? {}), [d.placement]: activeZone(d) };
+  const target = zones[next] ?? EMPTY_ZONE;
+  return {
+    zones,
+    placement: next,
+    designUrl: target.designUrl,
+    designPreview: target.designPreview,
+    offsetX: target.offsetX,
+    offsetY: target.offsetY,
+    scale: target.scale,
+    rotation: target.rotation,
+    mockups: [],
+    mockupUrl: null,
+  };
+}
+
 
 /** Producto ya terminado, listo para publicarse en la tienda. */
 export type ReadyProduct = {
@@ -116,7 +196,9 @@ export function newDraft(item: CatalogItem): ProductDraft {
     name: item.title,
     description: item.description || "",
     priceCents: null,
+    zones: {},
   };
+
 }
 
 export function currentVariant(d: ProductDraft): DraftVariant | undefined {

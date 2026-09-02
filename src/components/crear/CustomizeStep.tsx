@@ -10,7 +10,18 @@ import { DesignCanvas } from "@/components/crear/DesignCanvas";
 import { getCatalogProduct, getProductPlacements } from "@/lib/catalog.functions";
 import { useT } from "@/lib/i18n";
 import { placementLabel, productionOptionLabel } from "@/lib/catalog-labels";
-import { SIZE_ORDER, currentVariant, money, type DraftPlacement, type DraftProvider, type DraftVariant, type ProductDraft } from "@/lib/product-draft";
+import {
+  SIZE_ORDER,
+  currentVariant,
+  money,
+  switchZone,
+  zoneHasDesign,
+  type DraftPlacement,
+  type DraftProvider,
+  type DraftVariant,
+  type ProductDraft,
+} from "@/lib/product-draft";
+
 
 
 /** Paso 2: lienzo de diseño, variantes y opciones disponibles. */
@@ -51,7 +62,7 @@ export function CustomizeStep({
           providers: detail.providers ?? [],
           printProviderId: detail.printProviderId,
           placements: pl,
-          placement: pl[0]?.id ?? "front",
+          placement: pl.find((p) => p.id === "front")?.id ?? pl[0]?.id ?? "front",
           color: first?.color ?? null,
           variantId: first?.id ?? null,
           selectedVariantIds: first ? [first.id] : [],
@@ -96,7 +107,22 @@ export function CustomizeStep({
   }, [draft.variants, draft.color]);
 
   const current = currentVariant(draft);
-  const area = draft.placements.find((p) => p.id === draft.placement) ?? draft.placements[0];
+
+  /** Sólo se ofrecen las zonas que admite la variante elegida. */
+  const zonas = useMemo(() => {
+    const id = current?.id;
+    return draft.placements.filter((p) => !p.variantIds?.length || !id || p.variantIds.includes(id));
+  }, [draft.placements, current?.id]);
+
+  const area = zonas.find((p) => p.id === draft.placement) ?? zonas[0] ?? draft.placements[0];
+
+  // Si la zona activa no existe para esta variante, se pasa a una válida.
+  useEffect(() => {
+    if (!zonas.length) return;
+    if (zonas.some((p) => p.id === draft.placement)) return;
+    update(switchZone(draft, zonas.find((p) => p.id === "front")?.id ?? zonas[0].id));
+  }, [zonas, draft.placement]);
+
 
   /** Vigencia corta del enlace del diseño; se renueva cuando hace falta. */
   const FIRMA_SEGUNDOS = 60 * 60 * 24 * 7;
@@ -272,24 +298,51 @@ export function CustomizeStep({
             </div>
           )}
 
-          {draft.placements.length > 0 ? (
+          {zonas.length > 0 ? (
             <>
               <div>
                 <Label>{t("¿Dónde va tu diseño?", "Where does your design go?")}</Label>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {draft.placements.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => update({ placement: p.id, mockups: [], mockupUrl: null })}
-                      className={`rounded-lg border-2 px-3 py-1 text-xs font-bold ${
-                        draft.placement === p.id ? "border-primary bg-primary-soft" : "border-border bg-card"
-                      }`}
-                    >
-                      {placementLabel(p.id, p.label, t)}
-                    </button>
-                  ))}
+                <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {zonas.map((p) => {
+                    const on = draft.placement === p.id;
+                    const conDiseno = zoneHasDesign(draft, p.id);
+                    const zona = p.id === draft.placement ? draft.designUrl || draft.designPreview : draft.zones?.[p.id]?.designUrl ?? null;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => update(switchZone(draft, p.id))}
+                        className={`overflow-hidden rounded-xl border-2 bg-card p-1 text-left transition-all ${
+                          on ? "border-primary bg-primary-soft" : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+                          <img
+                            src={current?.image || draft.image}
+                            alt=""
+                            loading="lazy"
+                            className="size-full object-cover opacity-70"
+                          />
+                          {zona && (
+                            <img src={zona} alt="" className="absolute inset-0 m-auto max-h-[60%] max-w-[60%] object-contain" />
+                          )}
+                        </div>
+                        <span className="mt-1 block truncate px-1 text-[11px] font-bold leading-tight">
+                          {placementLabel(p.id, p.label, t)}
+                        </span>
+                        <span className={`block px-1 pb-1 text-[10px] ${conDiseno ? "text-primary" : "text-muted-foreground"}`}>
+                          {conDiseno ? t("con diseño", "with design") : t("vacía", "empty")}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+                {area && (
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {t("Área imprimible", "Print area")}: {area.areaWidth} × {area.areaHeight} px
+                  </p>
+                )}
               </div>
+
 
               <div>
                 <Label>{t("Tu diseño (PNG con fondo transparente, mínimo 1500 px)", "Your design (PNG with transparent background, minimum 1500 px)")}</Label>
