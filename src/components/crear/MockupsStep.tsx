@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, Loader2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { createProductMockup } from "@/lib/catalog.functions";
 import { useT } from "@/lib/i18n";
@@ -41,7 +42,7 @@ export function MockupsStep({
       if (!urls.length) throw new Error(t("No se pudieron generar las maquetas", "Could not generate mockups"));
       update({ mockups: urls, mockupUrl: urls[0] });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("No se pudieron generar las maquetas", "Could not generate mockups"));
+      toast.error(mensajeUsuario(err, t("No se pudieron generar las maquetas. Intenta de nuevo en unos minutos.", "Could not generate mockups. Please try again in a few minutes.")));
     } finally {
       setRendering(false);
     }

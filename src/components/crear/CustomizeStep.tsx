@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, RotateCcw, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -58,7 +59,7 @@ export function CustomizeStep({
           description: draft.description || detail.product.description || "",
         });
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t("No se pudo abrir el editor", "Could not open the editor"));
+        toast.error(mensajeUsuario(err, t("No se pudo abrir el editor. Intenta de nuevo en unos minutos.", "Could not open the editor. Please try again in a few minutes.")));
       } finally {
         if (alive) setLoading(false);
       }
@@ -110,7 +111,7 @@ export function CustomizeStep({
       if (!signed.data?.signedUrl) throw new Error(t("No se pudo preparar tu diseño", "Could not prepare your design"));
       update({ designUrl: signed.data.signedUrl, designPreview: URL.createObjectURL(file), mockups: [], mockupUrl: null });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("No se pudo subir el diseño", "Could not upload the design"));
+      toast.error(mensajeUsuario(err, t("No se pudo subir el diseño. Intenta de nuevo en unos minutos.", "Could not upload the design. Please try again in a few minutes.")));
     } finally {
       setUploading(false);
     }
