@@ -208,6 +208,8 @@ export function newDraft(item: CatalogItem): ProductDraft {
     offsetX: 0.5,
     offsetY: 0.5,
     rotation: 0,
+    fitMode: "fit",
+    tileScale: 0.25,
     mockups: [],
     mockupUrl: null,
     name: item.title,
