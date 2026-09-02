@@ -196,7 +196,9 @@ export function newDraft(item: CatalogItem): ProductDraft {
     name: item.title,
     description: item.description || "",
     priceCents: null,
+    zones: {},
   };
+
 }
 
 export function currentVariant(d: ProductDraft): DraftVariant | undefined {
