@@ -86,6 +86,10 @@ export type ProductDraft = {
   offsetY: number;
   /** Giro del diseño en grados. */
   rotation: number;
+  /** Modo de llenado de la zona activa. */
+  fitMode: FitMode;
+  /** Tamaño de la repetición (modo patrón) de la zona activa. */
+  tileScale: number;
   mockups: string[];
   mockupUrl: string | null;
   name: string;
@@ -106,6 +110,8 @@ export const EMPTY_ZONE: ZoneDesign = {
   offsetY: 0.5,
   scale: 0.8,
   rotation: 0,
+  fitMode: "fit",
+  tileScale: 0.25,
 };
 
 /** Diseño de la zona activa tal como está en el borrador. */
@@ -117,6 +123,8 @@ export function activeZone(d: ProductDraft): ZoneDesign {
     offsetY: d.offsetY,
     scale: d.scale,
     rotation: d.rotation,
+    fitMode: d.fitMode ?? "fit",
+    tileScale: d.tileScale ?? 0.25,
   };
 }
 
