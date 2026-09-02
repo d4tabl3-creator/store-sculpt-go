@@ -115,6 +115,13 @@ export function DesignCanvas({
             ref={boxRef}
             onPointerDown={(e) => {
               if (!designUrl) return;
+              // Captura el puntero para que el gesto no lo robe el scroll de la página.
+              e.preventDefault();
+              try {
+                (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+              } catch {
+                /* navegadores sin captura de puntero: se sigue con listeners globales */
+              }
               setDragging(true);
               move(e.clientX, e.clientY);
             }}
