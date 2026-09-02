@@ -129,6 +129,7 @@ export function DesignCanvas({
               designUrl ? "cursor-move" : ""
             }`}
             style={{
+              touchAction: designUrl ? "none" : undefined,
               aspectRatio: `${areaWidth > 0 ? areaWidth : 100} / ${areaHeight > 0 ? areaHeight : 125}`,
               backgroundColor: "hsl(var(--card))",
               backgroundImage:
