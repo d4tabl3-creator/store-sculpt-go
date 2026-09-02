@@ -493,45 +493,12 @@ export function CustomizeStep({
               </div>
 
               {draft.designUrl && (
-                <>
-                  <p className="text-xs text-muted-foreground">
-                    {t("Arrastra tu diseño dentro de la zona punteada para colocarlo.", "Drag your design inside the dotted area to position it.")}
-                  </p>
-                </>
-              )}
-              {false && (
-                <>
-                  <div>
-                    <Label>{t("Tamaño del diseño", "Design size")}</Label>
-                    <Slider
-                      className="mt-3"
-                      value={[draft.scale]}
-                      min={0.1}
-                      max={1}
-                      step={0.05}
-                      onValueChange={([v]) => update({ scale: v, mockups: [], mockupUrl: null })}
-                    />
-                  </div>
-                  <div>
-                    <Label>{t("Giro del diseño", "Design rotation")}</Label>
-                    <Slider
-                      className="mt-3"
-                      value={[draft.rotation]}
-                      min={-180}
-                      max={180}
-                      step={1}
-                      onValueChange={([v]) => update({ rotation: v, mockups: [], mockupUrl: null })}
-                    />
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="justify-self-start"
-                    onClick={() => update({ offsetX: 0.5, offsetY: 0.5, scale: 0.8, rotation: 0, mockups: [], mockupUrl: null })}
-                  >
-                    <RotateCcw className="mr-2 size-4" /> {t("Centrar diseño", "Center design")}
-                  </Button>
-                </>
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    "Arrastra tu diseño dentro de la zona punteada para colocarlo. El tamaño, el giro y el modo de llenado están junto al lienzo.",
+                    "Drag your design inside the dotted area to position it. Size, rotation and fill mode are next to the canvas.",
+                  )}
+                </p>
               )}
             </>
           ) : (
