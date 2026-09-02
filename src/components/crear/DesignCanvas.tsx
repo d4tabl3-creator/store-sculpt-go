@@ -77,7 +77,7 @@ export function DesignCanvas({
   /** Medidas reales del archivo subido, para avisar de baja resolución. */
   onNaturalSize?: (w: number, h: number) => void;
   /** Controles pegados al lienzo (tamaño, giro, modo). */
-  children?: React.ReactNode;
+  children?: ReactNode;
 }) {
   const t = useT();
   const boxRef = useRef<HTMLDivElement>(null);
@@ -252,6 +252,8 @@ export function DesignCanvas({
             "Everything inside this frame is what gets printed.",
           )}
         </p>
+
+        {children ? <div className="mt-3 border-t border-border pt-3">{children}</div> : null}
       </div>
 
       {/* REFERENCIA: foto del producto con la zona resaltada (no es el lienzo) */}
