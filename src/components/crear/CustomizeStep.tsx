@@ -62,7 +62,7 @@ export function CustomizeStep({
           providers: detail.providers ?? [],
           printProviderId: detail.printProviderId,
           placements: pl,
-          placement: pl[0]?.id ?? "front",
+          placement: pl.find((p) => p.id === "front")?.id ?? pl[0]?.id ?? "front",
           color: first?.color ?? null,
           variantId: first?.id ?? null,
           selectedVariantIds: first ? [first.id] : [],
