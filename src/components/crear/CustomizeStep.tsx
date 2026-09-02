@@ -10,7 +10,18 @@ import { DesignCanvas } from "@/components/crear/DesignCanvas";
 import { getCatalogProduct, getProductPlacements } from "@/lib/catalog.functions";
 import { useT } from "@/lib/i18n";
 import { placementLabel, productionOptionLabel } from "@/lib/catalog-labels";
-import { SIZE_ORDER, currentVariant, money, type DraftPlacement, type DraftProvider, type DraftVariant, type ProductDraft } from "@/lib/product-draft";
+import {
+  SIZE_ORDER,
+  currentVariant,
+  money,
+  switchZone,
+  zoneHasDesign,
+  type DraftPlacement,
+  type DraftProvider,
+  type DraftVariant,
+  type ProductDraft,
+} from "@/lib/product-draft";
+
 
 
 /** Paso 2: lienzo de diseño, variantes y opciones disponibles. */
