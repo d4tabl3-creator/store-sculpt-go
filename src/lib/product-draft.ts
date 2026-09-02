@@ -45,6 +45,9 @@ export type DraftPlacement = {
   variantIds?: number[];
 };
 
+/** Modo de llenado del diseño dentro de la zona. */
+export type FitMode = "fit" | "fill" | "tile";
+
 /** Diseño colocado en una zona concreta: cada zona tiene el suyo. */
 export type ZoneDesign = {
   designUrl: string | null;
@@ -53,6 +56,10 @@ export type ZoneDesign = {
   offsetY: number;
   scale: number;
   rotation: number;
+  /** Ajustar (completa), Rellenar (cubre) o Repetir patrón. */
+  fitMode: FitMode;
+  /** Tamaño de cada repetición como fracción del ancho del área. */
+  tileScale: number;
 };
 
 
