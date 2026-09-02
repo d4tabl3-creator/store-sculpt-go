@@ -65,7 +65,7 @@ function PlansPage() {
       },
     });
     if ("error" in res) throw new Error(res.error);
-    if (!res.clientSecret) throw new Error(t("Stripe no devolvió clientSecret", "Stripe did not return a clientSecret"));
+    if (!res.clientSecret) throw new Error(t("No pudimos abrir el pago. Intenta de nuevo en unos minutos.", "We could not open the payment. Please try again in a few minutes."));
     return res.clientSecret;
   }, [selected, t]);
 

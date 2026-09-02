@@ -372,7 +372,7 @@ function CheckoutForm({
           {t("Ir a pagar", "Go to payment")}
         </Button>
       </div>
-      <p className="mt-2 text-center text-[10px] text-muted-foreground">{t("Pago seguro procesado por Stripe.", "Secure payment processed by Stripe.")}</p>
+      <p className="mt-2 text-center text-[10px] text-muted-foreground">{t("Pago seguro y cifrado.", "Secure, encrypted payment.")}</p>
     </form>
   );
 }

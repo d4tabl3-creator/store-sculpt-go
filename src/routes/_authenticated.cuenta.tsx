@@ -105,7 +105,7 @@ function AccountPage() {
               <div>
                 <Badge variant="secondary" className="uppercase">{plan.plan}</Badge>
                 <span className="ml-2 text-sm text-muted-foreground">
-                  {t("Fuente: ", "Source: ")}{plan.source === "coupon" ? t("Cupón demo", "Demo coupon") : "Stripe"}
+                  {t("Fuente: ", "Source: ")}{plan.source === "coupon" ? t("Cupón demo", "Demo coupon") : t("Pago en línea", "Online payment")}
                 </span>
                 {plan.current_period_end && (
                   <div className="mt-1 text-xs text-muted-foreground">
