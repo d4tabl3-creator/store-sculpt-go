@@ -36,7 +36,25 @@ export type DraftVariant = {
 
 export type DraftProvider = { id: number; name: string; location: string | null };
 
-export type DraftPlacement = { id: string; label: string; areaWidth: number; areaHeight: number };
+export type DraftPlacement = {
+  id: string;
+  label: string;
+  areaWidth: number;
+  areaHeight: number;
+  /** Variantes que admiten esta zona (vacío = todas, productos ya guardados). */
+  variantIds?: number[];
+};
+
+/** Diseño colocado en una zona concreta: cada zona tiene el suyo. */
+export type ZoneDesign = {
+  designUrl: string | null;
+  designPreview: string | null;
+  offsetX: number;
+  offsetY: number;
+  scale: number;
+  rotation: number;
+};
+
 
 export type ProductDraft = {
   productId: number;
