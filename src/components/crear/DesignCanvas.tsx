@@ -105,6 +105,8 @@ export function DesignCanvas({
   }
 
 
+  const mode = state.fitMode ?? "fit";
+  const tile = state.tileScale ?? 0.25;
   const box = AREA_BOX[placementId] ?? AREA_BOX.default;
   const ratio = areaWidth > 0 && areaHeight > 0 ? areaHeight / areaWidth : 1.25;
   const refW = box.w;
