@@ -233,11 +233,111 @@ export function CustomizeStep({
               placementLabel={area ? etiquetaZona(area) : undefined}
               areaWidth={area?.areaWidth ?? 0}
               areaHeight={area?.areaHeight ?? 0}
-              state={{ offsetX: draft.offsetX, offsetY: draft.offsetY, scale: draft.scale, rotation: draft.rotation }}
+              state={{
+                offsetX: draft.offsetX,
+                offsetY: draft.offsetY,
+                scale: draft.scale,
+                rotation: draft.rotation,
+                fitMode: modo,
+                tileScale: tile,
+              }}
               onChange={(patch) => update({ ...patch, mockups: [], mockupUrl: null })}
               onRetryDesign={renovarEnlace}
               onReupload={() => fileRef.current?.click()}
-            />
+              onNaturalSize={(w, h) => setNatural({ w, h })}
+            >
+              {draft.designUrl && (
+                <div className="grid gap-3">
+                  <div>
+                    <Label>{t("Cómo llenar la zona", "How to fill the area")}</Label>
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {([
+                        ["fit", t("Ajustar", "Fit")],
+                        ["fill", t("Rellenar", "Fill")],
+                        ["tile", t("Repetir patrón", "Tile")],
+                      ] as Array<[FitMode, string]>).map(([m, label]) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => elegirModo(m)}
+                          className={`rounded-lg border-2 px-2 py-2 text-xs font-bold ${
+                            modo === m ? "border-primary bg-primary-soft" : "border-border bg-card"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {modo === "tile" ? (
+                    <div>
+                      <Label>{t("Tamaño de la repetición", "Repeat size")}</Label>
+                      <Slider
+                        className="mt-3"
+                        value={[tile]}
+                        min={0.05}
+                        max={1}
+                        step={0.05}
+                        onValueChange={([v]) => update({ tileScale: v, mockups: [], mockupUrl: null })}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label>{t("Tamaño del diseño", "Design size")}</Label>
+                      <Slider
+                        className="mt-3"
+                        value={[draft.scale]}
+                        min={0.1}
+                        max={3}
+                        step={0.05}
+                        onValueChange={([v]) => update({ scale: v, mockups: [], mockupUrl: null })}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label>{t("Giro del diseño", "Design rotation")}</Label>
+                    <Slider
+                      className="mt-3"
+                      value={[draft.rotation]}
+                      min={-180}
+                      max={180}
+                      step={1}
+                      onValueChange={([v]) => update({ rotation: v, mockups: [], mockupUrl: null })}
+                    />
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="justify-self-start"
+                    onClick={() =>
+                      update({
+                        offsetX: 0.5,
+                        offsetY: 0.5,
+                        scale: modo === "fill" ? 1 : 0.8,
+                        rotation: 0,
+                        mockups: [],
+                        mockupUrl: null,
+                      })
+                    }
+                  >
+                    <RotateCcw className="mr-2 size-4" /> {t("Centrar diseño", "Center design")}
+                  </Button>
+
+                  {bajaResolucion && (
+                    <p className="flex items-start gap-2 rounded-lg border-2 border-primary/40 bg-primary-soft p-2 text-[11px] font-semibold">
+                      <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                      {t(
+                        `Tu imagen mide ${natural?.w} px y a este tamaño se imprimiría a ${anchoImpreso} px. Puede verse borrosa: reduce el tamaño o sube un archivo de mayor resolución.`,
+                        `Your image is ${natural?.w} px and at this size it would print at ${anchoImpreso} px. It may look blurry: reduce the size or upload a higher-resolution file.`,
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
+            </DesignCanvas>
 
 
           ) : (
@@ -397,6 +497,10 @@ export function CustomizeStep({
                   <p className="text-xs text-muted-foreground">
                     {t("Arrastra tu diseño dentro de la zona punteada para colocarlo.", "Drag your design inside the dotted area to position it.")}
                   </p>
+                </>
+              )}
+              {false && (
+                <>
                   <div>
                     <Label>{t("Tamaño del diseño", "Design size")}</Label>
                     <Slider
