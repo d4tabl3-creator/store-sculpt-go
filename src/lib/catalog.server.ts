@@ -318,6 +318,7 @@ export async function getPlacements(
   if (!variants.length) return [];
 
   const map = new Map<string, Placement>();
+  const locked = new Set<string>();
   for (const v of variants) {
     const preferred = variantId ? v.id === variantId : false;
     for (const p of v.placeholders || []) {
@@ -330,16 +331,19 @@ export async function getPlacements(
           areaHeight: p.height,
           variantIds: [v.id],
         });
+        if (preferred) locked.add(p.position);
         continue;
       }
-      found.variantIds.push(v.id);
-      // Se conserva la medida de la variante pedida; si no, la mayor publicada.
-      if (preferred || p.width * p.height > found.areaWidth * found.areaHeight) {
+      if (!found.variantIds.includes(v.id)) found.variantIds.push(v.id);
+      // Manda la medida de la variante pedida; si no hay, la mayor publicada.
+      if (preferred || (!locked.has(p.position) && p.width * p.height > found.areaWidth * found.areaHeight)) {
         found.areaWidth = p.width;
         found.areaHeight = p.height;
+        if (preferred) locked.add(p.position);
       }
     }
   }
+
 
   return [...map.values()].sort((a, b) => orderIndex(a.id) - orderIndex(b.id) || a.id.localeCompare(b.id));
 }
