@@ -98,6 +98,31 @@ export function CustomizeStep({
   const current = currentVariant(draft);
   const area = draft.placements.find((p) => p.id === draft.placement) ?? draft.placements[0];
 
+  /** Vigencia corta del enlace del diseño; se renueva cuando hace falta. */
+  const FIRMA_SEGUNDOS = 60 * 60 * 24 * 7;
+
+  /** Extrae la ruta dentro del almacén a partir de un enlace firmado. */
+  function rutaDesdeEnlace(url: string | null): string | null {
+    if (!url) return null;
+    const m = url.match(/\/object\/sign\/disenos\/([^?]+)/);
+    return m?.[1] ? decodeURIComponent(m[1]) : null;
+  }
+
+  /** Renueva el enlace firmado del diseño si caducó o falló. */
+  async function renovarEnlace(): Promise<boolean> {
+    const path = rutaDesdeEnlace(draft.designUrl);
+    if (!path) return false;
+    try {
+      const signed = await supabase.storage.from("disenos").createSignedUrl(path, FIRMA_SEGUNDOS);
+      if (!signed.data?.signedUrl) return false;
+      update({ designUrl: signed.data.signedUrl });
+      return true;
+    } catch (err) {
+      console.error("[disenos] no se pudo renovar el enlace del diseño", err);
+      return false;
+    }
+  }
+
   async function upload(file: File) {
     setUploading(true);
     try {
@@ -107,7 +132,7 @@ export function CustomizeStep({
       const path = `${user.id}/disenos/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("disenos").upload(path, file, { contentType: file.type });
       if (error) throw new Error(error.message);
-      const signed = await supabase.storage.from("disenos").createSignedUrl(path, 60 * 60 * 24 * 3650);
+      const signed = await supabase.storage.from("disenos").createSignedUrl(path, FIRMA_SEGUNDOS);
       if (!signed.data?.signedUrl) throw new Error(t("No se pudo preparar tu diseño", "Could not prepare your design"));
       update({ designUrl: signed.data.signedUrl, designPreview: URL.createObjectURL(file), mockups: [], mockupUrl: null });
     } catch (err) {
@@ -116,6 +141,7 @@ export function CustomizeStep({
       setUploading(false);
     }
   }
+
 
   function toggleVariant(id: number) {
     const on = draft.selectedVariantIds.includes(id);
@@ -146,14 +172,17 @@ export function CustomizeStep({
           {draft.placements.length > 0 ? (
             <DesignCanvas
               productImage={current?.image || draft.image}
-              designUrl={draft.designPreview || draft.designUrl}
+              designUrl={draft.designUrl || draft.designPreview}
               placementId={draft.placement}
               placementLabel={area ? placementLabel(area.id, area.label, t) : undefined}
               areaWidth={area?.areaWidth ?? 0}
               areaHeight={area?.areaHeight ?? 0}
               state={{ offsetX: draft.offsetX, offsetY: draft.offsetY, scale: draft.scale, rotation: draft.rotation }}
               onChange={(patch) => update({ ...patch, mockups: [], mockupUrl: null })}
+              onRetryDesign={renovarEnlace}
+              onReupload={() => fileRef.current?.click()}
             />
+
 
           ) : (
             <div className="aspect-square overflow-hidden rounded-2xl border-2 border-border bg-muted">

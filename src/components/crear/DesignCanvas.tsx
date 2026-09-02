@@ -53,6 +53,8 @@ export function DesignCanvas({
   areaHeight,
   state,
   onChange,
+  onRetryDesign,
+  onReupload,
 }: {
   productImage: string;
   designUrl: string | null;
@@ -62,15 +64,42 @@ export function DesignCanvas({
   areaHeight: number;
   state: DesignPlacementState;
   onChange: (patch: Partial<DesignPlacementState>) => void;
+  /** Renueva el enlace del diseño cuando la imagen no carga. Devuelve true si lo logró. */
+  onRetryDesign?: () => Promise<boolean>;
+  /** Abre el selector de archivos para volver a subir el diseño. */
+  onReupload?: () => void;
 }) {
   const t = useT();
   const boxRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [failed, setFailed] = useState(false);
+  // La clave ignora el token del enlace: renovarlo no cuenta como diseño nuevo.
+  const designKey = designUrl ? designUrl.split("?")[0] : null;
+  const retries = useRef(0);
+
+  // Un diseño distinto siempre parte de cero: se limpia el estado de error.
+  useEffect(() => {
+    retries.current = 0;
+    setFailed(false);
+  }, [designKey]);
+
+  /** La imagen no cargó: se renueva el enlace una sola vez y, si no, se avisa. */
+  async function handleImgError() {
+    if (!designUrl) return;
+    if (onRetryDesign && retries.current < 1) {
+      retries.current += 1;
+      const ok = await onRetryDesign().catch(() => false);
+      if (ok) return;
+    }
+    setFailed(true);
+  }
+
 
   const box = AREA_BOX[placementId] ?? AREA_BOX.default;
   const ratio = areaWidth > 0 && areaHeight > 0 ? areaHeight / areaWidth : 1.25;
   const refW = box.w;
   const refH = Math.min(0.9, box.w * ratio);
+
 
   const move = useCallback(
     (clientX: number, clientY: number) => {
@@ -138,11 +167,12 @@ export function DesignCanvas({
               backgroundPosition: "0 0, 9px 9px",
             }}
           >
-            {designUrl ? (
+            {designUrl && !failed ? (
               <img
                 src={designUrl}
                 alt={t("Tu diseño", "Your design")}
                 draggable={false}
+                onError={() => void handleImgError()}
                 className="pointer-events-none absolute object-contain"
                 style={{
                   left: `${state.offsetX * 100}%`,
@@ -151,11 +181,30 @@ export function DesignCanvas({
                   transform: `translate(-50%, -50%) rotate(${state.rotation}deg)`,
                 }}
               />
+            ) : designUrl && failed ? (
+              <div className="absolute inset-0 grid place-items-center gap-2 px-3 text-center">
+                <p className="text-xs font-semibold text-muted-foreground">
+                  {t("No se pudo cargar tu diseño, vuelve a subirlo.", "We couldn't load your design, please upload it again.")}
+                </p>
+                {onReupload && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onReupload();
+                    }}
+                    className="rounded-lg border-2 border-primary bg-primary-soft px-3 py-1 text-xs font-bold"
+                  >
+                    {t("Volver a subir", "Upload again")}
+                  </button>
+                )}
+              </div>
             ) : (
               <span className="pointer-events-none absolute inset-0 grid place-items-center px-3 text-center text-xs font-semibold text-muted-foreground">
                 {t("Sube tu diseño y aparecerá aquí", "Upload your design and it will appear here")}
               </span>
             )}
+
           </div>
         </div>
 
