@@ -42,6 +42,10 @@ export type DesignPlacementState = {
   scale: number;
   /** Giro en grados. */
   rotation: number;
+  /** Ajustar, Rellenar o Repetir patrón. */
+  fitMode?: "fit" | "fill" | "tile";
+  /** Tamaño de cada repetición (fracción del ancho del área). */
+  tileScale?: number;
 };
 
 export function DesignCanvas({
