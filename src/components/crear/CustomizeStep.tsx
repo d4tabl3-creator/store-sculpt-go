@@ -213,19 +213,86 @@ export function CustomizeStep({
     }
   }
 
+  /** Lado máximo de la copia de trabajo que se dibuja en pantalla. */
+  const LADO_TRABAJO = 2000;
+
+  /**
+   * Genera una copia ligera para el lienzo y mide el archivo original.
+   * Si el navegador no puede procesarla, se devuelve sólo la medida.
+   */
+  async function copiaDeTrabajo(
+    file: File,
+  ): Promise<{ url: string | null; w: number; h: number } | null> {
+    try {
+      const bitmap = await createImageBitmap(file);
+      const w = bitmap.width;
+      const h = bitmap.height;
+      const factor = Math.min(1, LADO_TRABAJO / Math.max(w, h));
+      if (factor >= 1) {
+        bitmap.close?.();
+        return { url: URL.createObjectURL(file), w, h };
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(w * factor));
+      canvas.height = Math.max(1, Math.round(h * factor));
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        bitmap.close?.();
+        return { url: null, w, h };
+      }
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close?.();
+      const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
+      // Se libera el lienzo temporal de inmediato en dispositivos con poca memoria.
+      canvas.width = 0;
+      canvas.height = 0;
+      return { url: blob ? URL.createObjectURL(blob) : null, w, h };
+    } catch (err) {
+      console.error("[disenos] no se pudo generar la copia de trabajo", err);
+      return null;
+    }
+  }
+
   async function upload(file: File) {
     setUploading(true);
     try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) throw new Error(t("Inicia sesión otra vez", "Please sign in again"));
+      // PASO C: se revalida la sesión antes de empezar la subida.
+      const { data: sesion } = await supabase.auth.getSession();
+      let user = sesion.session?.user ?? null;
+      if (!user) {
+        const refrescada = await supabase.auth.refreshSession().catch(() => null);
+        user = refrescada?.data.session?.user ?? null;
+      }
+      if (!user) {
+        toast.error(
+          t(
+            "Tu sesión expiró. Vuelve a entrar a tu cuenta y sube el diseño otra vez.",
+            "Your session expired. Please sign in again and upload the design once more.",
+          ),
+        );
+        return;
+      }
+
+      setEditorErrorContext({
+        productoId: draft.productId,
+        zona: draft.placement,
+        archivoBytes: file.size,
+        archivoTipo: file.type,
+      });
+
+      // La copia reducida es sólo para dibujar; el original se sube íntegro.
+      const copia = await copiaDeTrabajo(file);
+
       const ext = file.name.split(".").pop()?.toLowerCase() || "png";
       const path = `${user.id}/disenos/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("disenos").upload(path, file, { contentType: file.type });
       if (error) throw new Error(error.message);
       const signed = await supabase.storage.from("disenos").createSignedUrl(path, FIRMA_SEGUNDOS);
       if (!signed.data?.signedUrl) throw new Error(t("No se pudo preparar tu diseño", "Could not prepare your design"));
-      setNatural(null);
-      update({ designUrl: signed.data.signedUrl, designPreview: URL.createObjectURL(file), mockups: [], mockupUrl: null });
+
+      setNatural(copia ? { w: copia.w, h: copia.h } : null);
+      setWorkPreview(copia?.url ?? null);
+      update({ designUrl: signed.data.signedUrl, designPreview: null, mockups: [], mockupUrl: null });
     } catch (err) {
       toast.error(mensajeUsuario(err, t("No se pudo subir el diseño. Intenta de nuevo en unos minutos.", "Could not upload the design. Please try again in a few minutes.")));
     } finally {
