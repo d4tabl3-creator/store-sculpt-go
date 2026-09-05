@@ -345,9 +345,16 @@ export function CustomizeStep({
                 tileScale: tile,
               }}
               onChange={(patch) => update({ ...patch, mockups: [], mockupUrl: null })}
-              onRetryDesign={renovarEnlace}
+              onRetryDesign={async () => {
+                // Si falla la copia ligera se vuelve al enlace persistente.
+                if (workUrl) {
+                  setWorkPreview(null);
+                  return true;
+                }
+                return renovarEnlace();
+              }}
               onReupload={() => fileRef.current?.click()}
-              onNaturalSize={(w, h) => setNatural({ w, h })}
+              onNaturalSize={(w, h) => setNatural((prev) => prev ?? { w, h })}
             >
               {draft.designUrl && (
                 <div className="grid gap-3">
