@@ -40,6 +40,40 @@ export function CustomizeStep({
   const [uploading, setUploading] = useState(false);
   /** Medidas reales del archivo subido, para avisar de baja resolución. */
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
+  /**
+   * Copia de trabajo reducida (máx. ~2000 px) que sólo se usa para dibujar el
+   * lienzo. El archivo ORIGINAL se sube íntegro al almacenamiento y es el que
+   * llega a fabricación: la calidad de producción no se toca.
+   */
+  const [workUrl, setWorkUrl] = useState<string | null>(null);
+  const workRef = useRef<string | null>(null);
+
+  /** Libera el enlace temporal anterior para no acumular memoria. */
+  function setWorkPreview(url: string | null) {
+    if (workRef.current) {
+      try {
+        URL.revokeObjectURL(workRef.current);
+      } catch {
+        /* el navegador ya lo liberó */
+      }
+    }
+    workRef.current = url;
+    setWorkUrl(url);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (workRef.current) {
+        try {
+          URL.revokeObjectURL(workRef.current);
+        } catch {
+          /* el navegador ya lo liberó */
+        }
+        workRef.current = null;
+      }
+    };
+  }, []);
+
 
   useEffect(() => {
     if (draft.variants.length) return;
