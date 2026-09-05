@@ -328,9 +328,10 @@ export function CustomizeStep({
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <div>
           {draft.placements.length > 0 ? (
+            <CanvasErrorBoundary onReset={() => setWorkPreview(null)}>
             <DesignCanvas
               productImage={current?.image || draft.image}
-              designUrl={draft.designUrl || draft.designPreview}
+              designUrl={workUrl || draft.designUrl || draft.designPreview}
               placementId={draft.placement}
               placementLabel={area ? etiquetaZona(area) : undefined}
               areaWidth={area?.areaWidth ?? 0}
