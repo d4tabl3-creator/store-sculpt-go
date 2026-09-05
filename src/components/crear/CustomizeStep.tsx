@@ -448,6 +448,8 @@ export function CustomizeStep({
                 </div>
               )}
             </DesignCanvas>
+            </CanvasErrorBoundary>
+
 
 
           ) : (
