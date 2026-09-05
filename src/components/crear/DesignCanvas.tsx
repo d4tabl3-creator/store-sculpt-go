@@ -1,5 +1,52 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Component, useCallback, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { useT } from "@/lib/i18n";
+import { reportLovableError } from "@/lib/lovable-error-reporting";
+
+/**
+ * Barrera de error local del lienzo: si el dibujado falla, sólo se cae este
+ * recuadro con un mensaje amable, nunca la aplicación completa.
+ */
+export class CanvasErrorBoundary extends Component<
+  { children: ReactNode; onReset?: () => void },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    reportLovableError(error, {
+      source: "design_canvas_boundary",
+      componentStack: info.componentStack ?? null,
+    });
+  }
+
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div className="grid place-items-center gap-3 rounded-2xl border-2 border-border bg-card p-6 text-center">
+        <p className="text-sm font-semibold">
+          No pudimos mostrar el editor de tu diseño en este momento.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Puedes intentarlo de nuevo o subir una imagen más ligera.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            this.setState({ failed: false });
+            this.props.onReset?.();
+          }}
+          className="rounded-lg border-2 border-primary bg-primary-soft px-3 py-1 text-xs font-bold"
+        >
+          Intentar de nuevo
+        </button>
+      </div>
+    );
+  }
+}
 
 /**
  * Lienzo de diseño.
