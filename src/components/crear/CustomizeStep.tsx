@@ -188,6 +188,12 @@ export function CustomizeStep({
   }, [zonas, draft.placement]);
 
 
+  // Cada zona tiene su propio diseño: la copia de trabajo no se reutiliza.
+  useEffect(() => {
+    setWorkPreview(null);
+    setNatural(null);
+  }, [draft.placement]);
+
   /** Vigencia corta del enlace del diseño; se renueva cuando hace falta. */
   const FIRMA_SEGUNDOS = 60 * 60 * 24 * 7;
 
