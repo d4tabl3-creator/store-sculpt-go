@@ -384,13 +384,22 @@ function CheckoutForm({
         {quoteError && <p className="mt-1 text-xs text-destructive">{quoteError}</p>}
         <div className="mt-1 flex justify-between text-lg font-bold"><span>{t("Total", "Total")}</span><span>${(total / 100).toFixed(2)}</span></div>
       </div>
+      {!canPay && (
+        <p className="mt-3 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-center text-xs text-warning">
+          {t(
+            "Los pagos de esta tienda están en mantenimiento. Vuelve a intentarlo más tarde.",
+            "Payments for this store are temporarily unavailable. Please try again later.",
+          )}
+        </p>
+      )}
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>{t("Atrás", "Back")}</Button>
-        <Button type="submit" disabled={submitting || !quote} style={{ background: store.primary_color }}>
+        <Button type="submit" disabled={submitting || !quote || !canPay} style={{ background: store.primary_color }}>
           {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
           {t("Ir a pagar", "Go to payment")}
         </Button>
       </div>
+
       <p className="mt-2 text-center text-[10px] text-muted-foreground">{t("Pago seguro y cifrado.", "Secure, encrypted payment.")}</p>
     </form>
   );
