@@ -158,31 +158,11 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
         };
       }
 
-      // Insertar orden con service role
-      const { data: order, error: orderErr } = await supabaseAdmin
-        .from("store_orders")
-        .insert({
-          store_id: store.id,
-          customer_name: data.customer.name.trim(),
-          customer_email: data.customer.email.trim().toLowerCase(),
-          customer_phone: data.customer.phone?.trim() || null,
-          shipping_address: `${data.customer.address.trim()} · ${shippingLabel}`,
-          shipping_details: shippingDetails,
+      // ORDEN CRÍTICO: primero se abre el cobro, después se guarda el pedido.
+      // Si la pasarela no está disponible o falla, NO queda ningún pedido en la
+      // base y por lo tanto nada puede llegar a fabricación sin cobro.
+      const orderId = crypto.randomUUID();
 
-
-          items: orderItems,
-          subtotal_cents: subtotal,
-          shipping_cents: shippingCents,
-          total_cents: totalCents,
-          notes: data.customer.notes?.trim() || null,
-          status: "pending",
-          payment_status: "pending",
-        })
-        .select("id")
-        .single();
-      if (orderErr || !order) return { error: orderErr?.message || "No se pudo crear el pedido" };
-
-      // Stripe
       const stripe = createStripeClient(data.environment);
       const lineItems = orderItems.map((it) => ({
         quantity: it.qty,
@@ -202,7 +182,7 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           },
         });
       }
-      const description = `${store.name} — pedido ${(order.id as string).slice(0, 8)}`;
+      const description = `${store.name} — pedido ${orderId.slice(0, 8)}`;
 
       const session = await stripe.checkout.sessions.create({
         line_items: lineItems,
@@ -213,19 +193,43 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
         payment_intent_data: { description },
         metadata: {
           kind: "store_order",
-          orderId: order.id as string,
+          orderId,
           storeId: store.id as string,
           storeSlug: store.slug as string,
           merchantId: store.owner_id as string,
         },
       });
 
-      await supabaseAdmin
-        .from("store_orders")
-        .update({ stripe_session_id: session.id })
-        .eq("id", order.id as string);
+      if (!session.client_secret) {
+        return { error: "No pudimos abrir el pago en este momento. Inténtalo de nuevo en unos minutos." };
+      }
 
-      return { clientSecret: session.client_secret ?? "", orderId: order.id as string };
+      // Sólo ahora, con el cobro ya abierto, se registra el pedido.
+      const { data: order, error: orderErr } = await supabaseAdmin
+        .from("store_orders")
+        .insert({
+          id: orderId,
+          store_id: store.id,
+          customer_name: data.customer.name.trim(),
+          customer_email: data.customer.email.trim().toLowerCase(),
+          customer_phone: data.customer.phone?.trim() || null,
+          shipping_address: `${data.customer.address.trim()} · ${shippingLabel}`,
+          shipping_details: shippingDetails,
+          items: orderItems,
+          subtotal_cents: subtotal,
+          shipping_cents: shippingCents,
+          total_cents: totalCents,
+          notes: data.customer.notes?.trim() || null,
+          status: "pending",
+          payment_status: "pending",
+          stripe_session_id: session.id,
+        })
+        .select("id")
+        .single();
+      if (orderErr || !order) return { error: orderErr?.message || "No se pudo crear el pedido" };
+
+      return { clientSecret: session.client_secret, orderId };
+
     } catch (error) {
       console.error("startStoreCheckout error:", error);
       return { error: getStripeErrorMessage(error) };
