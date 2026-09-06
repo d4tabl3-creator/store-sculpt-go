@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { EmbeddedStripe } from "@/components/EmbeddedStripe";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { getStripeEnvironment, paymentsAvailable } from "@/lib/stripe";
 import { startStoreCheckout, quoteStoreCart } from "@/lib/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useT } from "@/lib/i18n";
@@ -318,22 +318,41 @@ function CheckoutForm({
     return orderInfo.clientSecret;
   }, [orderInfo]);
 
+  const canPay = paymentsAvailable();
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!canPay) {
+      toast.error(t(
+        "Los pagos de esta tienda están en mantenimiento. Vuelve a intentarlo más tarde.",
+        "Payments for this store are temporarily unavailable. Please try again later.",
+      ));
+      return;
+    }
     setSubmitting(true);
-    const res = await startStoreCheckout({
-      data: {
-        storeId: store.id,
-        items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })),
-        customer: { name, email, phone: phone || undefined, address, notes: notes || undefined },
-        returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}&slug=${store.slug}`,
-        environment: getStripeEnvironment(),
-      },
-    });
-    setSubmitting(false);
-    if ("error" in res) { toast.error(mensajeUsuario(res.error)); return; }
-    setOrderInfo({ orderId: res.orderId, clientSecret: res.clientSecret });
+    try {
+      const res = await startStoreCheckout({
+        data: {
+          storeId: store.id,
+          items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })),
+          customer: { name, email, phone: phone || undefined, address, notes: notes || undefined },
+          returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}&slug=${store.slug}`,
+          environment: getStripeEnvironment(),
+        },
+      });
+      if ("error" in res) { toast.error(mensajeUsuario(res.error)); return; }
+      setOrderInfo({ orderId: res.orderId, clientSecret: res.clientSecret });
+    } catch (err) {
+      console.error("checkout error:", err);
+      toast.error(t(
+        "No pudimos abrir el pago. Tu pedido no se registró; inténtalo de nuevo.",
+        "We couldn't open the payment. Your order was not created; please try again.",
+      ));
+    } finally {
+      setSubmitting(false);
+    }
   }
+
 
   if (orderInfo) {
     return (
@@ -365,13 +384,22 @@ function CheckoutForm({
         {quoteError && <p className="mt-1 text-xs text-destructive">{quoteError}</p>}
         <div className="mt-1 flex justify-between text-lg font-bold"><span>{t("Total", "Total")}</span><span>${(total / 100).toFixed(2)}</span></div>
       </div>
+      {!canPay && (
+        <p className="mt-3 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-center text-xs text-warning">
+          {t(
+            "Los pagos de esta tienda están en mantenimiento. Vuelve a intentarlo más tarde.",
+            "Payments for this store are temporarily unavailable. Please try again later.",
+          )}
+        </p>
+      )}
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>{t("Atrás", "Back")}</Button>
-        <Button type="submit" disabled={submitting || !quote} style={{ background: store.primary_color }}>
+        <Button type="submit" disabled={submitting || !quote || !canPay} style={{ background: store.primary_color }}>
           {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
           {t("Ir a pagar", "Go to payment")}
         </Button>
       </div>
+
       <p className="mt-2 text-center text-[10px] text-muted-foreground">{t("Pago seguro y cifrado.", "Secure, encrypted payment.")}</p>
     </form>
   );
