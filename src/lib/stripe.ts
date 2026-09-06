@@ -12,6 +12,14 @@ function paymentsEnvironment(): StripeEnv {
   );
 }
 
+/**
+ * ¿Se puede cobrar en este sitio? Si no hay cobro configurado, la tienda NO
+ * debe aceptar pedidos: un pedido sin cobro es fabricación regalada.
+ */
+export function paymentsAvailable(): boolean {
+  return !!clientToken && (clientToken.startsWith("pk_test_") || clientToken.startsWith("pk_live_"));
+}
+
 let stripePromise: Promise<Stripe | null> | null = null;
 
 export function getStripe(): Promise<Stripe | null> {
@@ -25,3 +33,4 @@ export function getStripe(): Promise<Stripe | null> {
 export function getStripeEnvironment(): StripeEnv {
   return paymentsEnvironment();
 }
+
