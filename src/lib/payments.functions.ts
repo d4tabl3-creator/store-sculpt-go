@@ -6,6 +6,7 @@ import {
 } from "@/lib/stripe.server";
 
 import { quoteCart, type CostedProduct } from "@/lib/checkout-quote";
+import { USD_MXN } from "@/lib/pricing";
 
 type CartLine = { productId: string; qty: number };
 type CheckoutResult = { clientSecret: string; orderId: string } | { error: string };
@@ -144,7 +145,6 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       const orderItems = quote.lines;
       const subtotal = quote.subtotalCents;
       const shippingCents = quote.shippingCents;
-      const totalCents = quote.totalCents;
       const shippingLabel = "Envío a domicilio";
 
 
@@ -219,13 +219,13 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           unit_amount: it.price_cents,
         },
       }));
-      if (shippingCents > 0) {
+      if (finalShippingCents > 0) {
         lineItems.push({
           quantity: 1,
           price_data: {
             currency: "mxn",
             product_data: { name: shippingLabel },
-            unit_amount: shippingCents,
+            unit_amount: finalShippingCents,
           },
         });
       }
@@ -264,8 +264,8 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           shipping_details: shippingDetails,
           items: orderItems,
           subtotal_cents: subtotal,
-          shipping_cents: shippingCents,
-          total_cents: totalCents,
+          shipping_cents: finalShippingCents,
+          total_cents: subtotal + finalShippingCents,
           notes: data.customer.notes?.trim() || null,
           status: "pending",
           payment_status: "pending",
