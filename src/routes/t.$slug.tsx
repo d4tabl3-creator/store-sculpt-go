@@ -15,6 +15,7 @@ import { startStoreCheckout, quoteStoreCart } from "@/lib/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useT } from "@/lib/i18n";
 import { publicUrlFor } from "@/lib/public-url";
+import { StoreTemplate } from "@/components/store-templates";
 
 type Store = {
   id: string;
@@ -22,6 +23,7 @@ type Store = {
   name: string;
   niche: string;
   primary_color: string;
+  template: string;
 };
 type Product = {
   id: string;
@@ -37,7 +39,7 @@ export const Route = createFileRoute("/t/$slug")({
   loader: async ({ params }) => {
     const { data: store } = await supabase
       .from("stores")
-      .select("id, slug, name, niche, primary_color")
+      .select("id, slug, name, niche, primary_color, template")
       .eq("slug", params.slug)
       .eq("status", "published")
       .maybeSingle();
@@ -174,132 +176,90 @@ function Storefront() {
     else setCart((c) => c.map((x) => (x.product.id === pid ? { ...x, qty } : x)));
   }
 
+  const cartButton = (
+    <button
+      onClick={() => setOpen(true)}
+      className="relative flex items-center gap-2"
+      aria-label="Abrir carrito"
+    >
+      <ShoppingBag className="size-5" />
+      {cart.reduce((s, c) => s + c.qty, 0) > 0 && (
+        <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-white text-[10px] font-bold text-black">
+          {cart.reduce((s, c) => s + c.qty, 0)}
+        </span>
+      )}
+    </button>
+  );
+
   return (
-    <div className="min-h-screen bg-background" style={accent as React.CSSProperties}>
+    <div style={accent as React.CSSProperties}>
       <PaymentTestModeBanner />
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link to="/t/$slug" params={{ slug: store.slug }} className="flex items-center gap-2">
-            <span className="grid size-9 place-items-center rounded-lg font-bold text-white" style={{ background: store.primary_color }}>
-              {store.name.slice(0, 1)}
-            </span>
-            <div>
-              <div className="font-display text-lg font-extrabold leading-none">{store.name}</div>
-              <div className="text-xs text-muted-foreground">{store.niche}</div>
-            </div>
-          </Link>
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="relative">
-                <ShoppingBag className="size-4" />
-                <span className="ml-2 hidden sm:inline">{t("Carrito", "Cart")}</span>
-                {cart.length > 0 && (
-                  <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {cart.reduce((s, c) => s + c.qty, 0)}
-                  </span>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="flex w-full flex-col sm:max-w-md">
-              <SheetHeader><SheetTitle>{t("Tu carrito", "Your cart")}</SheetTitle></SheetHeader>
-              {!checkout ? (
-                <>
-                  <div className="flex-1 overflow-y-auto py-4">
-                    {cart.length === 0 ? (
-                      <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
-                        <ShoppingBag className="size-10 text-muted-foreground/50" />
-                        <p className="text-muted-foreground">{t("Tu carrito está vacío", "Your cart is empty")}</p>
-                        <p className="text-sm text-muted-foreground">{t("Explora los productos y agrega lo que te guste.", "Browse the products and add what you like.")}</p>
-                        <Button variant="outline" onClick={() => setOpen(false)}>
-                          {t("Ver productos", "View products")}
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {cart.map((c) => (
-                          <div key={c.product.id} className="flex gap-3 rounded-lg border border-border p-3">
-                            {c.product.image_url && <img src={c.product.image_url} alt="" className="size-16 rounded object-cover" />}
-                            <div className="flex-1">
-                              <div className="font-medium">{c.product.name}</div>
-                              <div className="text-sm text-muted-foreground">${(c.product.price_cents / 100).toFixed(2)}</div>
-                              <div className="mt-2 flex items-center gap-2">
-                                <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Quitar uno", "Remove one")} onClick={() => setQty(c.product.id, c.qty - 1)}><Minus className="size-3" /></Button>
-                                <span className="w-6 text-center text-sm font-bold">{c.qty}</span>
-                                <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Agregar uno", "Add one")} onClick={() => setQty(c.product.id, c.qty + 1)}><Plus className="size-3" /></Button>
-                                <Button size="sm" variant="ghost" className="ml-auto h-7 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => setQty(c.product.id, 0)}>
-                                  <X className="mr-1 size-3" /> {t("Quitar", "Remove")}
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild><span className="sr-only" /></SheetTrigger>
+        <SheetContent className="flex w-full flex-col sm:max-w-md">
+          <SheetHeader><SheetTitle>{t("Tu carrito", "Your cart")}</SheetTitle></SheetHeader>
+          {!checkout ? (
+            <>
+              <div className="flex-1 overflow-y-auto py-4">
+                {cart.length === 0 ? (
+                  <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
+                    <ShoppingBag className="size-10 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">{t("Tu carrito está vacío", "Your cart is empty")}</p>
+                    <p className="text-sm text-muted-foreground">{t("Explora los productos y agrega lo que te guste.", "Browse the products and add what you like.")}</p>
+                    <Button variant="outline" onClick={() => setOpen(false)}>
+                      {t("Ver productos", "View products")}
+                    </Button>
                   </div>
-                  {cart.length > 0 && (
-                    <div className="border-t border-border pt-4">
-                      <div className="flex justify-between text-lg font-bold">
-                        <span>{t("Subtotal", "Subtotal")}</span>
-                        <span>${(subtotal / 100).toFixed(2)}</span>
+                ) : (
+                  <div className="space-y-3">
+                    {cart.map((c) => (
+                      <div key={c.product.id} className="flex gap-3 rounded-lg border border-border p-3">
+                        {c.product.image_url && <img src={c.product.image_url} alt="" className="size-16 rounded object-cover" />}
+                        <div className="flex-1">
+                          <div className="font-medium">{c.product.name}</div>
+                          <div className="text-sm text-muted-foreground">${(c.product.price_cents / 100).toFixed(2)}</div>
+                          <div className="mt-2 flex items-center gap-2">
+                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Quitar uno", "Remove one")} onClick={() => setQty(c.product.id, c.qty - 1)}><Minus className="size-3" /></Button>
+                            <span className="w-6 text-center text-sm font-bold">{c.qty}</span>
+                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Agregar uno", "Add one")} onClick={() => setQty(c.product.id, c.qty + 1)}><Plus className="size-3" /></Button>
+                            <Button size="sm" variant="ghost" className="ml-auto h-7 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => setQty(c.product.id, 0)}>
+                              <X className="mr-1 size-3" /> {t("Quitar", "Remove")}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                      <Button onClick={() => setCheckout(true)} className="mt-4 w-full" style={{ background: store.primary_color }}>
-                        {t("Continuar al pago", "Continue to payment")}
-                      </Button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <CheckoutForm
-                  store={store}
-                  cart={cart}
-                  subtotal={subtotal}
-                  onCancel={() => setCheckout(false)}
-                  onDone={() => {
-                    setCart([]);
-                    setCheckout(false);
-                    setOpen(false);
-                  }}
-                />
-              )}
-            </SheetContent>
-          </Sheet>
-        </div>
-      </header>
-
-      <section className="border-b border-border/60" style={{ background: `linear-gradient(135deg, ${store.primary_color}15, transparent)` }}>
-        <div className="mx-auto max-w-6xl px-4 py-12 text-center">
-          <h1 className="font-display text-4xl font-extrabold sm:text-5xl">{store.name}</h1>
-          <p className="mt-3 text-muted-foreground">{t("Productos seleccionados con cariño. Envío a todo el país.", "Products handpicked with care. Nationwide shipping.")}</p>
-        </div>
-      </section>
-
-      <main className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((p: Product) => (
-            <article key={p.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-pop">
-              {p.image_url && (
-                <div className="aspect-square overflow-hidden bg-muted">
-                  <img src={p.image_url} alt={p.name} className="size-full object-cover transition-transform hover:scale-105" loading="lazy" />
-                </div>
-              )}
-              <div className="p-4">
-                <h3 className="font-display text-lg font-bold">{p.name}</h3>
-                {p.description && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>}
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-xl font-bold">${(p.price_cents / 100).toFixed(2)}</span>
-                  <Button onClick={() => add(p)} size="sm" style={{ background: store.primary_color }}>
-                    <Plus className="mr-1 size-3.5" /> {t("Agregar", "Add")}
+                    ))}
+                  </div>
+                )}
+              </div>
+              {cart.length > 0 && (
+                <div className="border-t border-border pt-4">
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>{t("Subtotal", "Subtotal")}</span>
+                    <span>${(subtotal / 100).toFixed(2)}</span>
+                  </div>
+                  <Button onClick={() => setCheckout(true)} className="mt-4 w-full" style={{ background: store.primary_color }}>
+                    {t("Continuar al pago", "Continue to payment")}
                   </Button>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </main>
-
-      <footer className="border-t border-border/60 py-8 text-center text-xs text-muted-foreground">
-        {t("Hecho con", "Made with")} <span className="font-bold text-foreground">Dªtªblɛ</span>
-      </footer>
+              )}
+            </>
+          ) : (
+            <CheckoutForm
+              store={store}
+              cart={cart}
+              subtotal={subtotal}
+              onCancel={() => setCheckout(false)}
+              onDone={() => {
+                setCart([]);
+                setCheckout(false);
+                setOpen(false);
+              }}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+      <StoreTemplate store={store} products={products} onAdd={add} cartButton={cartButton} />
     </div>
   );
 }
