@@ -6,6 +6,7 @@ import {
 } from "@/lib/stripe.server";
 
 import { quoteCart, type CostedProduct } from "@/lib/checkout-quote";
+import { USD_MXN } from "@/lib/pricing";
 
 type CartLine = { productId: string; qty: number };
 type CheckoutResult = { clientSecret: string; orderId: string } | { error: string };
@@ -144,7 +145,6 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       const orderItems = quote.lines;
       const subtotal = quote.subtotalCents;
       const shippingCents = quote.shippingCents;
-      const totalCents = quote.totalCents;
       const shippingLabel = "Envío a domicilio";
 
 
@@ -158,10 +158,57 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
         };
       }
 
+      // Un producto sin vínculo de fabricación jamás se cobra: se cobraría un
+      // pedido que nunca podría producirse.
+      const byIdForCheck = new Map(((products || []) as CostedProduct[]).map((p) => [p.id, p]));
+      for (const line of orderItems) {
+        const p = byIdForCheck.get(line.productId);
+        const providerId = p?.source_provider ?? "internal";
+        if (!p || providerId === "internal") continue;
+        const { data: binding } = await supabaseAdmin
+          .from("commerce_product_bindings")
+          .select("external_product_id, external_variant_id")
+          .eq("product_id", p.id)
+          .eq("provider", providerId)
+          .maybeSingle();
+        if (!binding?.external_product_id || !binding?.external_variant_id) {
+          return {
+            error: `"${p.name}" no está disponible por ahora. Escríbenos a hola@datable.com.mx y te ayudamos.`,
+          };
+        }
+      }
+
+      // Envío en tres capas: cotización real del taller → costo guardado → no vender.
+      let finalShippingCents = shippingCents;
+      try {
+        const { estimateShippingForStore } = await import("@/lib/commerce/orchestrator.server");
+        const rates = await estimateShippingForStore(
+          store.id as string,
+          shippingDetails,
+          data.items.map((i) => ({ productId: i.productId, qty: i.qty })),
+        );
+        if (rates?.length) {
+          const standard =
+            rates.find((r) => /standard/i.test(`${r.id} ${r.label}`)) ??
+            rates.slice().sort((a, b) => a.costUsd - b.costUsd)[0];
+          const cents = Math.round((standard?.costUsd ?? 0) * USD_MXN * 100);
+          if (cents > 0) finalShippingCents = cents;
+        }
+      } catch (err) {
+        console.error("estimateShippingForStore error:", err);
+      }
+      if (!(finalShippingCents > 0)) {
+        return {
+          error:
+            "No pudimos calcular el costo de envío a tu dirección en este momento. Escríbenos a hola@datable.com.mx y lo resolvemos contigo.",
+        };
+      }
+
       // ORDEN CRÍTICO: primero se abre el cobro, después se guarda el pedido.
       // Si la pasarela no está disponible o falla, NO queda ningún pedido en la
       // base y por lo tanto nada puede llegar a fabricación sin cobro.
       const orderId = crypto.randomUUID();
+
 
       const stripe = createStripeClient(data.environment);
       const lineItems = orderItems.map((it) => ({
@@ -172,13 +219,13 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           unit_amount: it.price_cents,
         },
       }));
-      if (shippingCents > 0) {
+      if (finalShippingCents > 0) {
         lineItems.push({
           quantity: 1,
           price_data: {
             currency: "mxn",
             product_data: { name: shippingLabel },
-            unit_amount: shippingCents,
+            unit_amount: finalShippingCents,
           },
         });
       }
@@ -217,8 +264,8 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           shipping_details: shippingDetails,
           items: orderItems,
           subtotal_cents: subtotal,
-          shipping_cents: shippingCents,
-          total_cents: totalCents,
+          shipping_cents: finalShippingCents,
+          total_cents: subtotal + finalShippingCents,
           notes: data.customer.notes?.trim() || null,
           status: "pending",
           payment_status: "pending",
