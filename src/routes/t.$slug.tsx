@@ -118,9 +118,44 @@ function StoreNotFound() {
 function Storefront() {
   const t = useT();
   const { store, products } = Route.useLoaderData();
+  const storageKey = `datable-cart-${store.slug}`;
   const [cart, setCart] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
+
+  // El carrito se conserva en el navegador de la clienta: si cierra el
+  // carrito, va y vuelve dentro de la tienda, o recarga la página, sus
+  // productos siguen ahí. Solo se vacía al completar la compra.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw) as CartItem[];
+        if (Array.isArray(saved)) {
+          const valid = saved.filter((c) => products.some((p) => p.id === c.product.id));
+          if (valid.length > 0) setCart(valid);
+        }
+      }
+    } catch {
+      // Si no se puede leer, el carrito simplemente empieza vacío.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]);
+
+  useEffect(() => {
+    try {
+      if (cart.length > 0) window.localStorage.setItem(storageKey, JSON.stringify(cart));
+      else window.localStorage.removeItem(storageKey);
+    } catch {
+      // Sin espacio o modo privado: el carrito vive solo en memoria.
+    }
+  }, [cart, storageKey]);
+
+  // Si el carrito queda vacío estando en la pantalla de datos, regresar a la
+  // vista del carrito (que mostrará el estado vacío amable).
+  useEffect(() => {
+    if (cart.length === 0 && checkout) setCheckout(false);
+  }, [cart.length, checkout]);
 
   const subtotal = cart.reduce((s, c) => s + c.product.price_cents * c.qty, 0);
   const accent = { ["--accent-color" as any]: store.primary_color };
@@ -171,7 +206,14 @@ function Storefront() {
                 <>
                   <div className="flex-1 overflow-y-auto py-4">
                     {cart.length === 0 ? (
-                      <p className="text-center text-muted-foreground">{t("Tu carrito está vacío", "Your cart is empty")}</p>
+                      <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
+                        <ShoppingBag className="size-10 text-muted-foreground/50" />
+                        <p className="text-muted-foreground">{t("Tu carrito está vacío", "Your cart is empty")}</p>
+                        <p className="text-sm text-muted-foreground">{t("Explora los productos y agrega lo que te guste.", "Browse the products and add what you like.")}</p>
+                        <Button variant="outline" onClick={() => setOpen(false)}>
+                          {t("Ver productos", "View products")}
+                        </Button>
+                      </div>
                     ) : (
                       <div className="space-y-3">
                         {cart.map((c) => (
@@ -181,10 +223,12 @@ function Storefront() {
                               <div className="font-medium">{c.product.name}</div>
                               <div className="text-sm text-muted-foreground">${(c.product.price_cents / 100).toFixed(2)}</div>
                               <div className="mt-2 flex items-center gap-2">
-                                <Button size="sm" variant="outline" className="size-7 p-0" onClick={() => setQty(c.product.id, c.qty - 1)}><Minus className="size-3" /></Button>
+                                <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Quitar uno", "Remove one")} onClick={() => setQty(c.product.id, c.qty - 1)}><Minus className="size-3" /></Button>
                                 <span className="w-6 text-center text-sm font-bold">{c.qty}</span>
-                                <Button size="sm" variant="outline" className="size-7 p-0" onClick={() => setQty(c.product.id, c.qty + 1)}><Plus className="size-3" /></Button>
-                                <Button size="sm" variant="ghost" className="ml-auto size-7 p-0" onClick={() => setQty(c.product.id, 0)}><X className="size-3" /></Button>
+                                <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Agregar uno", "Add one")} onClick={() => setQty(c.product.id, c.qty + 1)}><Plus className="size-3" /></Button>
+                                <Button size="sm" variant="ghost" className="ml-auto h-7 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => setQty(c.product.id, 0)}>
+                                  <X className="mr-1 size-3" /> {t("Quitar", "Remove")}
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -254,7 +298,7 @@ function Storefront() {
       </main>
 
       <footer className="border-t border-border/60 py-8 text-center text-xs text-muted-foreground">
-        {t("Hecho con", "Made with")} <Link to="/" className="font-bold text-foreground hover:text-primary">DªTªBLe</Link>
+        {t("Hecho con", "Made with")} <span className="font-bold text-foreground">DªTªBLe</span>
       </footer>
     </div>
   );
