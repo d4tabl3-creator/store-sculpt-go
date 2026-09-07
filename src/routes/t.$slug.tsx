@@ -206,7 +206,14 @@ function Storefront() {
                 <>
                   <div className="flex-1 overflow-y-auto py-4">
                     {cart.length === 0 ? (
-                      <p className="text-center text-muted-foreground">{t("Tu carrito está vacío", "Your cart is empty")}</p>
+                      <div className="flex h-full flex-col items-center justify-center gap-3 py-10 text-center">
+                        <ShoppingBag className="size-10 text-muted-foreground/50" />
+                        <p className="text-muted-foreground">{t("Tu carrito está vacío", "Your cart is empty")}</p>
+                        <p className="text-sm text-muted-foreground">{t("Explora los productos y agrega lo que te guste.", "Browse the products and add what you like.")}</p>
+                        <Button variant="outline" onClick={() => setOpen(false)}>
+                          {t("Ver productos", "View products")}
+                        </Button>
+                      </div>
                     ) : (
                       <div className="space-y-3">
                         {cart.map((c) => (
