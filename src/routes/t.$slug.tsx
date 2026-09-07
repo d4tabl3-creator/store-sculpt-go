@@ -118,9 +118,44 @@ function StoreNotFound() {
 function Storefront() {
   const t = useT();
   const { store, products } = Route.useLoaderData();
+  const storageKey = `datable-cart-${store.slug}`;
   const [cart, setCart] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
+
+  // El carrito se conserva en el navegador de la clienta: si cierra el
+  // carrito, va y vuelve dentro de la tienda, o recarga la página, sus
+  // productos siguen ahí. Solo se vacía al completar la compra.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw) as CartItem[];
+        if (Array.isArray(saved)) {
+          const valid = saved.filter((c) => products.some((p) => p.id === c.product.id));
+          if (valid.length > 0) setCart(valid);
+        }
+      }
+    } catch {
+      // Si no se puede leer, el carrito simplemente empieza vacío.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]);
+
+  useEffect(() => {
+    try {
+      if (cart.length > 0) window.localStorage.setItem(storageKey, JSON.stringify(cart));
+      else window.localStorage.removeItem(storageKey);
+    } catch {
+      // Sin espacio o modo privado: el carrito vive solo en memoria.
+    }
+  }, [cart, storageKey]);
+
+  // Si el carrito queda vacío estando en la pantalla de datos, regresar a la
+  // vista del carrito (que mostrará el estado vacío amable).
+  useEffect(() => {
+    if (cart.length === 0 && checkout) setCheckout(false);
+  }, [cart.length, checkout]);
 
   const subtotal = cart.reduce((s, c) => s + c.product.price_cents * c.qty, 0);
   const accent = { ["--accent-color" as any]: store.primary_color };
