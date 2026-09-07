@@ -223,10 +223,12 @@ function Storefront() {
                               <div className="font-medium">{c.product.name}</div>
                               <div className="text-sm text-muted-foreground">${(c.product.price_cents / 100).toFixed(2)}</div>
                               <div className="mt-2 flex items-center gap-2">
-                                <Button size="sm" variant="outline" className="size-7 p-0" onClick={() => setQty(c.product.id, c.qty - 1)}><Minus className="size-3" /></Button>
+                                <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Quitar uno", "Remove one")} onClick={() => setQty(c.product.id, c.qty - 1)}><Minus className="size-3" /></Button>
                                 <span className="w-6 text-center text-sm font-bold">{c.qty}</span>
-                                <Button size="sm" variant="outline" className="size-7 p-0" onClick={() => setQty(c.product.id, c.qty + 1)}><Plus className="size-3" /></Button>
-                                <Button size="sm" variant="ghost" className="ml-auto size-7 p-0" onClick={() => setQty(c.product.id, 0)}><X className="size-3" /></Button>
+                                <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Agregar uno", "Add one")} onClick={() => setQty(c.product.id, c.qty + 1)}><Plus className="size-3" /></Button>
+                                <Button size="sm" variant="ghost" className="ml-auto h-7 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => setQty(c.product.id, 0)}>
+                                  <X className="mr-1 size-3" /> {t("Quitar", "Remove")}
+                                </Button>
                               </div>
                             </div>
                           </div>
