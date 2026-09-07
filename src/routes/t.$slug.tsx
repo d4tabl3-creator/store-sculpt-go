@@ -298,7 +298,7 @@ function Storefront() {
       </main>
 
       <footer className="border-t border-border/60 py-8 text-center text-xs text-muted-foreground">
-        {t("Hecho con", "Made with")} <Link to="/" className="font-bold text-foreground hover:text-primary">DªTªBLe</Link>
+        {t("Hecho con", "Made with")} <span className="font-bold text-foreground">DªTªBLe</span>
       </footer>
     </div>
   );
