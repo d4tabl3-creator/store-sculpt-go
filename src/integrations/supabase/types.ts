@@ -1192,6 +1192,7 @@ export type Database = {
           shipping_options: Json
           slug: string
           status: string
+          template: string
           theme: string
           updated_at: string
         }
@@ -1208,6 +1209,7 @@ export type Database = {
           shipping_options?: Json
           slug: string
           status?: string
+          template?: string
           theme?: string
           updated_at?: string
         }
@@ -1224,6 +1226,7 @@ export type Database = {
           shipping_options?: Json
           slug?: string
           status?: string
+          template?: string
           theme?: string
           updated_at?: string
         }
