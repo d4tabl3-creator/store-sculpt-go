@@ -134,7 +134,12 @@ function Storefront() {
       if (raw) {
         const saved = JSON.parse(raw) as CartItem[];
         if (Array.isArray(saved)) {
-          const valid = saved.filter((c) => products.some((p) => p.id === c.product.id));
+          const valid = saved
+            .filter((c) => products.some((p) => p.id === c.product.id))
+            .map((c) => {
+              const current = products.find((p) => p.id === c.product.id)!;
+              return { ...c, product: current };
+            });
           if (valid.length > 0) setCart(valid);
         }
       }
@@ -344,7 +349,7 @@ function CheckoutForm({
           environment: getStripeEnvironment(),
         },
       });
-      if ("error" in res) { toast.error(mensajeUsuario(res.error)); return; }
+      if ("error" in res) { toast.error(res.error); return; }
       setOrderInfo({ orderId: res.orderId, clientSecret: res.clientSecret });
     } catch (err) {
       console.error("checkout error:", err);
@@ -361,9 +366,6 @@ function CheckoutForm({
   if (orderInfo) {
     return (
       <div className="flex flex-1 flex-col overflow-y-auto py-4">
-        <p className="mb-3 text-sm text-muted-foreground">
-          {t("Total a pagar:", "Total to pay:")} <span className="font-bold text-foreground">${(total / 100).toFixed(2)} MXN</span>
-        </p>
         <EmbeddedStripe fetchClientSecret={fetchClientSecret} minHeight={500} />
         <Button type="button" variant="ghost" className="mt-3" onClick={onCancel}>{t("Cancelar", "Cancel")}</Button>
       </div>
@@ -383,10 +385,26 @@ function CheckoutForm({
         <div className="flex justify-between text-sm"><span>{t("Productos", "Products")}</span><span>${(subtotal / 100).toFixed(2)}</span></div>
         <div className="flex justify-between text-sm">
           <span>{t("Envío", "Shipping")}</span>
-          <span>{quote ? `$${(shippingCents / 100).toFixed(2)}` : quoteError ? "—" : t("Calculando…", "Calculating…")}</span>
+          <span>
+            {!quote && !quoteError
+              ? t("Calculando…", "Calculating…")
+              : quoteError
+              ? "—"
+              : shippingCents > 0
+              ? `$${(shippingCents / 100).toFixed(2)}`
+              : t("se calcula al confirmar", "calculated at checkout")}
+          </span>
         </div>
         {quoteError && <p className="mt-1 text-xs text-destructive">{quoteError}</p>}
         <div className="mt-1 flex justify-between text-lg font-bold"><span>{t("Total", "Total")}</span><span>${(total / 100).toFixed(2)}</span></div>
+        {shippingCents === 0 && quote && !quoteError && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t(
+              "El envío se suma al confirmar tu dirección.",
+              "Shipping is added when your address is confirmed.",
+            )}
+          </p>
+        )}
       </div>
       {!canPay && (
         <p className="mt-3 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-center text-xs text-warning">
