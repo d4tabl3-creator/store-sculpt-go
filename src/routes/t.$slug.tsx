@@ -185,7 +185,7 @@ function Storefront() {
     <button
       onClick={() => setOpen(true)}
       className="relative flex items-center gap-2"
-      aria-label="Abrir carrito"
+      aria-label={t("Abrir carrito", "Open cart")}
     >
       <ShoppingBag className="size-5" />
       {cart.reduce((s, c) => s + c.qty, 0) > 0 && (
@@ -306,7 +306,7 @@ function CheckoutForm({
     quoteStoreCart({ data: { storeId: store.id, items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })) } })
       .then((res) => {
         if (!alive) return;
-        if ("error" in res) setQuoteError(res.error);
+        if ("error" in res) setQuoteError(mensajeUsuario(res.error));
         else setQuote(res);
       })
       .catch(() => alive && setQuoteError(t("No pudimos calcular el envío.", "We could not calculate shipping.")));
@@ -349,7 +349,7 @@ function CheckoutForm({
           environment: getStripeEnvironment(),
         },
       });
-      if ("error" in res) { toast.error(res.error); return; }
+      if ("error" in res) { toast.error(mensajeUsuario(res.error)); return; }
       setOrderInfo({ orderId: res.orderId, clientSecret: res.clientSecret });
     } catch (err) {
       console.error("checkout error:", err);
