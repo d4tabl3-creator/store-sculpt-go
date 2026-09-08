@@ -44,7 +44,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const detected = detectLang();
     setLangState(detected);
-    document.documentElement.lang = detected;
+    // El contenido de la aplicación sigue escrito en español. Declarar el
+    // documento como "en" haría que el navegador no ofrezca traducirlo.
+    // Restaurar `detected` cuando los textos pasen por t() en toda la app.
+    document.documentElement.lang = "es";
   }, []);
 
   function setLang(l: Lang) {
@@ -54,7 +57,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     } catch {
       /* almacenamiento no disponible */
     }
-    document.documentElement.lang = l;
+    // Ver nota arriba: se mantiene "es" mientras el contenido sea español.
+    document.documentElement.lang = "es";
   }
 
   const t = (es: string, en: string) => (lang === "en" ? en : es);
