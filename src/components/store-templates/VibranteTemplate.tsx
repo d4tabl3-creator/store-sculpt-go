@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
 import type { StoreTemplateProps } from "./index";
+import fondoVibrante from "@/assets/hero-vibrante.jpg";
 
 /**
  * Plantilla vibrante: rosa, verde y naranja tropical.
@@ -8,9 +10,6 @@ import type { StoreTemplateProps } from "./index";
  * de favoritos y los banners promocionales están escritos pero apagados,
  * porque esas funciones y esos datos no existen todavía. Para encenderlos,
  * cambiar el interruptor correspondiente a true.
- *
- * El fondo del hero es un patrón dibujado con formas, no una fotografía:
- * no depende de archivos externos ni de licencias de terceros.
  */
 
 const MOSTRAR_ICONOS = false;
@@ -32,11 +31,11 @@ const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap');
 
 @keyframes vib-flotar { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-@keyframes vib-entra { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes vib-pasa { from { opacity: 0; transform: translateY(18px) scale(.96); } to { opacity: 1; transform: none; } }
 
 .vib-flotar { animation: vib-flotar 5s ease-in-out infinite; }
 .vib-flotar-lento { animation: vib-flotar 7s ease-in-out infinite; }
-.vib-entra { animation: vib-entra .6s ease both; }
+.vib-pasa { animation: vib-pasa .7s cubic-bezier(.16,1,.3,1) both; }
 
 .vib-crece { transition: transform .25s ease, box-shadow .25s ease, filter .25s ease; }
 .vib-crece:hover { transform: scale(1.06); filter: brightness(1.05); }
@@ -51,61 +50,31 @@ const CSS = `
 .vib-circulo:hover { transform: scale(1.1); }
 
 @media (prefers-reduced-motion: reduce) {
-  .vib-flotar, .vib-flotar-lento, .vib-entra { animation: none !important; }
+  .vib-flotar, .vib-flotar-lento, .vib-pasa { animation: none !important; }
   .vib-crece, .vib-tarjeta, .vib-foto, .vib-circulo { transition: none !important; }
   .vib-crece:hover, .vib-tarjeta:hover, .vib-circulo:hover { transform: none !important; }
 }
 `;
 
-/** Patrón tropical dibujado con formas. Sin imágenes ni dependencias. */
-function PatronTropical() {
-  const hoja = "M100 14 C142 56, 142 144, 100 186 C58 144, 58 56, 100 14 Z";
-  return (
-    <svg
-      viewBox="0 0 400 460"
-      preserveAspectRatio="xMidYMid slice"
-      className="h-full w-full"
-      aria-hidden="true"
-    >
-      <defs>
-        <pattern id="vib-patron" width="200" height="200" patternUnits="userSpaceOnUse">
-          <rect width="200" height="200" fill={CREMA} />
-
-          <g transform="translate(-10 -20) rotate(-18 100 100) scale(0.62)">
-            <path d={hoja} fill={VERDE} />
-            <path d="M100 24 L100 176" stroke={CREMA} strokeWidth="5" strokeLinecap="round" />
-          </g>
-
-          <g transform="translate(96 6) rotate(26 100 100) scale(0.5)">
-            <path d={hoja} fill={ROSA} />
-            <path d="M100 24 L100 176" stroke={CREMA} strokeWidth="6" strokeLinecap="round" />
-          </g>
-
-          <g transform="translate(-4 92) rotate(58 100 100) scale(0.44)">
-            <path d={hoja} fill={NARANJA} />
-            <path d="M100 24 L100 176" stroke={CREMA} strokeWidth="7" strokeLinecap="round" />
-          </g>
-
-          <g transform="translate(88 104) rotate(-42 100 100) scale(0.58)">
-            <path d={hoja} fill={VERDE} opacity="0.85" />
-            <path d="M100 24 L100 176" stroke={CREMA} strokeWidth="5" strokeLinecap="round" />
-          </g>
-
-          <circle cx="30" cy="150" r="7" fill={NARANJA} />
-          <circle cx="176" cy="72" r="5" fill={VERDE} />
-          <circle cx="150" cy="188" r="6" fill={ROSA} />
-          <circle cx="60" cy="20" r="4" fill={ROSA} />
-        </pattern>
-      </defs>
-      <rect width="400" height="460" fill="url(#vib-patron)" />
-    </svg>
-  );
-}
-
 export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTemplateProps) {
   const t = useT();
   const total = products.length;
   const accesos = products.slice(0, 6);
+  const destacados = products.slice(0, 5);
+  const [visible, setVisible] = useState(0);
+
+  // El escaparate del hero rota solo. Se detiene si el dispositivo pide
+  // movimiento reducido.
+  useEffect(() => {
+    if (destacados.length <= 1) return;
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => {
+      setVisible((v) => (v + 1) % destacados.length);
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [destacados.length]);
+
+  const activo = destacados[Math.min(visible, Math.max(destacados.length - 1, 0))];
 
   const secciones = [
     { etiqueta: t("Colección", "Collection"), destino: "#vib-productos" },
@@ -128,10 +97,7 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
       <style>{CSS}</style>
 
       {/* ===== Encabezado ===== */}
-      <header
-        className="sticky top-0 z-50 backdrop-blur"
-        style={{ background: "color-mix(in oklch, " + CREMA + " 90%, transparent)" }}
-      >
+      <header className="sticky top-0 z-50 backdrop-blur" style={{ background: CREMA }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
           <span
             className="flex min-w-0 items-center gap-2 text-xl font-semibold sm:text-2xl"
@@ -166,11 +132,79 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
       {/* ===== Hero ===== */}
       <section className="relative overflow-hidden" style={{ background: VERDE }}>
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 md:grid-cols-2 md:py-0">
+          {/* Escaparate rotativo con el patrón de fondo */}
           <div className="relative z-10 order-2 md:order-1">
             <div
-              className="vib-flotar-lento aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-2xl md:aspect-[5/6] md:rounded-none md:rounded-r-[3rem] md:shadow-none"
+              className="vib-flotar-lento relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-2xl md:aspect-[5/6] md:rounded-none md:rounded-r-[3rem] md:shadow-none"
+              style={{
+                backgroundImage: `url(${fondoVibrante})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
             >
-              <PatronTropical />
+              <div className="absolute inset-0" style={{ background: "rgba(255,255,255,0.35)" }} />
+
+              {activo ? (
+                <button
+                  type="button"
+                  onClick={() => irA("#vib-productos")}
+                  aria-label={activo.name}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-8"
+                >
+                  <div
+                    key={`f-${activo.id}`}
+                    className="vib-pasa w-[62%] overflow-hidden rounded-2xl md:w-[68%]"
+                    style={{ background: BLANCO, boxShadow: "0 24px 48px -20px rgba(0,0,0,.45)" }}
+                  >
+                    {activo.image_url ? (
+                      <img
+                        src={activo.image_url}
+                        alt=""
+                        width={520}
+                        height={520}
+                        className="aspect-square w-full object-cover"
+                      />
+                    ) : (
+                      <span className="block aspect-square w-full" style={{ background: BORDE }} />
+                    )}
+                  </div>
+
+                  <div
+                    key={`e-${activo.id}`}
+                    className="vib-pasa max-w-[86%] rounded-full px-5 py-2 text-center shadow-lg"
+                    style={{ background: BLANCO }}
+                  >
+                    <p
+                      className="line-clamp-1 text-sm font-semibold"
+                      style={{ color: TINTA, fontFamily: "'Fredoka', ui-sans-serif, sans-serif" }}
+                    >
+                      {activo.name}
+                    </p>
+                    <p className="text-sm font-bold" style={{ color: ROSA }}>
+                      ${(activo.price_cents / 100).toFixed(2)}
+                    </p>
+                  </div>
+                </button>
+              ) : null}
+
+              {destacados.length > 1 && (
+                <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2">
+                  {destacados.map((p, i) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setVisible(i)}
+                      aria-label={p.name}
+                      aria-current={visible === i}
+                      className="h-2.5 rounded-full transition-all"
+                      style={{
+                        width: visible === i ? 26 : 10,
+                        background: visible === i ? ACENTOS[i % 3] : "rgba(255,255,255,0.85)",
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -182,10 +216,7 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
               {t("Nueva Colección", "New Collection")}
             </h1>
             {store.niche && (
-              <p
-                className="mt-4 line-clamp-2 text-lg font-semibold"
-                style={{ color: "rgba(255,255,255,0.9)" }}
-              >
+              <p className="mt-4 line-clamp-2 text-lg font-semibold" style={{ color: "rgba(255,255,255,0.9)" }}>
                 {store.niche}
               </p>
             )}
@@ -232,14 +263,7 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
                   }}
                 >
                   {p.image_url ? (
-                    <img
-                      src={p.image_url}
-                      alt=""
-                      loading="lazy"
-                      width={256}
-                      height={256}
-                      className="size-full object-cover"
-                    />
+                    <img src={p.image_url} alt="" loading="lazy" width={256} height={256} className="size-full object-cover" />
                   ) : (
                     <span className="block size-full" />
                   )}
@@ -259,10 +283,7 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
       {/* ===== Cuadrícula de productos ===== */}
       <section id="vib-productos" className="mx-auto max-w-6xl px-4 pb-16">
         <div className="mb-8 flex items-end justify-between gap-4">
-          <h2
-            className="text-3xl font-bold"
-            style={{ color: TINTA, fontFamily: "'Fredoka', ui-sans-serif, sans-serif" }}
-          >
+          <h2 className="text-3xl font-bold" style={{ color: TINTA, fontFamily: "'Fredoka', ui-sans-serif, sans-serif" }}>
             {t("Productos destacados", "Featured products")}
           </h2>
         </div>
@@ -293,10 +314,7 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
                       className="vib-foto aspect-[4/5] w-full object-cover"
                     />
                   ) : (
-                    <div
-                      className="grid aspect-[4/5] w-full place-items-center text-xs font-semibold"
-                      style={{ color: SUAVE }}
-                    >
+                    <div className="grid aspect-[4/5] w-full place-items-center text-xs font-semibold" style={{ color: SUAVE }}>
                       {t("Sin imagen", "No image")}
                     </div>
                   )}
@@ -332,11 +350,7 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
                       type="button"
                       onClick={() => onAdd(p)}
                       className="vib-crece mt-3 rounded-full px-6 py-2.5 text-sm font-semibold shadow-md"
-                      style={{
-                        background: ACENTOS[i % 3],
-                        color: BLANCO,
-                        fontFamily: "'Fredoka', ui-sans-serif, sans-serif",
-                      }}
+                      style={{ background: ACENTOS[i % 3], color: BLANCO, fontFamily: "'Fredoka', ui-sans-serif, sans-serif" }}
                     >
                       {t("Comprar", "Buy")}
                     </button>
@@ -350,16 +364,11 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
 
       {/* OCULTO — banners promocionales: no existen promociones en la base.
           Cambiar MOSTRAR_BANNERS a true cuando existan. */}
-      {MOSTRAR_BANNERS && (
-        <section className="mx-auto grid max-w-6xl gap-6 px-4 pb-20 md:grid-cols-2" />
-      )}
+      {MOSTRAR_BANNERS && <section className="mx-auto grid max-w-6xl gap-6 px-4 pb-20 md:grid-cols-2" />}
 
       {/* ===== La tienda ===== */}
       <section id="vib-tienda" className="mx-auto max-w-6xl px-4 pb-16">
-        <div
-          className="relative overflow-hidden rounded-3xl px-8 py-12 text-center"
-          style={{ background: VERDE, color: BLANCO }}
-        >
+        <div className="relative overflow-hidden rounded-3xl px-8 py-12 text-center" style={{ background: VERDE, color: BLANCO }}>
           <h2
             className="text-3xl font-bold md:text-4xl"
             style={{ fontFamily: "'Fredoka', ui-sans-serif, sans-serif", overflowWrap: "break-word" }}
@@ -386,10 +395,7 @@ export function VibranteTemplate({ store, products, onAdd, cartButton }: StoreTe
       </section>
 
       {/* ===== Pie ===== */}
-      <footer
-        className="py-8 text-center text-sm"
-        style={{ borderTop: `1px solid ${BORDE}`, color: SUAVE }}
-      >
+      <footer className="py-8 text-center text-sm" style={{ borderTop: `1px solid ${BORDE}`, color: SUAVE }}>
         <p>
           © {new Date().getFullYear()} {store.name}
         </p>
