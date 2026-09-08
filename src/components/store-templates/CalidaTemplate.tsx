@@ -1,6 +1,7 @@
 import { ArrowRight, Diamond, Leaf, Package, ShieldCheck, Truck } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import type { StoreTemplateProps } from "./index";
+import fondoHero from "@/assets/hero-calida.jpg";
 
 /**
  * Plantilla cálida: verde petróleo, naranja y crema.
@@ -76,49 +77,55 @@ export function CalidaTemplate({ store, products, onAdd, cartButton }: StoreTemp
     <div style={{ minHeight: "100vh", background: CREMA, color: MARRON, fontFamily: "'Montserrat', ui-sans-serif, system-ui, sans-serif" }}>
       <style>{CSS}</style>
 
-      {/* ===== Encabezado sobre el hero ===== */}
-      <header className="absolute inset-x-0 top-0 z-50">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-6">
-          <span
-            className="text-xl font-extrabold uppercase tracking-widest sm:text-2xl"
-            style={{ color: CREMA, overflowWrap: "break-word" }}
-          >
-            {store.name}
-          </span>
-
-          <nav className="hidden items-center gap-10 md:flex">
-            {secciones.map((s) => (
-              <button
-                key={s.destino}
-                type="button"
-                onClick={() => irA(s.destino)}
-                className="cal-enlace text-sm font-medium tracking-wide"
-                style={{ color: "rgba(245,240,230,0.8)" }}
-              >
-                {s.etiqueta}
-              </button>
-            ))}
-          </nav>
-
-          <div className="flex shrink-0 items-center gap-5" style={{ color: CREMA }}>
-            {/* OCULTO — buscador y cuenta: no existen en la tienda pública */}
-            {MOSTRAR_ICONOS && <span aria-hidden="true" />}
-            {cartButton}
-          </div>
-        </div>
-      </header>
-
       {/* ===== Hero ===== */}
       <section
         className="relative flex min-h-[90vh] items-center overflow-hidden"
         style={{
-          background: `radial-gradient(120% 90% at 78% 30%, #0A5560 0%, ${PETROLEO} 55%, #032B31 100%)`,
+          backgroundColor: PETROLEO,
+          backgroundImage: `url(${fondoHero})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         <div
           className="absolute inset-0"
-          style={{ background: `linear-gradient(to right, ${PETROLEO} 0%, rgba(5,58,65,0.85) 28%, transparent 60%)` }}
+          style={{ background: `linear-gradient(to bottom, rgba(5,58,65,0.92) 0%, rgba(5,58,65,0.55) 45%, rgba(5,58,65,0.88) 100%)` }}
         />
+        <div
+          className="absolute inset-0 hidden md:block"
+          style={{ background: `linear-gradient(to right, ${PETROLEO} 0%, rgba(5,58,65,0.82) 34%, transparent 68%)` }}
+        />
+
+        <header className="absolute inset-x-0 top-0 z-30">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-6">
+            <span
+              className="text-xl font-extrabold uppercase tracking-widest sm:text-2xl"
+              style={{ color: CREMA, overflowWrap: "break-word" }}
+            >
+              {store.name}
+            </span>
+
+            <nav className="hidden items-center gap-10 md:flex">
+              {secciones.map((s) => (
+                <button
+                  key={s.destino}
+                  type="button"
+                  onClick={() => irA(s.destino)}
+                  className="cal-enlace text-sm font-medium tracking-wide"
+                  style={{ color: "rgba(245,240,230,0.8)" }}
+                >
+                  {s.etiqueta}
+                </button>
+              ))}
+            </nav>
+
+            <div className="flex shrink-0 items-center gap-5" style={{ color: CREMA }}>
+              {/* OCULTO — buscador y cuenta: no existen en la tienda pública */}
+              {MOSTRAR_ICONOS && <span aria-hidden="true" />}
+              {cartButton}
+            </div>
+          </div>
+        </header>
 
         {/* Círculo naranja flotante */}
         <div
