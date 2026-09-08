@@ -164,7 +164,7 @@ export function OscuraTemplate({ store, products, onAdd, cartButton }: StoreTemp
             </h1>
             {store.niche && (
               <p
-                className="mt-2 text-[9px] uppercase tracking-[0.4em] sm:text-[10px]"
+                className="mt-2 line-clamp-1 max-w-[15rem] text-[9px] uppercase tracking-[0.4em] sm:max-w-sm sm:text-[10px]"
                 style={{ color: GRIS }}
               >
                 {store.niche}
@@ -379,7 +379,7 @@ export function OscuraTemplate({ store, products, onAdd, cartButton }: StoreTemp
               {store.name}
             </p>
             {store.niche && (
-              <p className="mt-3 text-[10px] uppercase tracking-[0.35em] opacity-70">{store.niche}</p>
+              <p className="mt-3 line-clamp-2 text-[10px] uppercase tracking-[0.35em] opacity-70">{store.niche}</p>
             )}
           </div>
 
