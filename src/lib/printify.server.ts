@@ -480,15 +480,30 @@ export async function getStandardShippingCosts(
             };
           }>;
         }>(`/v2/catalog/blueprints/${blueprintId}/print_providers/${printProviderId}/shipping/standard.json`);
+
+        // El proveedor publica las tarifas por país. Cuando el fabricante no
+        // lista el país de destino, la tarifa que aplica es la general
+        // (`REST_OF_THE_WORLD`). El país exacto siempre tiene prioridad; la
+        // general sólo se usa como respaldo para las variantes que no tengan
+        // tarifa propia para ese país.
+        const exactas = new Map<number, number>();
+        const generales = new Map<number, number>();
         for (const row of res.data || []) {
           const a = row.attributes;
           if (!a) continue;
-          if (a.country?.code && a.country.code !== countryCode) continue;
           const amount = a.shippingCost?.firstItem?.amount;
-          if (typeof amount === "number") costs.set(a.variantId, amount);
+          if (typeof amount !== "number") continue;
+          const code = a.country?.code;
+          if (!code || code === countryCode) exactas.set(a.variantId, amount);
+          else if (code === "REST_OF_THE_WORLD") generales.set(a.variantId, amount);
         }
-      } catch {
-        /* sin datos de envío: el costo base se queda con la fabricación */
+        for (const [variantId, amount] of generales) costs.set(variantId, amount);
+        for (const [variantId, amount] of exactas) costs.set(variantId, amount);
+      } catch (err) {
+        // Sin datos de envío el costo base se queda sólo con la fabricación.
+        // Se registra el motivo: un fallo silencioso aquí deja productos con
+        // envío cero sin que nadie se entere.
+        console.error("getStandardShippingCosts error:", err);
       }
       return mapToRecord(costs);
     },
