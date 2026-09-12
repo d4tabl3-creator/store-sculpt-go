@@ -440,13 +440,23 @@ function StoreManage() {
                     </div>
                   </div>
 
-                  {min === 0 && (
-                    <p className="mt-2 text-xs text-destructive">
-                      {t(
-                        "No tenemos un costo confiable para este producto: no debe publicarse hasta corregirlo.",
-                        "We don't have a reliable cost for this product: it should not be published until fixed.",
-                      )}
-                    </p>
+                  {(belowCost || min === 0) && (
+                    <div className="mt-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs">
+                      <div className="font-bold text-destructive">
+                        {t("Este producto no se está vendiendo", "This product is not being sold")}
+                      </div>
+                      <div className="mt-1 text-muted-foreground">
+                        {min === 0
+                          ? t(
+                              "No tenemos un costo confiable para este producto. Escríbenos y lo revisamos contigo.",
+                              "We don't have a reliable cost for this product. Write to us and we'll review it with you.",
+                            )
+                          : t(
+                              `Tu precio está por debajo de tu costo base. Súbelo a ${money(min)} MXN o más para que vuelva a estar disponible.`,
+                              `Your price is below your base cost. Raise it to ${money(min)} MXN or more so it becomes available again.`,
+                            )}
+                      </div>
+                    </div>
                   )}
 
                   {issue?.status === "error" && (
