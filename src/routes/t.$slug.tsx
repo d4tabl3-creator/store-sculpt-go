@@ -414,6 +414,13 @@ function CheckoutForm({
           )}
         </p>
       )}
+      <p className="text-center text-xs text-muted-foreground">
+        {t("Al comprar aceptas las", "By purchasing you accept the")}{" "}
+        <a href="/politicas" className="underline">
+          {t("políticas de compra", "purchase policies")}
+        </a>
+        .
+      </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>{t("Atrás", "Back")}</Button>
         <Button type="submit" disabled={submitting || !quote || !canPay} style={{ background: store.primary_color }}>
