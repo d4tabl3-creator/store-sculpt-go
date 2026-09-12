@@ -23,6 +23,35 @@ export type CostedProduct = {
   source_provider: string | null;
 };
 
+/**
+ * REGLAS DE OPERACIÓN — filtro único e innegociable.
+ *
+ * Un producto sólo puede venderse si cumple TODAS. Si falla cualquiera, no
+ * está en existencia y no se discute: ni con la vendedora, ni con la clienta,
+ * ni con el resto del sistema. Estas reglas existen para que un error nuestro
+ * en cualquier otra parte del código jamás termine en una venta que no
+ * podamos sostener.
+ *
+ *   1. Costo de fabricación mayor que cero. Sin costo real no sabemos cuánto
+ *      nos cuesta producirlo.
+ *   2. Costo de envío mayor que cero. Un envío en cero significa que no
+ *      pudimos cotizarlo, y enviar a ciegas sale de nuestra bolsa.
+ *   3. Precio igual o mayor al piso de margen del 40 % sobre la fabricación.
+ *      Ese margen es el colchón que cubre reposiciones y reclamos.
+ *
+ * Devuelve el motivo interno (para registro y diagnóstico) o null si el
+ * producto es vendible. El motivo NUNCA se muestra al cliente.
+ */
+export function motivoNoVendible(p: CostedProduct): string | null {
+  const externo = (p.source_provider ?? "internal") !== "internal";
+  if (externo && !(p.production_cost_cents > 0)) return "sin costo de fabricación";
+  if (externo && !(p.shipping_cost_cents > 0)) return "sin costo de envío";
+  if (!validatePrice(p.price_cents, p.production_cost_cents).ok) {
+    return "precio por debajo del piso de margen";
+  }
+  return null;
+}
+
 export function quoteCart(
   products: CostedProduct[],
   items: CartLine[],
@@ -55,12 +84,11 @@ export function quoteCart(
     const p = byId.get(it.productId);
     if (!p || p.store_id !== storeId) return { error: "Producto no válido en esta tienda" };
     if (p.stock < it.qty) return { error: `Sin stock suficiente de ${p.name}` };
-    // Defensa en profundidad: aunque la BD ya lo impide, un producto con
-    // precio inválido jamás se cobra.
-    const check = validatePrice(p.price_cents, p.production_cost_cents);
-    if (!check.ok) return { error: `El producto "${p.name}" no está en existencia.` };
-    if ((p.source_provider ?? "internal") !== "internal" && p.production_cost_cents <= 0) {
-      return { error: `El producto "${p.name}" no está disponible por ahora.` };
+    // Filtro único de operación. Ver motivoNoVendible.
+    const motivo = motivoNoVendible(p);
+    if (motivo) {
+      console.warn(`producto no vendible (${p.id}): ${motivo}`);
+      return { error: `El producto "${p.name}" no está en existencia.` };
     }
     lines.push({
       productId: p.id,
