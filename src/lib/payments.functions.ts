@@ -207,7 +207,32 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       // ORDEN CRÍTICO: primero se abre el cobro, después se guarda el pedido.
       // Si la pasarela no está disponible o falla, NO queda ningún pedido en la
       // base y por lo tanto nada puede llegar a fabricación sin cobro.
-      const orderId = crypto.randomUUID();
+      //
+      // Antiduplicados: si esta misma clienta ya tiene un pedido pendiente sin
+      // pagar con exactamente los mismos artículos, se reutiliza esa fila en
+      // lugar de crear otra. El id debe decidirse ANTES de abrir el cobro,
+      // porque viaja en los metadatos de la sesión de pago.
+      const correoCliente = data.customer.email.trim().toLowerCase();
+      let orderId = crypto.randomUUID();
+      try {
+        const { data: pendientes } = await supabaseAdmin
+          .from("store_orders")
+          .select("id, items")
+          .eq("store_id", store.id)
+          .eq("customer_email", correoCliente)
+          .eq("status", "pending")
+          .eq("payment_status", "pending")
+          .order("created_at", { ascending: false })
+          .limit(5);
+        const mismos = (pendientes || []).find(
+          (o) => JSON.stringify(o.items) === JSON.stringify(orderItems),
+        );
+        if (mismos?.id) orderId = mismos.id as string;
+      } catch (err) {
+        // Si la búsqueda falla se sigue con un id nuevo: duplicar un pendiente
+        // es molesto, pero impedir la venta sería peor.
+        console.error("busqueda de pedido pendiente:", err);
+      }
 
 
       const stripe = createStripeClient(data.environment);
@@ -254,7 +279,7 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       // Sólo ahora, con el cobro ya abierto, se registra el pedido.
       const { data: order, error: orderErr } = await supabaseAdmin
         .from("store_orders")
-        .insert({
+        .upsert({
           id: orderId,
           store_id: store.id,
           customer_name: data.customer.name.trim(),
@@ -270,7 +295,7 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
           status: "pending",
           payment_status: "pending",
           stripe_session_id: session.id,
-        })
+        }, { onConflict: "id" })
         .select("id")
         .single();
       if (orderErr || !order) return { error: orderErr?.message || "No se pudo crear el pedido" };
