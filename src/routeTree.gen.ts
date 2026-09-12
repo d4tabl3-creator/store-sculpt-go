@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PoliticasRouteImport } from './routes/politicas'
 import { Route as PlanesRouteImport } from './routes/planes'
@@ -42,6 +43,11 @@ import { Route as ApiPublicGuiaIdRouteImport } from './routes/api/public/guia/$i
 import { Route as ApiPublicCommerceWorkerRouteImport } from './routes/api/public/commerce/worker'
 import { Route as ApiPublicCommerceWebhookProviderRouteImport } from './routes/api/public/commerce/webhook.$provider'
 
+const TerminosRoute = TerminosRouteImport.update({
+  id: '/terminos',
+  path: '/terminos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/planes': typeof PlanesRoute
   '/politicas': typeof PoliticasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terminos': typeof TerminosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/crear': typeof AuthenticatedCrearRoute
   '/cuenta': typeof AuthenticatedCuentaRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/planes': typeof PlanesRoute
   '/politicas': typeof PoliticasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terminos': typeof TerminosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/crear': typeof AuthenticatedCrearRoute
   '/cuenta': typeof AuthenticatedCuentaRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/planes': typeof PlanesRoute
   '/politicas': typeof PoliticasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terminos': typeof TerminosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/crear': typeof AuthenticatedCrearRoute
   '/_authenticated/cuenta': typeof AuthenticatedCuentaRoute
@@ -320,6 +329,7 @@ export interface FileRouteTypes {
     | '/planes'
     | '/politicas'
     | '/sitemap.xml'
+    | '/terminos'
     | '/admin'
     | '/crear'
     | '/cuenta'
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/planes'
     | '/politicas'
     | '/sitemap.xml'
+    | '/terminos'
     | '/admin'
     | '/crear'
     | '/cuenta'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/planes'
     | '/politicas'
     | '/sitemap.xml'
+    | '/terminos'
     | '/_authenticated/admin'
     | '/_authenticated/crear'
     | '/_authenticated/cuenta'
@@ -421,6 +433,7 @@ export interface RootRouteChildren {
   PlanesRoute: typeof PlanesRoute
   PoliticasRoute: typeof PoliticasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TerminosRoute: typeof TerminosRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   TSlugRoute: typeof TSlugRoute
@@ -438,6 +451,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terminos': {
+      id: '/terminos'
+      path: '/terminos'
+      fullPath: '/terminos'
+      preLoaderRoute: typeof TerminosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -714,6 +734,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlanesRoute: PlanesRoute,
   PoliticasRoute: PoliticasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TerminosRoute: TerminosRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   TSlugRoute: TSlugRoute,
