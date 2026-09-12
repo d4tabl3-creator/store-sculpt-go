@@ -58,7 +58,7 @@ export function quoteCart(
     // Defensa en profundidad: aunque la BD ya lo impide, un producto con
     // precio inválido jamás se cobra.
     const check = validatePrice(p.price_cents, p.production_cost_cents);
-    if (!check.ok) return { error: `El producto "${p.name}" no está disponible por ahora.` };
+    if (!check.ok) return { error: `El producto "${p.name}" no está en existencia.` };
     if ((p.source_provider ?? "internal") !== "internal" && p.production_cost_cents <= 0) {
       return { error: `El producto "${p.name}" no está disponible por ahora.` };
     }

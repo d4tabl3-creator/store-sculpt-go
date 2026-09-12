@@ -8,7 +8,8 @@
  *   ganancia        = precio de venta del producto − fabricación.
  *   comisión        = 20 % de la ganancia (ver plans.ts). Jamás sobre
  *                     fabricación, envío ni total cobrado.
- *   precio mínimo   = fabricación. No existe ningún mínimo artificial.
+ *   precio mínimo   = fabricación + 40 % (piso de margen del taller). Por
+ *                     debajo de ese piso el producto no está en existencia.
  */
 
 /** Tipo de cambio conservador para convertir el costo del proveedor (USD → MXN). */
@@ -24,6 +25,19 @@ export const MARGIN_TIERS: Array<{ upToMxn: number; markup: number }> = [
 
 export function markupFor(costMxn: number): number {
   return (MARGIN_TIERS.find((t) => costMxn <= t.upToMxn) ?? MARGIN_TIERS[MARGIN_TIERS.length - 1]).markup;
+}
+
+/**
+ * Piso de margen recomendado por el taller de fabricación: 40 % sobre el costo
+ * de fabricación. Es el colchón que cubre reposiciones, reclamos y devoluciones.
+ * Ningún producto puede venderse por debajo de este piso: si su precio queda
+ * abajo, deja de estar en existencia hasta que se corrija.
+ */
+export const MARGIN_FLOOR = 1.4;
+
+/** Precio mínimo vendible en centavos: fabricación más el piso de margen. */
+export function minSellablePriceCents(productionCents: number): number {
+  return Math.ceil(productionCents * MARGIN_FLOOR);
 }
 
 /**
@@ -95,8 +109,9 @@ export type PriceValidation = { ok: true } | { ok: false; code: "PRICE_INVALID" 
  */
 export function validatePrice(priceCents: number | null | undefined, productionCents: number): PriceValidation {
   const p = Number(priceCents);
-  if (!Number.isFinite(p) || p <= 0) return { ok: false, code: "PRICE_INVALID", minCents: Math.max(1, productionCents) };
-  if (p < productionCents) return { ok: false, code: "PRICE_BELOW_COST", minCents: productionCents };
+  const minimo = minSellablePriceCents(productionCents);
+  if (!Number.isFinite(p) || p <= 0) return { ok: false, code: "PRICE_INVALID", minCents: Math.max(1, minimo) };
+  if (p < minimo) return { ok: false, code: "PRICE_BELOW_COST", minCents: minimo };
   return { ok: true };
 }
 
