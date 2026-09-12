@@ -59,6 +59,7 @@ type Store = {
   name: string;
   niche: string;
   primary_color: string;
+  template: string;
   status: string;
   logo_url: string | null;
   external_links: ExternalLinks | null;
@@ -94,6 +95,13 @@ const LINK_FIELDS: Array<{ key: keyof ExternalLinks; label: string; placeholder:
   { key: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@…" },
   { key: "amazon", label: "Amazon", placeholder: "https://amazon.com.mx/…" },
   { key: "mercadolibre", label: "Mercado Libre", placeholder: "https://mercadolibre.com.mx/…" },
+];
+
+const PLANTILLAS: Array<{ id: string; nombre: string; nombreEn: string; colores: string[] }> = [
+  { id: "calida", nombre: "Cálida", nombreEn: "Warm", colores: ["#053A41", "#FC931F", "#F5F0E6"] },
+  { id: "oscura", nombre: "Minimalista", nombreEn: "Minimal", colores: ["#FFFFFF", "#000000", "#EDEDED"] },
+  { id: "vibrante", nombre: "Vibrante", nombreEn: "Vibrant", colores: ["#E8267C", "#1E9A9E", "#F0862F"] },
+  { id: "tropical", nombre: "Tropical", nombreEn: "Tropical", colores: ["#F2E8D5", "#4A5D23", "#E07A2F"] },
 ];
 
 function money(cents: number) {
@@ -179,7 +187,7 @@ function StoreManage() {
     }
     const { error } = await supabase
       .from("stores")
-      .update({ name: store.name, niche: store.niche, logo_url: store.logo_url, external_links: clean } as never)
+      .update({ name: store.name, niche: store.niche, template: store.template, logo_url: store.logo_url, external_links: clean } as never)
       .eq("id", id);
     if (!error) {
       const { error: pe } = await supabase
@@ -542,6 +550,43 @@ function StoreManage() {
                     </Button>
                   </div>
                 </div>
+              </div>
+            </section>
+
+            {/* A2) Diseño de la tienda */}
+            <section className="rounded-2xl border border-border bg-card p-5">
+              <h2 className="font-display text-lg font-bold">{t("Diseño de la tienda", "Store design")}</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t(
+                  "Elige cómo se ve tu tienda para tus clientas. El cambio se aplica al guardar.",
+                  "Choose how your store looks to your customers. The change applies when you save.",
+                )}
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {PLANTILLAS.map((pl) => {
+                  const activa = store.template === pl.id;
+                  return (
+                    <button
+                      key={pl.id}
+                      type="button"
+                      onClick={() => setStore({ ...store, template: pl.id })}
+                      aria-pressed={activa}
+                      className={`rounded-xl border-2 p-4 text-left transition-all ${
+                        activa ? "border-primary shadow-cta" : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex gap-1.5">
+                        {pl.colores.map((c) => (
+                          <span key={c} className="size-6 rounded-full border border-border" style={{ background: c }} />
+                        ))}
+                      </div>
+                      <div className="mt-3 font-display text-sm font-bold">{t(pl.nombre, pl.nombreEn)}</div>
+                      {activa && (
+                        <div className="mt-1 text-[11px] font-semibold text-primary">{t("En uso", "In use")}</div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </section>
 
