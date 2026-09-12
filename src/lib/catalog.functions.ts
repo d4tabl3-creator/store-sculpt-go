@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { validatePrice } from "@/lib/pricing";
+import { baseCostCents, validatePrice } from "@/lib/pricing";
 
 const UUID = /^[0-9a-fA-F-]{36}$/;
 
@@ -168,7 +168,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         throw new Error(
           check.code === "PRICE_INVALID"
             ? `"${item.name?.trim() || product.title}": el precio de venta debe ser mayor a cero.`
-            : `"${item.name?.trim() || product.title}": el precio (${(priceCents / 100).toFixed(2)} MXN) no puede ser menor al costo de fabricación (${(variant.productionCents / 100).toFixed(2)} MXN).`,
+            : `"${item.name?.trim() || product.title}": el precio (${(priceCents / 100).toFixed(2)} MXN) no puede ser menor a tu costo base (${(baseCostCents(variant.productionCents) / 100).toFixed(2)} MXN).`,
         );
       }
       if (variant.productionCents <= 0) {

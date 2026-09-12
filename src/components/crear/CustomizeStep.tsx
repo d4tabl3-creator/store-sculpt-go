@@ -472,7 +472,7 @@ export function CustomizeStep({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("Costo de fabricación", "Production cost")}</span>
-                <span>{money(current.productionCents ?? current.costCents)} MXN</span>
+                <span>{money(current.costCents ?? current.productionCents)} MXN</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("Envío (se cobra aparte)", "Shipping (charged separately)")}</span>
