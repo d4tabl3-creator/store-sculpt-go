@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PoliticasRouteImport } from './routes/politicas'
 import { Route as PlanesRouteImport } from './routes/planes'
 import { Route as InfoRouteImport } from './routes/info'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -44,6 +45,11 @@ import { Route as ApiPublicCommerceWebhookProviderRouteImport } from './routes/a
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticasRoute = PoliticasRouteImport.update({
+  id: '/politicas',
+  path: '/politicas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanesRoute = PlanesRouteImport.update({
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRouteWithChildren
   '/info': typeof InfoRoute
   '/planes': typeof PlanesRoute
+  '/politicas': typeof PoliticasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/crear': typeof AuthenticatedCrearRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/info': typeof InfoRoute
   '/planes': typeof PlanesRoute
+  '/politicas': typeof PoliticasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/crear': typeof AuthenticatedCrearRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/demo': typeof DemoRouteWithChildren
   '/info': typeof InfoRoute
   '/planes': typeof PlanesRoute
+  '/politicas': typeof PoliticasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/crear': typeof AuthenticatedCrearRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/info'
     | '/planes'
+    | '/politicas'
     | '/sitemap.xml'
     | '/admin'
     | '/crear'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/info'
     | '/planes'
+    | '/politicas'
     | '/sitemap.xml'
     | '/admin'
     | '/crear'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/info'
     | '/planes'
+    | '/politicas'
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/crear'
@@ -407,6 +419,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRouteWithChildren
   InfoRoute: typeof InfoRoute
   PlanesRoute: typeof PlanesRoute
+  PoliticasRoute: typeof PoliticasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -430,6 +443,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politicas': {
+      id: '/politicas'
+      path: '/politicas'
+      fullPath: '/politicas'
+      preLoaderRoute: typeof PoliticasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planes': {
@@ -692,6 +712,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRouteWithChildren,
   InfoRoute: InfoRoute,
   PlanesRoute: PlanesRoute,
+  PoliticasRoute: PoliticasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
