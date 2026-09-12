@@ -213,7 +213,7 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       // lugar de crear otra. El id debe decidirse ANTES de abrir el cobro,
       // porque viaja en los metadatos de la sesión de pago.
       const correoCliente = data.customer.email.trim().toLowerCase();
-      let orderId = crypto.randomUUID();
+      let orderId: string = crypto.randomUUID();
       try {
         const { data: pendientes } = await supabaseAdmin
           .from("store_orders")
