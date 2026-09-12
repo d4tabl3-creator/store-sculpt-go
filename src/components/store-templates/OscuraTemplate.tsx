@@ -414,6 +414,11 @@ export function OscuraTemplate({ store, products, onAdd, cartButton }: StoreTemp
               Dªtªblɛ
             </span>
           </p>
+          <p className="mt-2">
+            <a href="/politicas" className="underline">
+              {t("Políticas de compra", "Purchase policies")}
+            </a>
+          </p>
         </div>
       </footer>
     </div>
