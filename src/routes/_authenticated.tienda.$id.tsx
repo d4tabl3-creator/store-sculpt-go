@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
 import { syncProduct, getCommerceHealth, getProductSyncIssues } from "@/lib/commerce.functions";
+import { baseCostCents } from "@/lib/pricing";
 import { commissionLabelFor } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
 import { useT } from "@/lib/i18n";
@@ -212,7 +213,9 @@ function StoreManage() {
         toast.error(t("Configura primero un correo de cobros (pestaña Configuración).", "First set a payments email (Settings tab)."));
         return;
       }
-      const invalid = products.filter((p) => p.price_cents <= 0 || p.price_cents < p.production_cost_cents);
+      const invalid = products.filter(
+        (p) => p.price_cents <= 0 || p.price_cents < baseCostCents(p.production_cost_cents),
+      );
       if (invalid.length) {
         toast.error(
           t(
@@ -262,11 +265,11 @@ function StoreManage() {
       toast.error(t("El precio debe ser mayor a cero.", "Price must be greater than zero."));
       return;
     }
-    if (p.price_cents < p.production_cost_cents) {
+    if (p.price_cents < baseCostCents(p.production_cost_cents)) {
       toast.error(
         t(
-          `Precio mínimo permitido: ${money(p.production_cost_cents)} MXN (costo de fabricación).`,
-          `Minimum allowed price: ${money(p.production_cost_cents)} MXN (production cost).`,
+          `Precio mínimo permitido: ${money(baseCostCents(p.production_cost_cents))} MXN (tu costo base).`,
+          `Minimum allowed price: ${money(baseCostCents(p.production_cost_cents))} MXN (your base cost).`,
         ),
       );
       return;
@@ -401,7 +404,7 @@ function StoreManage() {
 
             {products.map((p) => {
               const issue = issues.find((i) => i.productId === p.id);
-              const min = p.production_cost_cents;
+              const min = baseCostCents(p.production_cost_cents);
               const belowCost = p.price_cents <= 0 || p.price_cents < min;
               return (
                 <div key={p.id} className="rounded-xl border border-border bg-card p-3">
