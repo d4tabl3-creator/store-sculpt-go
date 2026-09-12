@@ -265,11 +265,11 @@ function StoreManage() {
       toast.error(t("El precio debe ser mayor a cero.", "Price must be greater than zero."));
       return;
     }
-    if (p.price_cents < p.production_cost_cents) {
+    if (p.price_cents < baseCostCents(p.production_cost_cents)) {
       toast.error(
         t(
-          `Precio mínimo permitido: ${money(p.production_cost_cents)} MXN (costo de fabricación).`,
-          `Minimum allowed price: ${money(p.production_cost_cents)} MXN (production cost).`,
+          `Precio mínimo permitido: ${money(baseCostCents(p.production_cost_cents))} MXN (tu costo base).`,
+          `Minimum allowed price: ${money(baseCostCents(p.production_cost_cents))} MXN (your base cost).`,
         ),
       );
       return;
