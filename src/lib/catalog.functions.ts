@@ -92,6 +92,20 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         mockupUrl?: string;
         placement?: string;
         printProviderId?: number;
+        /** Ajuste completo por zona de impresión (frente, espalda, mangas…). */
+        zones?: Array<{
+          placement: string;
+          designUrl?: string | null;
+          designPreviewUrl?: string | null;
+          fitMode?: "fit" | "fill" | "tile";
+          scale?: number;
+          tileScale?: number;
+          offsetX?: number;
+          offsetY?: number;
+          rotation?: number;
+          areaWidth?: number;
+          areaHeight?: number;
+        }>;
       }>;
     }) => {
       if (!UUID.test(data.storeId)) throw new Error("storeId inválido");
