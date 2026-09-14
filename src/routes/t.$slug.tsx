@@ -263,16 +263,21 @@ function Storefront() {
                 ) : (
                   <div className="space-y-3">
                     {cart.map((c) => (
-                      <div key={c.product.id} className="flex gap-3 rounded-lg border border-border p-3">
-                        {c.product.image_url && <img src={c.product.image_url} alt="" className="size-16 rounded object-cover" />}
+                      <div key={lineaId(c)} className="flex gap-3 rounded-lg border border-border p-3">
+                        {(c.variant?.image_url || c.product.image_url) && <img src={c.variant?.image_url || c.product.image_url || ""} alt="" className="size-16 rounded object-cover" />}
                         <div className="flex-1">
                           <div className="font-medium">{c.product.name}</div>
-                          <div className="text-sm text-muted-foreground">${(c.product.price_cents / 100).toFixed(2)}</div>
+                          {(c.variant?.size || c.variant?.color) && (
+                            <div className="text-xs text-muted-foreground">
+                              {[c.variant?.size, c.variant?.color].filter(Boolean).join(" · ")}
+                            </div>
+                          )}
+                          <div className="text-sm text-muted-foreground">${(precioDe(c.product, c.variant) / 100).toFixed(2)}</div>
                           <div className="mt-2 flex items-center gap-2">
-                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Quitar uno", "Remove one")} onClick={() => setQty(c.product.id, c.qty - 1)}><Minus className="size-3" /></Button>
+                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Quitar uno", "Remove one")} onClick={() => setQty(lineaId(c), c.qty - 1)}><Minus className="size-3" /></Button>
                             <span className="w-6 text-center text-sm font-bold">{c.qty}</span>
-                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Agregar uno", "Add one")} onClick={() => setQty(c.product.id, c.qty + 1)}><Plus className="size-3" /></Button>
-                            <Button size="sm" variant="ghost" className="ml-auto h-7 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => setQty(c.product.id, 0)}>
+                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Agregar uno", "Add one")} onClick={() => setQty(lineaId(c), c.qty + 1)}><Plus className="size-3" /></Button>
+                            <Button size="sm" variant="ghost" className="ml-auto h-7 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => setQty(lineaId(c), 0)}>
                               <X className="mr-1 size-3" /> {t("Quitar", "Remove")}
                             </Button>
                           </div>
