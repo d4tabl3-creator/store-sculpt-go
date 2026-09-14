@@ -90,7 +90,15 @@ export function CustomizeStep({
           printProviderId: number;
         };
         if (!alive) return;
-        const first = detail.variants.find((v) => v.inStock) || detail.variants[0];
+        // La vendedora SIEMPRE diseña sobre la prenda base (blanca). Elegir
+        // color es cosa de la clienta final, no suya.
+        const esBase = (c: string | null) =>
+          !!c && /^(white|blanco|natural|nat|off white|solid white)$/i.test(c.trim());
+        const first =
+          detail.variants.find((v) => v.inStock && esBase(v.color)) ||
+          detail.variants.find((v) => esBase(v.color)) ||
+          detail.variants.find((v) => v.inStock) ||
+          detail.variants[0];
         const pl = (await getProductPlacements({
           data: { productId: draft.productId, variantId: first?.id, printProviderId: detail.printProviderId },
         })) as DraftPlacement[];
@@ -140,9 +148,15 @@ export function CustomizeStep({
   }, [draft.variants]);
 
   const sizes = useMemo(() => {
-    const list = draft.variants.filter((v) => (draft.color ? v.color === draft.color : true));
+    // Todas las tallas del producto, sin filtrar por color: son informativas.
+    const map = new Map<string, DraftVariant>();
+    for (const v of draft.variants) {
+      const k = v.size || v.name;
+      if (k && !map.has(k)) map.set(k, v);
+    }
+    const list = [...map.values()];
     return [...list].sort((a, b) => SIZE_ORDER.indexOf(a.size || "") - SIZE_ORDER.indexOf(b.size || ""));
-  }, [draft.variants, draft.color]);
+  }, [draft.variants]);
 
   const current = currentVariant(draft);
 
@@ -514,18 +528,23 @@ export function CustomizeStep({
 
           {colors.length > 0 && (
             <div>
-              <Label>{t("Color para diseñar", "Color to design on")}</Label>
+              <Label>{t("Colores que se publicarán", "Colors that will be published")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {colors.map(([c, v]) => (
-                  <button
+                  <span
                     key={c}
                     title={c}
-                    onClick={() => update({ color: c, variantId: v.id, mockups: [], mockupUrl: null })}
-                    className={`size-8 rounded-full border-2 ${draft.color === c ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
+                    className="size-8 rounded-full border-2 border-border"
                     style={{ background: v.colorCode || "#ccc" }}
                   />
                 ))}
               </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t(
+                  `Diseñas sobre la prenda base. Los ${colors.length} colores se publican solos y tu clienta elige el suyo al comprar.`,
+                  `You design on the base garment. All ${colors.length} colors are published automatically and your customer picks hers at checkout.`,
+                )}
+              </p>
             </div>
           )}
 
@@ -546,8 +565,8 @@ export function CustomizeStep({
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
                 {t(
-                  "Todas las tallas y colores disponibles se publican solos. Tú sólo diseñas: tu clienta elige cuál quiere al comprar.",
-                  "All available sizes and colors are published automatically. You just design: your customer picks which one at checkout.",
+                  "Todas las tallas se publican solas. Tu clienta elige la suya al comprar.",
+                  "All sizes are published automatically. Your customer picks hers at checkout.",
                 )}
               </p>
             </div>
