@@ -262,14 +262,26 @@ export async function runProvisioning(storeId: string): Promise<void> {
 // Productos / inventario / pedidos
 // ---------------------------------------------------------------------------
 
-function hashProduct(p: {
-  name: string;
-  description: string | null;
-  price_cents: number;
-  image_url: string | null;
-  stock: number;
-}): string {
-  return `${p.name}|${p.description ?? ""}|${p.price_cents}|${p.image_url ?? ""}|${p.stock}`;
+function hashProduct(
+  p: {
+    name: string;
+    description: string | null;
+    price_cents: number;
+    image_url: string | null;
+    stock: number;
+  },
+  zones: DesignZoneRef[] = [],
+): string {
+  // El ajuste del diseño forma parte de la huella: mover o reescalar una zona
+  // debe volver a mandar el producto a fabricación.
+  const z = zones
+    .map(
+      (d) =>
+        `${d.placement}:${d.url ?? ""}:${d.fitMode}:${d.scale}:${d.tileScale}:${d.offsetX}:${d.offsetY}:${d.rotation}`,
+    )
+    .sort()
+    .join(";");
+  return `${p.name}|${p.description ?? ""}|${p.price_cents}|${p.image_url ?? ""}|${p.stock}|${z}`;
 }
 
 export async function syncProductToProvider(binding: ProviderBinding, productId: string) {
