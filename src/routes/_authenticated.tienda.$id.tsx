@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
 import { syncProduct, getCommerceHealth, getProductSyncIssues } from "@/lib/commerce.functions";
-import { baseCostCents } from "@/lib/pricing";
+import { baseCostCents, storePriceCents, suggestedPriceFromProductionCents } from "@/lib/pricing";
 import { commissionLabelFor } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
 import { useT } from "@/lib/i18n";
@@ -64,6 +64,7 @@ type Store = {
   status: string;
   logo_url: string | null;
   external_links: ExternalLinks | null;
+  markup_pct: number | null;
 };
 type Product = {
   id: string;
@@ -186,11 +187,22 @@ function StoreManage() {
       const v = (links[f.key] || "").trim();
       if (v) clean[f.key] = v;
     }
+    const pct = Math.max(0, Math.min(1000, Number(store.markup_pct ?? 0)));
     const { error } = await supabase
       .from("stores")
-      .update({ name: store.name, niche: store.niche, template: store.template, logo_url: store.logo_url, external_links: clean } as never)
+      .update({ name: store.name, niche: store.niche, template: store.template, logo_url: store.logo_url, external_links: clean, markup_pct: pct } as never)
       .eq("id", id);
     if (!error) {
+      // El porcentaje es parejo para toda la tienda: al cambiarlo se recalculan
+      // los precios de todos los productos a partir de su costo real de fábrica.
+      const recalculados = products.map((p) => ({
+        ...p,
+        price_cents: storePriceCents(p.production_cost_cents, pct),
+      }));
+      for (const p of recalculados) {
+        await supabase.from("store_products").update({ price_cents: p.price_cents }).eq("id", p.id);
+      }
+      setProducts(recalculados);
       const { error: pe } = await supabase
         .from("store_payment_settings")
         .upsert({ store_id: id, payment_email: paymentEmail || null }, { onConflict: "store_id" });
@@ -414,19 +426,17 @@ function StoreManage() {
                       <Label className="text-xs">{t("Nombre", "Name")}</Label>
                       <Input value={p.name} onChange={(e) => setProducts(products.map((x) => (x.id === p.id ? { ...x, name: e.target.value } : x)))} />
                     </div>
-                    <div className="w-36">
-                      <Label className="text-xs">{t("Tu precio de venta ($)", "Your selling price ($)")}</Label>
-                      <Input
-                        type="number"
-                        min={Math.ceil(min / 100)}
-                        value={p.price_cents / 100}
-                        onChange={(e) =>
-                          setProducts(products.map((x) => (x.id === p.id ? { ...x, price_cents: Math.round(Number(e.target.value) * 100) } : x)))
-                        }
-                      />
-                      <p className={`mt-1 text-[11px] ${belowCost ? "text-destructive" : "text-muted-foreground"}`}>
+                    <div className="w-44">
+                      <Label className="text-xs">{t("Precio de venta", "Selling price")}</Label>
+                      <p className={`mt-1 font-bold ${belowCost ? "text-destructive" : ""}`}>
+                        {t(`desde ${money(p.price_cents)} MXN`, `from ${money(p.price_cents)} MXN`)}
+                      </p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
                         {min > 0
-                          ? t(`Costo mínimo: ${money(min)} MXN`, `Minimum cost: ${money(min)} MXN`)
+                          ? t(
+                              `Sugerido ${money(suggestedPriceFromProductionCents(p.production_cost_cents))} + tu ${store.markup_pct ?? 0}%`,
+                              `Suggested ${money(suggestedPriceFromProductionCents(p.production_cost_cents))} + your ${store.markup_pct ?? 0}%`,
+                            )
                           : t("Costo no disponible", "Cost unavailable")}
                       </p>
                     </div>
@@ -537,6 +547,23 @@ function StoreManage() {
                 <div>
                   <Label>{t("Descripción o eslogan", "Description or tagline")}</Label>
                   <Textarea rows={3} value={store.niche} onChange={(e) => setStore({ ...store, niche: e.target.value })} />
+                </div>
+                <div className="rounded-xl border border-border bg-muted/40 p-4">
+                  <Label>{t("Tu ganancia adicional (%)", "Your extra margin (%)")}</Label>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t(
+                      "Cada producto ya trae un precio sugerido calculado sobre su costo: los artículos baratos llevan más porcentaje y los caros menos. Si quieres ganar más, pon aquí un porcentaje y se aplicará parejo a TODOS los productos de tu tienda, en todas sus tallas y colores. Déjalo en 0 para vender al precio sugerido.",
+                      "Every product already has a suggested price based on its cost: cheaper items carry a higher percentage and expensive ones less. If you want to earn more, set a percentage here and it will apply evenly to ALL products in your store, across every size and color. Leave it at 0 to sell at the suggested price.",
+                    )}
+                  </p>
+                  <Input
+                    className="mt-2 w-32"
+                    type="number"
+                    min={0}
+                    max={1000}
+                    value={store.markup_pct ?? 0}
+                    onChange={(e) => setStore({ ...store, markup_pct: Number(e.target.value) })}
+                  />
                 </div>
                 <div>
                   <Label>{t("Logo", "Logo")}</Label>
