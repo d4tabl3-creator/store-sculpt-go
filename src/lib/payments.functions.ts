@@ -5,10 +5,10 @@ import {
   getStripeErrorMessage,
 } from "@/lib/stripe.server";
 
-import { quoteCart, type CostedProduct } from "@/lib/checkout-quote";
+import { quoteCart, type CostedProduct, type CostedVariant } from "@/lib/checkout-quote";
 import { USD_MXN } from "@/lib/pricing";
 
-type CartLine = { productId: string; qty: number };
+type CartLine = { productId: string; qty: number; variantId?: string | null };
 type CheckoutResult = { clientSecret: string; orderId: string } | { error: string };
 
 /** Cotización pública del carrito (subtotal, envío y total) para mostrarla antes de pagar. */
