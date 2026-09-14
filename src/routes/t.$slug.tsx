@@ -16,6 +16,7 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useT } from "@/lib/i18n";
 import { publicUrlFor } from "@/lib/public-url";
 import { StoreTemplate } from "@/components/store-templates";
+import { storePriceCents } from "@/lib/pricing";
 
 type Store = {
   id: string;
@@ -24,6 +25,18 @@ type Store = {
   niche: string;
   primary_color: string;
   template: string;
+  markup_pct: number | null;
+};
+type Variant = {
+  id: string;
+  product_id: string;
+  source_variant_id: string;
+  size: string | null;
+  color: string | null;
+  color_code: string | null;
+  image_url: string | null;
+  production_cost_cents: number;
+  in_stock: boolean;
 };
 type Product = {
   id: string;
