@@ -62,7 +62,7 @@ export type CatalogVariant = {
   inStock: boolean;
 };
 
-export type ProviderOption = { id: number; name: string; location: string | null };
+export type ProviderOption = { id: number; name: string; location: string | null; hasShipping: boolean };
 
 export type Placement = {
   id: string;
@@ -172,7 +172,21 @@ function hexFor(color: string | null): string | null {
 /** Fabricantes que pueden producir este artículo del catálogo. */
 export async function getProductProviders(productId: number): Promise<ProviderOption[]> {
   const list = await listPrintProviders(productId);
-  return list.map((p) => ({ id: p.id, name: p.title, location: p.location }));
+  // Cada taller cotiza su propio envío. El que no publica tarifas a México no
+  // sirve para vender: se marca aquí para poder avisarlo en pantalla y que
+  // nadie elija una opción con la que el producto jamás podría enviarse.
+  return Promise.all(
+    list.map(async (p) => {
+      let hasShipping = false;
+      try {
+        const envio = await getStandardShippingCosts(productId, p.id, "MX");
+        hasShipping = [...envio.values()].some((c) => c > 0);
+      } catch {
+        hasShipping = false;
+      }
+      return { id: p.id, name: p.title, location: p.location, hasShipping };
+    }),
+  );
 }
 
 export async function getCatalogVariants(
