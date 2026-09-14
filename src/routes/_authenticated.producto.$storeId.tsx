@@ -17,6 +17,7 @@ import { MockupsStep } from "@/components/crear/MockupsStep";
 import {
   currentVariant,
   draftToProduct,
+  draftZones,
   money,
   newDraft,
   type CatalogItem,
@@ -146,6 +147,8 @@ function StoreProductsPage() {
       // si el comerciante marcó S, M y L, las tres quedan disponibles.
       const chosen = p.selectedVariantIds.length ? p.selectedVariantIds : p.variantId ? [p.variantId] : [];
       const byId = new Map(draft.variants.map((v) => [v.id, v]));
+      // Todas las zonas con diseño viajan juntas: frente, espalda, mangas…
+      const zones = draftZones(draft);
       const items = (chosen.length ? chosen : [null]).map((variantId) => {
         const v = variantId != null ? byId.get(variantId) : undefined;
         const suffix = v?.size ? ` — ${v.size}` : v?.color && chosen.length > 1 ? ` — ${v.color}` : "";
@@ -159,6 +162,7 @@ function StoreProductsPage() {
           designUrl: p.designUrl,
           mockupUrl: p.mockupUrl,
           placement: p.placement,
+          zones,
         };
       });
       await addCatalogProducts({ data: { storeId, items } });

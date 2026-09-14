@@ -165,6 +165,45 @@ export function switchZone(d: ProductDraft, next: string): Partial<ProductDraft>
 }
 
 
+/** Ajuste completo de una zona, listo para guardarse en la tienda. */
+export type ZonePayload = {
+  placement: string;
+  designUrl: string | null;
+  designPreviewUrl: string | null;
+  fitMode: FitMode;
+  scale: number;
+  tileScale: number;
+  offsetX: number;
+  offsetY: number;
+  rotation: number;
+  areaWidth: number;
+  areaHeight: number;
+};
+
+/** Todas las zonas con diseño del borrador (incluida la zona activa). */
+export function draftZones(d: ProductDraft): ZonePayload[] {
+  const all: Record<string, ZoneDesign> = { ...(d.zones ?? {}), [d.placement]: activeZone(d) };
+  const out: ZonePayload[] = [];
+  for (const [placement, z] of Object.entries(all)) {
+    if (!z.designUrl && !z.designPreview) continue;
+    const area = d.placements.find((p) => p.id === placement);
+    out.push({
+      placement,
+      designUrl: z.designUrl,
+      designPreviewUrl: z.designPreview,
+      fitMode: z.fitMode ?? "fit",
+      scale: z.scale ?? 0.8,
+      tileScale: z.tileScale ?? 0.25,
+      offsetX: z.offsetX ?? 0.5,
+      offsetY: z.offsetY ?? 0.5,
+      rotation: z.rotation ?? 0,
+      areaWidth: area?.areaWidth ?? 0,
+      areaHeight: area?.areaHeight ?? 0,
+    });
+  }
+  return out;
+}
+
 /** Producto ya terminado, listo para publicarse en la tienda. */
 export type ReadyProduct = {
   productId: number;

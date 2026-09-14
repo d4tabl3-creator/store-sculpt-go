@@ -301,6 +301,73 @@ export const printifyProvider: CommerceProvider = {
         variants.find((v) => v.placeholders?.length)?.placeholders?.[0]?.position ||
         "front";
 
+      /**
+       * Colocación real de cada zona. Las coordenadas guardadas por el editor
+       * son fracciones del área imprimible, el mismo sistema que usa la
+       * fabricación, así que la traducción es directa. En "Repetir patrón" la
+       * producción NO tiene repetición propia: se arma una cuadrícula de
+       * copias, acotada a 60 piezas por zona.
+       */
+      const zones = product.designs?.length ? product.designs : null;
+      const placeholders: Array<{
+        position: string;
+        images: Array<{ id: string; x: number; y: number; scale: number; angle: number }>;
+      }> = [];
+
+      if (zones) {
+        for (const z of zones) {
+          if (!z.url && !z.externalFileId) continue;
+          let zoneImageId = z.externalFileId ?? null;
+          if (!zoneImageId && z.url) {
+            const up = await uploadImageByUrl(z.url, `${product.productId.slice(0, 8)}-${z.placement}.png`);
+            zoneImageId = up.id;
+          }
+          if (!zoneImageId) continue;
+
+          const x = Math.min(0.95, Math.max(0.05, z.offsetX));
+          const y = Math.min(0.95, Math.max(0.05, z.offsetY));
+          const angle = Math.round(z.rotation);
+          let scale = Math.min(3, Math.max(0.05, z.scale));
+
+          if (z.fitMode === "fill") {
+            // Rellenar: cubrir el área sin deformar. Con las medidas del
+            // archivo se calcula el factor mínimo que cubre ambos lados.
+            const areaRatio = z.areaWidth > 0 && z.areaHeight > 0 ? z.areaHeight / z.areaWidth : 1;
+            const imgRatio =
+              z.naturalWidth && z.naturalHeight ? z.naturalHeight / z.naturalWidth : areaRatio;
+            const cover = imgRatio > 0 ? Math.max(1, areaRatio / imgRatio) : 1;
+            scale = Math.min(3, Math.max(scale, cover));
+          }
+
+          let images = [{ id: zoneImageId, x, y, scale, angle }];
+
+          if (z.fitMode === "tile") {
+            const tile = Math.min(1, Math.max(0.05, z.tileScale));
+            const cols = Math.min(Math.ceil(1 / tile), 10);
+            const ratio = z.areaWidth > 0 && z.areaHeight > 0 ? z.areaHeight / z.areaWidth : 1;
+            const rows = Math.min(Math.max(Math.ceil(ratio / tile), 1), 10);
+            const grid: typeof images = [];
+            for (let r = 0; r < rows && grid.length < 60; r++) {
+              for (let c = 0; c < cols && grid.length < 60; c++) {
+                grid.push({
+                  id: zoneImageId,
+                  x: Math.min(0.99, Math.max(0.01, (c + 0.5) / cols)),
+                  y: Math.min(0.99, Math.max(0.01, (r + 0.5) / rows)),
+                  scale: tile,
+                  angle,
+                });
+              }
+            }
+            if (grid.length) images = grid;
+          }
+
+          placeholders.push({ position: z.placement, images });
+        }
+      }
+
+      if (!placeholders.length) {
+        placeholders.push({ position, images: [{ id: imageId, x: 0.5, y: 0.5, scale: 0.9, angle: 0 }] });
+      }
 
       const created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
         method: "POST",
@@ -310,14 +377,7 @@ export const printifyProvider: CommerceProvider = {
           blueprint_id: blueprintId,
           print_provider_id: printProviderId,
           variants: [{ id: variantId, price: product.priceCents, is_enabled: true }],
-          print_areas: [
-            {
-              variant_ids: [variantId],
-              placeholders: [
-                { position, images: [{ id: imageId, x: 0.5, y: 0.5, scale: 0.9, angle: 0 }] },
-              ],
-            },
-          ],
+          print_areas: [{ variant_ids: [variantId], placeholders }],
         },
       });
 

@@ -93,6 +93,8 @@ export type ProviderProduct = {
   sourceVariantId?: string | null;
   /** Diseño asociado, en formato neutral. */
   design?: DesignAssetRef | null;
+  /** Ajuste completo por zona de impresión, cuando el producto lo tiene. */
+  designs?: DesignZoneRef[] | null;
 };
 
 export type ProviderProductResult = {
@@ -163,6 +165,26 @@ export type DesignAssetRef = {
   externalTemplateId?: string | null;
   placement?: string | null;
   source?: DesignSource;
+};
+
+/**
+ * Colocación exacta de un diseño dentro de una zona de impresión.
+ * Coordenadas y tamaños en fracción (0-1) del área imprimible.
+ */
+export type DesignZoneRef = {
+  placement: string;
+  url: string | null;
+  fitMode: "fit" | "fill" | "tile";
+  scale: number;
+  tileScale: number;
+  offsetX: number;
+  offsetY: number;
+  rotation: number;
+  areaWidth: number;
+  areaHeight: number;
+  naturalWidth?: number | null;
+  naturalHeight?: number | null;
+  externalFileId?: string | null;
 };
 
 export type ProviderFileResult = {

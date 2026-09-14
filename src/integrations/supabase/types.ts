@@ -941,6 +941,96 @@ export type Database = {
         }
         Relationships: []
       }
+      product_print_zones: {
+        Row: {
+          area_height: number
+          area_width: number
+          created_at: string
+          design_preview_url: string | null
+          design_url: string | null
+          dpi_estimate: number | null
+          external_file_id: string | null
+          fit_mode: string
+          id: string
+          metadata: Json
+          natural_height: number | null
+          natural_width: number | null
+          offset_x: number
+          offset_y: number
+          owner_id: string
+          placement: string
+          product_id: string
+          rotation: number
+          scale: number
+          store_id: string
+          tile_scale: number
+          updated_at: string
+        }
+        Insert: {
+          area_height?: number
+          area_width?: number
+          created_at?: string
+          design_preview_url?: string | null
+          design_url?: string | null
+          dpi_estimate?: number | null
+          external_file_id?: string | null
+          fit_mode?: string
+          id?: string
+          metadata?: Json
+          natural_height?: number | null
+          natural_width?: number | null
+          offset_x?: number
+          offset_y?: number
+          owner_id: string
+          placement: string
+          product_id: string
+          rotation?: number
+          scale?: number
+          store_id: string
+          tile_scale?: number
+          updated_at?: string
+        }
+        Update: {
+          area_height?: number
+          area_width?: number
+          created_at?: string
+          design_preview_url?: string | null
+          design_url?: string | null
+          dpi_estimate?: number | null
+          external_file_id?: string | null
+          fit_mode?: string
+          id?: string
+          metadata?: Json
+          natural_height?: number | null
+          natural_width?: number | null
+          offset_x?: number
+          offset_y?: number
+          owner_id?: string
+          placement?: string
+          product_id?: string
+          rotation?: number
+          scale?: number
+          store_id?: string
+          tile_scale?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_print_zones_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "store_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_print_zones_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bank_name: string | null

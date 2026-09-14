@@ -12,6 +12,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type {
   CommerceProvider,
+  DesignZoneRef,
   ProviderBinding,
   ProviderId,
   ProviderOrder,
@@ -262,14 +263,26 @@ export async function runProvisioning(storeId: string): Promise<void> {
 // Productos / inventario / pedidos
 // ---------------------------------------------------------------------------
 
-function hashProduct(p: {
-  name: string;
-  description: string | null;
-  price_cents: number;
-  image_url: string | null;
-  stock: number;
-}): string {
-  return `${p.name}|${p.description ?? ""}|${p.price_cents}|${p.image_url ?? ""}|${p.stock}`;
+function hashProduct(
+  p: {
+    name: string;
+    description: string | null;
+    price_cents: number;
+    image_url: string | null;
+    stock: number;
+  },
+  zones: DesignZoneRef[] = [],
+): string {
+  // El ajuste del diseño forma parte de la huella: mover o reescalar una zona
+  // debe volver a mandar el producto a fabricación.
+  const z = zones
+    .map(
+      (d) =>
+        `${d.placement}:${d.url ?? ""}:${d.fitMode}:${d.scale}:${d.tileScale}:${d.offsetX}:${d.offsetY}:${d.rotation}`,
+    )
+    .sort()
+    .join(";");
+  return `${p.name}|${p.description ?? ""}|${p.price_cents}|${p.image_url ?? ""}|${p.stock}|${z}`;
 }
 
 export async function syncProductToProvider(binding: ProviderBinding, productId: string) {
@@ -288,7 +301,33 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
     .eq("provider", binding.provider)
     .maybeSingle();
 
-  const hash = hashProduct(row as never);
+  // Ajuste fino guardado por zona de impresión (frente, espalda, mangas…).
+  const { data: zoneRows } = await supabaseAdmin
+    .from("product_print_zones")
+    .select(
+      "placement, design_url, fit_mode, scale, tile_scale, offset_x, offset_y, rotation, area_width, area_height, natural_width, natural_height, external_file_id",
+    )
+    .eq("product_id", productId);
+
+  const designs: DesignZoneRef[] = (zoneRows ?? [])
+    .filter((z) => z.design_url)
+    .map((z) => ({
+      placement: z.placement as string,
+      url: z.design_url as string | null,
+      fitMode: ((z.fit_mode as string) ?? "fit") as DesignZoneRef["fitMode"],
+      scale: Number(z.scale ?? 0.8),
+      tileScale: Number(z.tile_scale ?? 0.25),
+      offsetX: Number(z.offset_x ?? 0.5),
+      offsetY: Number(z.offset_y ?? 0.5),
+      rotation: Number(z.rotation ?? 0),
+      areaWidth: Number(z.area_width ?? 0),
+      areaHeight: Number(z.area_height ?? 0),
+      naturalWidth: (z.natural_width as number | null) ?? null,
+      naturalHeight: (z.natural_height as number | null) ?? null,
+      externalFileId: (z.external_file_id as string | null) ?? null,
+    }));
+
+  const hash = hashProduct(row as never, designs);
   if (existing?.sync_hash === hash) return;
 
   // Diseño en formato neutral: da igual si vino del editor provisional, de una
@@ -326,6 +365,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
     sourceProductId: (row.source_product_id as string | null) ?? null,
     sourceVariantId: (row.source_variant_id as string | null) ?? null,
     design,
+    designs: designs.length ? designs : null,
   };
 
   try {
