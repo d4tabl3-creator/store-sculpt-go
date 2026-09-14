@@ -446,7 +446,9 @@ export const printifyProvider: CommerceProvider = {
           .eq("product_id", line.productId)
           .maybeSingle();
         const externalProductId = (pb?.external_product_id as string | null) ?? null;
-        const externalVariantId = Number(pb?.external_variant_id ?? line.externalVariantId ?? 0);
+        // La variante de la LÍNEA manda sobre la del vínculo: el vínculo sólo
+        // guarda una, y el pedido guarda la que realmente se compró.
+        const externalVariantId = Number(line.externalVariantId ?? pb?.external_variant_id ?? 0);
         if (!externalProductId || !externalVariantId) continue;
         lineItems.push({
           product_id: externalProductId,
