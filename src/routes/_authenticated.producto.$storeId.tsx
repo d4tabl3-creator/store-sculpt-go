@@ -146,25 +146,25 @@ function StoreProductsPage() {
       // Cada talla/color elegido se guarda como una opción vendible propia:
       // si el comerciante marcó S, M y L, las tres quedan disponibles.
       const chosen = p.selectedVariantIds.length ? p.selectedVariantIds : p.variantId ? [p.variantId] : [];
-      const byId = new Map(draft.variants.map((v) => [v.id, v]));
       // Todas las zonas con diseño viajan juntas: frente, espalda, mangas…
       const zones = draftZones(draft);
-      const items = (chosen.length ? chosen : [null]).map((variantId) => {
-        const v = variantId != null ? byId.get(variantId) : undefined;
-        const suffix = v?.size ? ` — ${v.size}` : v?.color && chosen.length > 1 ? ` — ${v.color}` : "";
-        return {
+      // UN SOLO producto con todas sus variantes: la clienta elige talla y
+      // color al comprar. Antes se creaba un producto por cada talla.
+      const items = [
+        {
           productId: p.productId,
           printProviderId: p.printProviderId ?? undefined,
-          variantId: variantId ?? undefined,
-          name: `${p.name}${chosen.length > 1 ? suffix : ""}`,
+          variantId: chosen[0] ?? undefined,
+          variantIds: chosen.length ? chosen : undefined,
+          name: p.name,
           description: p.description || undefined,
           priceCents: p.priceCents ?? undefined,
           designUrl: p.designUrl,
           mockupUrl: p.mockupUrl,
           placement: p.placement,
           zones,
-        };
-      });
+        },
+      ];
       const res = await addCatalogProducts({ data: { storeId, items } });
       if (res?.zonesError) {
         toast.error(
@@ -178,8 +178,11 @@ function StoreProductsPage() {
       setDraft(null);
       setStage("catalog");
       toast.success(
-        items.length > 1
-          ? t(`Se agregaron ${items.length} opciones a tu tienda.`, `${items.length} options added to your store.`)
+        chosen.length > 1
+          ? t(
+              `Producto agregado con ${chosen.length} opciones de talla y color.`,
+              `Product added with ${chosen.length} size and color options.`,
+            )
           : t("Producto agregado a tu tienda.", "Product added to your store."),
       );
     } catch (err) {
