@@ -201,21 +201,29 @@ function Storefront() {
     if (cart.length === 0 && checkout) setCheckout(false);
   }, [cart.length, checkout]);
 
-  const subtotal = cart.reduce((s, c) => s + c.product.price_cents * c.qty, 0);
+  const subtotal = cart.reduce((s, c) => s + precioDe(c.product, c.variant) * c.qty, 0);
   const accent = { ["--accent-color" as any]: store.primary_color };
 
-  function add(p: Product) {
+  function add(p: Product, v: Variant | null = null) {
+    const clave = lineaId({ product: p, variant: v });
     setCart((c) => {
-      const existing = c.find((x) => x.product.id === p.id);
-      if (existing) return c.map((x) => (x.product.id === p.id ? { ...x, qty: x.qty + 1 } : x));
-      return [...c, { product: p, qty: 1 }];
+      const existing = c.find((x) => lineaId(x) === clave);
+      if (existing) return c.map((x) => (lineaId(x) === clave ? { ...x, qty: x.qty + 1 } : x));
+      return [...c, { product: p, variant: v, qty: 1 }];
     });
     toast.success(t(`${p.name} agregado`, `${p.name} added`));
   }
 
-  function setQty(pid: string, qty: number) {
-    if (qty <= 0) setCart((c) => c.filter((x) => x.product.id !== pid));
-    else setCart((c) => c.map((x) => (x.product.id === pid ? { ...x, qty } : x)));
+  function setQty(key: string, qty: number) {
+    if (qty <= 0) setCart((c) => c.filter((x) => lineaId(x) !== key));
+    else setCart((c) => c.map((x) => (lineaId(x) === key ? { ...x, qty } : x)));
+  }
+
+  /** Abrir la ficha del producto. Si sólo hay una variante, va preseleccionada. */
+  function abrirDetalle(p: Product) {
+    const vs = variantesDe(p.id);
+    setElegida(vs.length === 1 ? vs[0] : null);
+    setDetalle(p);
   }
 
   const cartButton = (
