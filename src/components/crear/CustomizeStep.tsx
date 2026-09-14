@@ -520,7 +520,7 @@ export function CustomizeStep({
                   <button
                     key={c}
                     title={c}
-                    onClick={() => update({ color: c, variantId: v.id, selectedVariantIds: [v.id], mockups: [], mockupUrl: null })}
+                    onClick={() => update({ color: c, variantId: v.id, mockups: [], mockupUrl: null })}
                     className={`size-8 rounded-full border-2 ${draft.color === c ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
                     style={{ background: v.colorCode || "#ccc" }}
                   />
