@@ -161,6 +161,8 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       .eq("store_id", data.storeId);
 
     const rows: Array<Record<string, unknown>> = [];
+    // Ajuste por zona de cada fila, en el mismo orden que `rows`.
+    const zonesPerRow: Array<NonNullable<(typeof data.items)[number]["zones"]>> = [];
     let i = count ?? 0;
     for (const item of data.items) {
       const { product, variants, printProviderId } = await getCatalogVariants(item.productId, item.printProviderId);
