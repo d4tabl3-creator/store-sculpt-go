@@ -162,6 +162,7 @@ function StoreProductsPage() {
           designUrl: p.designUrl,
           mockupUrl: p.mockupUrl,
           placement: p.placement,
+          zones,
         };
       });
       await addCatalogProducts({ data: { storeId, items } });
