@@ -307,11 +307,6 @@ export function CustomizeStep({
   }
 
 
-  function toggleVariant(id: number) {
-    const on = draft.selectedVariantIds.includes(id);
-    const next = on ? draft.selectedVariantIds.filter((x) => x !== id) : [...draft.selectedVariantIds, id];
-    update({ selectedVariantIds: next.length ? next : [id], variantId: on ? draft.variantId : id, mockups: [], mockupUrl: null });
-  }
 
   if (loading) {
     return (
