@@ -207,6 +207,8 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     const zonesPerRow: Array<NonNullable<(typeof data.items)[number]["zones"]>> = [];
     // Variantes vendibles de cada fila, en el mismo orden que `rows`.
     const variantsPerRow: Array<Awaited<ReturnType<typeof getCatalogVariants>>["variants"]> = [];
+    // Maqueta con el diseño encima, una por color, en el mismo orden que `rows`.
+    const mockupPorColorPerRow: Array<Map<string, string>> = [];
     let i = count ?? 0;
     for (const item of data.items) {
       const { product, variants, printProviderId } = await getCatalogVariants(item.productId, item.printProviderId);
@@ -236,6 +238,58 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       const previewVariant = variants.find((v) => v.id === item.variantId) ?? variant;
 
       const mockup = item.mockupUrl ? await persistMockup(item.mockupUrl, product.id) : null;
+
+      // MAQUETAS POR COLOR: la clienta debe ver el diseño en el color que elige,
+      // no la prenda lisa de fábrica. Se genera una maqueta por color (un
+      // representante por color) y se guarda en cada variante. Si algo falla,
+      // el producto se guarda igual con la foto del proveedor: nunca bloquea.
+      const mockupPorColor = new Map<string, string>();
+      const zonasConDiseno: NonNullable<(typeof item)["zones"]> = (
+        item.zones?.length
+          ? item.zones
+          : item.designUrl
+            ? [{ placement: item.placement || "front", designUrl: item.designUrl }]
+            : []
+      ).filter((z) => !!z.designUrl);
+      if (zonasConDiseno.length) {
+        try {
+          const representantes = new Map<string, number>();
+          for (const v of variantsForRow) {
+            const color = v.color ?? "";
+            if (!representantes.has(color)) representantes.set(color, v.id);
+          }
+          const colorPorVariante = new Map<number, string>();
+          for (const [color, id] of representantes) colorPorVariante.set(id, color);
+          const { generateMockups } = await import("@/lib/catalog.server");
+          const maquetas = await generateMockups({
+            productId: item.productId,
+            variantIds: [...representantes.values()],
+            placement: zonasConDiseno[0].placement,
+            imageUrl: zonasConDiseno[0].designUrl || "",
+            printProviderId,
+            zones: zonasConDiseno.map((z) => ({
+              placement: z.placement,
+              imageUrl: z.designUrl || "",
+              scale: z.scale,
+              offsetX: z.offsetX,
+              offsetY: z.offsetY,
+              angle: z.rotation,
+              fitMode: z.fitMode,
+              tileScale: z.tileScale,
+            })),
+          });
+          for (const m of maquetas) {
+            for (const vid of m.variantIds) {
+              const color = colorPorVariante.get(vid);
+              if (color === undefined || mockupPorColor.has(color)) continue;
+              const guardada = await persistMockup(m.url, product.id);
+              if (guardada) mockupPorColor.set(color, guardada);
+            }
+          }
+        } catch (err) {
+          console.error("maquetas por color:", err);
+        }
+      }
 
       // REGLA: la vendedora NO teclea precios. El precio sale del costo real de
       // la variante más el porcentaje único de su tienda. Como `variant` es la
@@ -282,6 +336,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
             : [],
       );
       variantsPerRow.push(variantsForRow);
+      mockupPorColorPerRow.push(mockupPorColor);
     }
     if (!rows.length) throw new Error("No se pudo cargar el catálogo elegido");
 
@@ -311,6 +366,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       if (!rowId) return;
       const row = { id: rowId };
       // Variantes vendibles del producto, cada una con su costo real de fábrica.
+      const maquetasPorColor = mockupPorColorPerRow[idx] ?? new Map<string, string>();
       for (const v of variantsPerRow[idx] ?? []) {
         variantRows.push({
           product_id: rowId,
@@ -320,7 +376,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
           size: v.size ?? null,
           color: v.color ?? null,
           color_code: v.colorCode ?? null,
-          image_url: v.image ?? null,
+          image_url: maquetasPorColor.get(v.color ?? "") ?? v.image ?? null,
           production_cost_cents: v.productionCents,
           shipping_cost_cents: v.shippingCents,
           in_stock: v.inStock !== false,
