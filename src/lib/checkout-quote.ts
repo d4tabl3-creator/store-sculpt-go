@@ -8,9 +8,21 @@
  * ganancia ni en la comisión. Cada línea congela los costos del proveedor
  * (snapshot) para que el ledger use exactamente lo que costaba al vender.
  */
-import { validatePrice } from "@/lib/pricing";
+import { storePriceCents, validatePrice } from "@/lib/pricing";
 
-export type CartLine = { productId: string; qty: number };
+export type CartLine = { productId: string; qty: number; variantId?: string | null };
+
+/** Talla + color vendible, con su costo real de fábrica. */
+export type CostedVariant = {
+  id: string;
+  product_id: string;
+  source_variant_id: string;
+  size: string | null;
+  color: string | null;
+  production_cost_cents: number;
+  shipping_cost_cents: number;
+  in_stock: boolean;
+};
 
 export type CostedProduct = {
   id: string;
