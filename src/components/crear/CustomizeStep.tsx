@@ -307,11 +307,6 @@ export function CustomizeStep({
   }
 
 
-  function toggleVariant(id: number) {
-    const on = draft.selectedVariantIds.includes(id);
-    const next = on ? draft.selectedVariantIds.filter((x) => x !== id) : [...draft.selectedVariantIds, id];
-    update({ selectedVariantIds: next.length ? next : [id], variantId: on ? draft.variantId : id, mockups: [], mockupUrl: null });
-  }
 
   if (loading) {
     return (
@@ -519,13 +514,13 @@ export function CustomizeStep({
 
           {colors.length > 0 && (
             <div>
-              <Label>{t("Color", "Color")}</Label>
+              <Label>{t("Color para diseñar", "Color to design on")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {colors.map(([c, v]) => (
                   <button
                     key={c}
                     title={c}
-                    onClick={() => update({ color: c, variantId: v.id, selectedVariantIds: [v.id], mockups: [], mockupUrl: null })}
+                    onClick={() => update({ color: c, variantId: v.id, mockups: [], mockupUrl: null })}
                     className={`size-8 rounded-full border-2 ${draft.color === c ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
                     style={{ background: v.colorCode || "#ccc" }}
                   />
@@ -536,21 +531,25 @@ export function CustomizeStep({
 
           {sizes.some((v) => v.size) && (
             <div>
-              <Label>{t("Tallas y medidas que ofrecerás", "Sizes you will offer")}</Label>
+              <Label>{t("Tallas que se publicarán", "Sizes that will be published")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sizes.map((v) => (
-                  <button
+                  <span
                     key={v.id}
-                    disabled={!v.inStock}
-                    onClick={() => toggleVariant(v.id)}
-                    className={`rounded-lg border-2 px-3 py-1 text-xs font-bold disabled:opacity-40 ${
-                      draft.selectedVariantIds.includes(v.id) ? "border-primary bg-primary-soft" : "border-border bg-card"
+                    className={`rounded-lg border-2 border-border bg-card px-3 py-1 text-xs font-bold ${
+                      v.inStock ? "" : "opacity-40 line-through"
                     }`}
                   >
                     {v.size || v.name}
-                  </button>
+                  </span>
                 ))}
               </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t(
+                  "Todas las tallas y colores disponibles se publican solos. Tú sólo diseñas: tu clienta elige cuál quiere al comprar.",
+                  "All available sizes and colors are published automatically. You just design: your customer picks which one at checkout.",
+                )}
+              </p>
             </div>
           )}
 
