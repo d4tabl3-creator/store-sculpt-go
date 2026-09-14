@@ -416,7 +416,7 @@ export async function generateMockups(input: {
       : await resolvePrintProviderId(input.productId);
   const shopId = await printifyShopId();
   const placements = await getPlacements(input.productId, input.variantIds[0], printProviderId);
-  const variantIds = input.variantIds.slice(0, 10);
+  const variantIds = input.variantIds.slice(0, 20);
 
   // Todas las zonas con diseño entran en la MISMA maqueta: si la vendedora
   // puso algo en el frente y en la espalda, la vista previa muestra las dos.
@@ -513,7 +513,7 @@ export async function generateMockups(input: {
     if (seen.has(img.src)) continue;
     seen.add(img.src);
     out.push({ placement: img.position || areaIds[0], variantIds: img.variant_ids || variantIds, url: img.src });
-    if (out.length >= 8) break;
+    if (out.length >= 60) break;
   }
   if (!out.length) throw new Error("No se pudo generar la maqueta. Inténtalo otra vez.");
   return out;
