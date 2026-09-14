@@ -187,11 +187,22 @@ function StoreManage() {
       const v = (links[f.key] || "").trim();
       if (v) clean[f.key] = v;
     }
+    const pct = Math.max(0, Math.min(1000, Number(store.markup_pct ?? 0)));
     const { error } = await supabase
       .from("stores")
-      .update({ name: store.name, niche: store.niche, template: store.template, logo_url: store.logo_url, external_links: clean } as never)
+      .update({ name: store.name, niche: store.niche, template: store.template, logo_url: store.logo_url, external_links: clean, markup_pct: pct } as never)
       .eq("id", id);
     if (!error) {
+      // El porcentaje es parejo para toda la tienda: al cambiarlo se recalculan
+      // los precios de todos los productos a partir de su costo real de fábrica.
+      const recalculados = products.map((p) => ({
+        ...p,
+        price_cents: storePriceCents(p.production_cost_cents, pct),
+      }));
+      for (const p of recalculados) {
+        await supabase.from("store_products").update({ price_cents: p.price_cents }).eq("id", p.id);
+      }
+      setProducts(recalculados);
       const { error: pe } = await supabase
         .from("store_payment_settings")
         .upsert({ store_id: id, payment_email: paymentEmail || null }, { onConflict: "store_id" });
