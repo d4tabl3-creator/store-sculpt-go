@@ -435,7 +435,7 @@ function CheckoutForm({
     let alive = true;
     setQuote(null);
     setQuoteError(null);
-    quoteStoreCart({ data: { storeId: store.id, items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })) } })
+    quoteStoreCart({ data: { storeId: store.id, items: cart.map((c) => ({ productId: c.product.id, qty: c.qty, variantId: c.variant?.id ?? null })) } })
       .then((res) => {
         if (!alive) return;
         if ("error" in res) setQuoteError(mensajeUsuario(res.error));
@@ -475,7 +475,7 @@ function CheckoutForm({
       const res = await startStoreCheckout({
         data: {
           storeId: store.id,
-          items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })),
+          items: cart.map((c) => ({ productId: c.product.id, qty: c.qty, variantId: c.variant?.id ?? null })),
           customer: { name, email, phone: phone || undefined, address, notes: notes || undefined },
           returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}&slug=${store.slug}`,
           environment: getStripeEnvironment(),
