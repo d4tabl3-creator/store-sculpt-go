@@ -95,6 +95,8 @@ export type ProviderProduct = {
   design?: DesignAssetRef | null;
   /** Ajuste completo por zona de impresión, cuando el producto lo tiene. */
   designs?: DesignZoneRef[] | null;
+  /** Todas las tallas y colores publicados, con su id del fabricante. */
+  variantIds?: number[] | null;
 };
 
 export type ProviderProductResult = {

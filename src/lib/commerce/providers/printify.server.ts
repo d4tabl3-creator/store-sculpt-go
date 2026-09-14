@@ -369,6 +369,12 @@ export const printifyProvider: CommerceProvider = {
         placeholders.push({ position, images: [{ id: imageId, x: 0.5, y: 0.5, scale: 0.9, angle: 0 }] });
       }
 
+      // TODAS las tallas y colores publicados se registran en fabricación. Si
+      // sólo se registrara uno, un pedido de otra talla no podría producirse.
+      const todasLasVariantes = product.variantIds?.length
+        ? [...new Set(product.variantIds)]
+        : [variantId];
+
       const created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
         method: "POST",
         body: {
@@ -376,8 +382,8 @@ export const printifyProvider: CommerceProvider = {
           description: product.description || "",
           blueprint_id: blueprintId,
           print_provider_id: printProviderId,
-          variants: [{ id: variantId, price: product.priceCents, is_enabled: true }],
-          print_areas: [{ variant_ids: [variantId], placeholders }],
+          variants: todasLasVariantes.map((id) => ({ id, price: product.priceCents, is_enabled: true })),
+          print_areas: [{ variant_ids: todasLasVariantes, placeholders }],
         },
       });
 

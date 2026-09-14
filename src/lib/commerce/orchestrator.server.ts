@@ -327,7 +327,20 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
       externalFileId: (z.external_file_id as string | null) ?? null,
     }));
 
-  const hash = hashProduct(row as never, designs);
+  // Todas las tallas y colores publicados, con su id de fabricación. El id que
+  // guardamos en source_variant_id es el mismo que usa el taller.
+  const { data: variantRows } = await supabaseAdmin
+    .from("store_product_variants")
+    .select("source_variant_id")
+    .eq("product_id", productId)
+    .order("sort_order");
+  const variantIds = (variantRows ?? [])
+    .map((v) => Number(v.source_variant_id))
+    .filter((n) => Number.isFinite(n) && n > 0);
+
+  // Las variantes forman parte de la huella: publicar una talla nueva debe
+  // volver a mandar el producto a fabricación.
+  const hash = `${hashProduct(row as never, designs)}|${[...variantIds].sort((a, b) => a - b).join(",")}`;
   if (existing?.sync_hash === hash) return;
 
   // Diseño en formato neutral: da igual si vino del editor provisional, de una
@@ -366,6 +379,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
     sourceVariantId: (row.source_variant_id as string | null) ?? null,
     design,
     designs: designs.length ? designs : null,
+    variantIds: variantIds.length ? variantIds : null,
   };
 
   try {
