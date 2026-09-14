@@ -531,21 +531,25 @@ export function CustomizeStep({
 
           {sizes.some((v) => v.size) && (
             <div>
-              <Label>{t("Tallas y medidas que ofrecerás", "Sizes you will offer")}</Label>
+              <Label>{t("Tallas que se publicarán", "Sizes that will be published")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sizes.map((v) => (
-                  <button
+                  <span
                     key={v.id}
-                    disabled={!v.inStock}
-                    onClick={() => toggleVariant(v.id)}
-                    className={`rounded-lg border-2 px-3 py-1 text-xs font-bold disabled:opacity-40 ${
-                      draft.selectedVariantIds.includes(v.id) ? "border-primary bg-primary-soft" : "border-border bg-card"
+                    className={`rounded-lg border-2 border-border bg-card px-3 py-1 text-xs font-bold ${
+                      v.inStock ? "" : "opacity-40 line-through"
                     }`}
                   >
                     {v.size || v.name}
-                  </button>
+                  </span>
                 ))}
               </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t(
+                  "Todas las tallas y colores disponibles se publican solos. Tú sólo diseñas: tu clienta elige cuál quiere al comprar.",
+                  "All available sizes and colors are published automatically. You just design: your customer picks which one at checkout.",
+                )}
+              </p>
             </div>
           )}
 
