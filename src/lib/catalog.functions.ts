@@ -60,6 +60,16 @@ export const createProductMockup = createServerFn({ method: "POST" })
       fitMode?: "fit" | "fill" | "tile";
       tileScale?: number;
       printProviderId?: number;
+      zones?: Array<{
+        placement: string;
+        imageUrl: string;
+        scale?: number;
+        offsetX?: number;
+        offsetY?: number;
+        angle?: number;
+        fitMode?: "fit" | "fill" | "tile";
+        tileScale?: number;
+      }>;
     }) => {
       if (!Number.isInteger(data.productId)) throw new Error("Producto inválido");
       if (!Array.isArray(data.variantIds) || !data.variantIds.length) throw new Error("Elige al menos una variante");
