@@ -210,16 +210,25 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     let i = count ?? 0;
     for (const item of data.items) {
       const { product, variants, printProviderId } = await getCatalogVariants(item.productId, item.printProviderId);
+      // GUARDA DE ENVÍO: si el taller elegido no publica tarifas a México, el
+      // envío llega en cero y el producto jamás podría venderse (enviar a
+      // ciegas sale de nuestra bolsa). Se corta aquí, antes de guardar nada.
+      const conEnvio = variants.filter((v) => v.shippingCents > 0);
+      if (!conEnvio.length) {
+        throw new Error(
+          `"${item.name?.trim() || product.title}": la opción de producción que elegiste no tiene costo de envío a México, así que este producto no se podría vender. Cámbiala por otra opción de producción y vuelve a intentar.`,
+        );
+      }
       // TODAS las variantes se publican: la vendedora ya no las elige, sólo
       // diseña. La clienta final escoge talla y color al comprar. Se descartan
-      // las que no traen un costo de fábrica confiable.
-      const sellableVariants = variants.filter((v) => v.productionCents > 0);
+      // las que no traen un costo de fábrica confiable ni envío cotizado.
+      const sellableVariants = variants.filter((v) => v.productionCents > 0 && v.shippingCents > 0);
       // La variante principal es la MÁS BARATA: define el precio "desde" que
       // verá la clienta en la vitrina y la fila madre del producto.
       const variant =
         [...sellableVariants].sort((a, b) => a.productionCents - b.productionCents)[0] ||
-        variants.find((v) => v.inStock) ||
-        variants[0];
+        conEnvio.find((v) => v.inStock) ||
+        conEnvio[0];
       if (!variant) continue;
       const variantsForRow = sellableVariants.length ? sellableVariants : [variant];
       // La foto del producto usa el color sobre el que la vendedora diseñó,
