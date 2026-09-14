@@ -17,6 +17,7 @@ import { MockupsStep } from "@/components/crear/MockupsStep";
 import {
   currentVariant,
   draftToProduct,
+  draftZones,
   money,
   newDraft,
   type CatalogItem,
