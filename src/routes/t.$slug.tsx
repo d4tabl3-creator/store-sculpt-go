@@ -16,6 +16,7 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useT } from "@/lib/i18n";
 import { publicUrlFor } from "@/lib/public-url";
 import { StoreTemplate } from "@/components/store-templates";
+import { storePriceCents } from "@/lib/pricing";
 
 type Store = {
   id: string;
@@ -24,6 +25,18 @@ type Store = {
   niche: string;
   primary_color: string;
   template: string;
+  markup_pct: number | null;
+};
+type Variant = {
+  id: string;
+  product_id: string;
+  source_variant_id: string;
+  size: string | null;
+  color: string | null;
+  color_code: string | null;
+  image_url: string | null;
+  production_cost_cents: number;
+  in_stock: boolean;
 };
 type Product = {
   id: string;
@@ -39,7 +52,7 @@ export const Route = createFileRoute("/t/$slug")({
   loader: async ({ params }) => {
     const { data: store } = await supabase
       .from("stores")
-      .select("id, slug, name, niche, primary_color, template")
+      .select("id, slug, name, niche, primary_color, template, markup_pct")
       .eq("slug", params.slug)
       .eq("status", "published")
       .maybeSingle();
@@ -49,7 +62,17 @@ export const Route = createFileRoute("/t/$slug")({
       .select("id, name, description, price_cents, image_url, stock, shipping_cost_cents")
       .eq("store_id", store.id)
       .order("sort_order");
-    return { store: store as Store, products: (products as Product[]) || [] };
+    // Tallas y colores de cada producto: la clienta elige el suyo al comprar.
+    const { data: variants } = await supabase
+      .from("store_product_variants")
+      .select("id, product_id, source_variant_id, size, color, color_code, image_url, production_cost_cents, in_stock")
+      .eq("store_id", store.id)
+      .order("sort_order");
+    return {
+      store: store as Store,
+      products: (products as Product[]) || [],
+      variants: (variants as Variant[]) || [],
+    };
   },
   head: ({ params, loaderData }) => {
     const url = publicUrlFor(`/t/${params.slug}`);
@@ -102,7 +125,12 @@ export const Route = createFileRoute("/t/$slug")({
   notFoundComponent: () => <StoreNotFound />,
 });
 
-type CartItem = { product: Product; qty: number };
+type CartItem = { product: Product; variant: Variant | null; qty: number };
+
+/** Identifica una línea del carrito: el mismo producto en dos tallas son dos líneas. */
+function lineaId(c: { product: Product; variant: Variant | null }): string {
+  return `${c.product.id}|${c.variant?.id ?? ""}`;
+}
 
 function StoreNotFound() {
   const t = useT();
@@ -119,11 +147,19 @@ function StoreNotFound() {
 
 function Storefront() {
   const t = useT();
-  const { store, products } = Route.useLoaderData();
+  const { store, products, variants } = Route.useLoaderData();
   const storageKey = `datable-cart-${store.slug}`;
   const [cart, setCart] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
+  const [detalle, setDetalle] = useState<Product | null>(null);
+  const [elegida, setElegida] = useState<Variant | null>(null);
+
+  /** Tallas y colores de un producto. */
+  const variantesDe = (pid: string) => variants.filter((v) => v.product_id === pid);
+  /** Precio real de una variante: su costo de fábrica más el porcentaje de la tienda. */
+  const precioDe = (p: Product, v: Variant | null) =>
+    v && v.production_cost_cents > 0 ? storePriceCents(v.production_cost_cents, store.markup_pct) : p.price_cents;
 
   // El carrito se conserva en el navegador de la clienta: si cierra el
   // carrito, va y vuelve dentro de la tienda, o recarga la página, sus
@@ -138,7 +174,8 @@ function Storefront() {
             .filter((c) => products.some((p) => p.id === c.product.id))
             .map((c) => {
               const current = products.find((p) => p.id === c.product.id)!;
-              return { ...c, product: current };
+              const v = c.variant ? variants.find((x) => x.id === c.variant!.id) ?? null : null;
+              return { ...c, product: current, variant: v };
             });
           if (valid.length > 0) setCart(valid);
         }
@@ -164,21 +201,29 @@ function Storefront() {
     if (cart.length === 0 && checkout) setCheckout(false);
   }, [cart.length, checkout]);
 
-  const subtotal = cart.reduce((s, c) => s + c.product.price_cents * c.qty, 0);
+  const subtotal = cart.reduce((s, c) => s + precioDe(c.product, c.variant) * c.qty, 0);
   const accent = { ["--accent-color" as any]: store.primary_color };
 
-  function add(p: Product) {
+  function add(p: Product, v: Variant | null = null) {
+    const clave = lineaId({ product: p, variant: v });
     setCart((c) => {
-      const existing = c.find((x) => x.product.id === p.id);
-      if (existing) return c.map((x) => (x.product.id === p.id ? { ...x, qty: x.qty + 1 } : x));
-      return [...c, { product: p, qty: 1 }];
+      const existing = c.find((x) => lineaId(x) === clave);
+      if (existing) return c.map((x) => (lineaId(x) === clave ? { ...x, qty: x.qty + 1 } : x));
+      return [...c, { product: p, variant: v, qty: 1 }];
     });
     toast.success(t(`${p.name} agregado`, `${p.name} added`));
   }
 
-  function setQty(pid: string, qty: number) {
-    if (qty <= 0) setCart((c) => c.filter((x) => x.product.id !== pid));
-    else setCart((c) => c.map((x) => (x.product.id === pid ? { ...x, qty } : x)));
+  function setQty(key: string, qty: number) {
+    if (qty <= 0) setCart((c) => c.filter((x) => lineaId(x) !== key));
+    else setCart((c) => c.map((x) => (lineaId(x) === key ? { ...x, qty } : x)));
+  }
+
+  /** Abrir la ficha del producto. Si sólo hay una variante, va preseleccionada. */
+  function abrirDetalle(p: Product) {
+    const vs = variantesDe(p.id);
+    setElegida(vs.length === 1 ? vs[0] : null);
+    setDetalle(p);
   }
 
   const cartButton = (
@@ -218,16 +263,21 @@ function Storefront() {
                 ) : (
                   <div className="space-y-3">
                     {cart.map((c) => (
-                      <div key={c.product.id} className="flex gap-3 rounded-lg border border-border p-3">
-                        {c.product.image_url && <img src={c.product.image_url} alt="" className="size-16 rounded object-cover" />}
+                      <div key={lineaId(c)} className="flex gap-3 rounded-lg border border-border p-3">
+                        {(c.variant?.image_url || c.product.image_url) && <img src={c.variant?.image_url || c.product.image_url || ""} alt="" className="size-16 rounded object-cover" />}
                         <div className="flex-1">
                           <div className="font-medium">{c.product.name}</div>
-                          <div className="text-sm text-muted-foreground">${(c.product.price_cents / 100).toFixed(2)}</div>
+                          {(c.variant?.size || c.variant?.color) && (
+                            <div className="text-xs text-muted-foreground">
+                              {[c.variant?.size, c.variant?.color].filter(Boolean).join(" · ")}
+                            </div>
+                          )}
+                          <div className="text-sm text-muted-foreground">${(precioDe(c.product, c.variant) / 100).toFixed(2)}</div>
                           <div className="mt-2 flex items-center gap-2">
-                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Quitar uno", "Remove one")} onClick={() => setQty(c.product.id, c.qty - 1)}><Minus className="size-3" /></Button>
+                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Quitar uno", "Remove one")} onClick={() => setQty(lineaId(c), c.qty - 1)}><Minus className="size-3" /></Button>
                             <span className="w-6 text-center text-sm font-bold">{c.qty}</span>
-                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Agregar uno", "Add one")} onClick={() => setQty(c.product.id, c.qty + 1)}><Plus className="size-3" /></Button>
-                            <Button size="sm" variant="ghost" className="ml-auto h-7 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => setQty(c.product.id, 0)}>
+                            <Button size="sm" variant="outline" className="size-7 p-0" aria-label={t("Agregar uno", "Add one")} onClick={() => setQty(lineaId(c), c.qty + 1)}><Plus className="size-3" /></Button>
+                            <Button size="sm" variant="ghost" className="ml-auto h-7 px-2 text-xs text-muted-foreground hover:text-destructive" onClick={() => setQty(lineaId(c), 0)}>
                               <X className="mr-1 size-3" /> {t("Quitar", "Remove")}
                             </Button>
                           </div>
@@ -264,7 +314,89 @@ function Storefront() {
           )}
         </SheetContent>
       </Sheet>
-      <StoreTemplate store={store} products={products} onAdd={add} cartButton={cartButton} />
+      <StoreTemplate store={store} products={products} onAdd={abrirDetalle} cartButton={cartButton} />
+      {detalle && (
+        <Sheet open onOpenChange={(o) => !o && setDetalle(null)}>
+          <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto">
+            <SheetHeader><SheetTitle>{detalle.name}</SheetTitle></SheetHeader>
+            {(() => {
+              const vs = variantesDe(detalle.id);
+              const colores = [...new Map(vs.filter((v) => v.color).map((v) => [v.color as string, v])).values()];
+              const tallas = [...new Map(vs.filter((v) => v.size).map((v) => [v.size as string, v])).values()];
+              const elegirColor = (color: string) =>
+                setElegida(
+                  vs.find((v) => v.color === color && (!elegida?.size || v.size === elegida.size)) ??
+                    vs.find((v) => v.color === color) ??
+                    null,
+                );
+              const elegirTalla = (size: string) =>
+                setElegida(
+                  vs.find((v) => v.size === size && (!elegida?.color || v.color === elegida.color)) ??
+                    vs.find((v) => v.size === size) ??
+                    null,
+                );
+              const listo = vs.length === 0 || !!elegida;
+              const foto = elegida?.image_url || detalle.image_url;
+              return (
+                <div className="mt-4 space-y-4 pb-6">
+                  {foto && <img src={foto} alt={detalle.name} className="w-full rounded-xl object-cover" />}
+                  <div>
+                    <div className="text-2xl font-bold">
+                      {!elegida && vs.length > 1 ? t("desde ", "from ") : ""}
+                      ${(precioDe(detalle, elegida) / 100).toFixed(2)} MXN
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t("Envío se calcula al pagar.", "Shipping is calculated at checkout.")}</p>
+                  </div>
+                  {detalle.description && <p className="text-sm text-muted-foreground">{detalle.description}</p>}
+                  {colores.length > 0 && (
+                    <div>
+                      <Label>{t("Color", "Color")}{elegida?.color ? `: ${elegida.color}` : ""}</Label>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {colores.map((v) => (
+                          <button
+                            key={v.color}
+                            title={v.color || ""}
+                            onClick={() => elegirColor(v.color as string)}
+                            className={`size-9 rounded-full border-2 ${elegida?.color === v.color ? "border-foreground ring-2 ring-foreground/30" : "border-border"}`}
+                            style={{ background: v.color_code || "#ccc" }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {tallas.length > 0 && (
+                    <div>
+                      <Label>{t("Talla", "Size")}{elegida?.size ? `: ${elegida.size}` : ""}</Label>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {tallas.map((v) => (
+                          <button
+                            key={v.size}
+                            disabled={!v.in_stock}
+                            onClick={() => elegirTalla(v.size as string)}
+                            className={`rounded-lg border-2 px-3 py-1 text-sm font-bold disabled:opacity-40 ${elegida?.size === v.size ? "border-foreground bg-muted" : "border-border"}`}
+                          >
+                            {v.size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <Button
+                    className="w-full"
+                    disabled={!listo}
+                    onClick={() => {
+                      add(detalle, elegida);
+                      setDetalle(null);
+                    }}
+                  >
+                    {listo ? t("Agregar al carrito", "Add to cart") : t("Elige talla y color", "Choose size and color")}
+                  </Button>
+                </div>
+              );
+            })()}
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
