@@ -248,7 +248,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       rows.push({
         store_id: data.storeId,
         name: item.name?.trim() || product.title,
-        description: item.description?.trim() || product.description,
+        description: item.description?.trim() || limpiarDescripcion(product.description),
         price_cents: priceCents,
         // Costos del proveedor: sólo los escribe el servidor (trigger cost_guard).
         production_cost_cents: variant.productionCents,

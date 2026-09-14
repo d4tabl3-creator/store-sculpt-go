@@ -382,8 +382,8 @@ export const printifyProvider: CommerceProvider = {
           description: product.description || "",
           blueprint_id: blueprintId,
           print_provider_id: printProviderId,
-          variants: [{ id: variantId, price: product.priceCents, is_enabled: true }],
-          print_areas: [{ variant_ids: [variantId], placeholders }],
+          variants: todasLasVariantes.map((id) => ({ id, price: product.priceCents, is_enabled: true })),
+          print_areas: [{ variant_ids: todasLasVariantes, placeholders }],
         },
       });
 
