@@ -152,7 +152,7 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       // Cargar tienda publicada
       const { data: store } = await supabaseAdmin
         .from("stores")
-        .select("id, slug, name, owner_id, status")
+        .select("id, slug, name, owner_id, status, markup_pct")
         .eq("id", data.storeId)
         .maybeSingle();
       if (!store || store.status !== "published") return { error: "Tienda no disponible" };
