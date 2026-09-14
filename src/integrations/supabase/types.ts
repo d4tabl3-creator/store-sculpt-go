@@ -1191,6 +1191,78 @@ export type Database = {
           },
         ]
       }
+      store_product_variants: {
+        Row: {
+          color: string | null
+          color_code: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          in_stock: boolean
+          metadata: Json
+          owner_id: string
+          product_id: string
+          production_cost_cents: number
+          shipping_cost_cents: number
+          size: string | null
+          sort_order: number
+          source_variant_id: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          color_code?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean
+          metadata?: Json
+          owner_id: string
+          product_id: string
+          production_cost_cents?: number
+          shipping_cost_cents?: number
+          size?: string | null
+          sort_order?: number
+          source_variant_id: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          color_code?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean
+          metadata?: Json
+          owner_id?: string
+          product_id?: string
+          production_cost_cents?: number
+          shipping_cost_cents?: number
+          size?: string | null
+          sort_order?: number
+          source_variant_id?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "store_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_product_variants_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_products: {
         Row: {
           base_cost_cents: number
@@ -1275,6 +1347,7 @@ export type Database = {
           id: string
           kit_id: string | null
           logo_url: string | null
+          markup_pct: number | null
           name: string
           niche: string
           owner_id: string
@@ -1292,6 +1365,7 @@ export type Database = {
           id?: string
           kit_id?: string | null
           logo_url?: string | null
+          markup_pct?: number | null
           name: string
           niche: string
           owner_id: string
@@ -1309,6 +1383,7 @@ export type Database = {
           id?: string
           kit_id?: string | null
           logo_url?: string | null
+          markup_pct?: number | null
           name?: string
           niche?: string
           owner_id?: string
