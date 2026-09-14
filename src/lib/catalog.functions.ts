@@ -211,10 +211,52 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         source_product_id: `${product.id}:${printProviderId}`,
         source_variant_id: String(variant.id),
       });
+      zonesPerRow.push(
+        item.zones?.length
+          ? item.zones
+          : item.designUrl
+            ? [{ placement: item.placement || "front", designUrl: item.designUrl }]
+            : [],
+      );
     }
     if (!rows.length) throw new Error("No se pudo cargar el catálogo elegido");
 
-    const { error } = await supabaseAdmin.from("store_products").insert(rows as never);
+    const { data: inserted, error } = await supabaseAdmin
+      .from("store_products")
+      .insert(rows as never)
+      .select("id");
     if (error) throw new Error(error.message);
+
+    // Ajuste fino del diseño por zona: se guarda aparte para que cada producto
+    // conserve frente, espalda y mangas con su propia colocación.
+    const zoneRows: Array<Record<string, unknown>> = [];
+    (inserted ?? []).forEach((row, idx) => {
+      for (const z of zonesPerRow[idx] ?? []) {
+        if (!z.placement) continue;
+        zoneRows.push({
+          product_id: (row as { id: string }).id,
+          store_id: data.storeId,
+          owner_id: context.userId,
+          placement: z.placement,
+          design_url: z.designUrl ?? null,
+          design_preview_url: z.designPreviewUrl ?? null,
+          fit_mode: z.fitMode ?? "fit",
+          scale: z.scale ?? 0.8,
+          tile_scale: z.tileScale ?? 0.25,
+          offset_x: z.offsetX ?? 0.5,
+          offset_y: z.offsetY ?? 0.5,
+          rotation: z.rotation ?? 0,
+          area_width: Math.round(z.areaWidth ?? 0),
+          area_height: Math.round(z.areaHeight ?? 0),
+        });
+      }
+    });
+    if (zoneRows.length) {
+      const { error: zErr } = await supabaseAdmin
+        .from("product_print_zones")
+        .upsert(zoneRows as never, { onConflict: "product_id,placement" });
+      if (zErr) console.error("guardar zonas de impresión:", zErr.message);
+    }
+
     return { inserted: rows.length };
   });
