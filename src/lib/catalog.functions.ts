@@ -92,6 +92,8 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         mockupUrl?: string;
         placement?: string;
         printProviderId?: number;
+        /** Todas las variantes (talla + color) que la vendedora dejó disponibles. */
+        variantIds?: number[];
         /** Ajuste completo por zona de impresión (frente, espalda, mangas…). */
         zones?: Array<{
           placement: string;
@@ -163,14 +165,26 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     const rows: Array<Record<string, unknown>> = [];
     // Ajuste por zona de cada fila, en el mismo orden que `rows`.
     const zonesPerRow: Array<NonNullable<(typeof data.items)[number]["zones"]>> = [];
+    // Variantes vendibles de cada fila, en el mismo orden que `rows`.
+    const variantsPerRow: Array<Awaited<ReturnType<typeof getCatalogVariants>>["variants"]> = [];
     let i = count ?? 0;
     for (const item of data.items) {
       const { product, variants, printProviderId } = await getCatalogVariants(item.productId, item.printProviderId);
+      // Todas las variantes elegidas por la vendedora (talla + color).
+      const chosenIds = item.variantIds?.length
+        ? item.variantIds
+        : item.variantId != null
+          ? [item.variantId]
+          : [];
+      const chosenVariants = chosenIds.length ? variants.filter((v) => chosenIds.includes(v.id)) : [];
+      // La variante principal es la MÁS BARATA: define el precio "desde" que
+      // verá la clienta en la vitrina y la fila madre del producto.
       const variant =
-        variants.find((v) => v.id === item.variantId) ||
+        [...chosenVariants].sort((a, b) => a.productionCents - b.productionCents)[0] ||
         variants.find((v) => v.inStock) ||
         variants[0];
       if (!variant) continue;
+      const variantsForRow = chosenVariants.length ? chosenVariants : [variant];
 
       const mockup = item.mockupUrl ? await persistMockup(item.mockupUrl, product.id) : null;
 
@@ -218,6 +232,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
             ? [{ placement: item.placement || "front", designUrl: item.designUrl }]
             : [],
       );
+      variantsPerRow.push(variantsForRow);
     }
     if (!rows.length) throw new Error("No se pudo cargar el catálogo elegido");
 
@@ -230,6 +245,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     // Ajuste fino del diseño por zona: se guarda aparte para que cada producto
     // conserve frente, espalda y mangas con su propia colocación.
     const zoneRows: Array<Record<string, unknown>> = [];
+    const variantRows: Array<Record<string, unknown>> = [];
     // Emparejamiento por clave real (producto + variante de origen), no por
     // posición: el orden de retorno del INSERT no está garantizado.
     const insertedById = new Map<string, string>();
@@ -245,6 +261,23 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       const rowId = insertedById.get(key);
       if (!rowId) return;
       const row = { id: rowId };
+      // Variantes vendibles del producto, cada una con su costo real de fábrica.
+      for (const v of variantsPerRow[idx] ?? []) {
+        variantRows.push({
+          product_id: rowId,
+          store_id: data.storeId,
+          owner_id: context.userId,
+          source_variant_id: String(v.id),
+          size: v.size ?? null,
+          color: v.color ?? null,
+          color_code: v.colorCode ?? null,
+          image_url: v.image ?? null,
+          production_cost_cents: v.productionCents,
+          shipping_cost_cents: v.shippingCents,
+          in_stock: v.inStock !== false,
+          sort_order: variantRows.length,
+        });
+      }
       for (const z of zonesPerRow[idx] ?? []) {
         if (!z.placement) continue;
         zoneRows.push({
@@ -273,6 +306,16 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       if (zErr) {
         console.error("guardar zonas de impresión:", zErr.message);
         zonesError = zErr.message;
+      }
+    }
+
+    if (variantRows.length) {
+      const { error: vErr } = await supabaseAdmin
+        .from("store_product_variants")
+        .upsert(variantRows as never, { onConflict: "product_id,source_variant_id" });
+      if (vErr) {
+        console.error("guardar variantes:", vErr.message);
+        zonesError = zonesError ?? vErr.message;
       }
     }
 
