@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { baseCostCents, validatePrice } from "@/lib/pricing";
+import { baseCostCents, storePriceCents, validatePrice } from "@/lib/pricing";
 
 const UUID = /^[0-9a-fA-F-]{36}$/;
 
@@ -172,6 +172,15 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
       .select("id", { count: "exact", head: true })
       .eq("store_id", data.storeId);
 
+    // Porcentaje único de ganancia de la tienda, sobre el precio sugerido.
+    // Si la vendedora aún no lo definió, se publica al sugerido tal cual.
+    const { data: tienda } = await supabaseAdmin
+      .from("stores")
+      .select("markup_pct")
+      .eq("id", data.storeId)
+      .maybeSingle();
+    const markupPct = Number((tienda as { markup_pct: number | null } | null)?.markup_pct ?? 0);
+
     const rows: Array<Record<string, unknown>> = [];
     // Ajuste por zona de cada fila, en el mismo orden que `rows`.
     const zonesPerRow: Array<NonNullable<(typeof data.items)[number]["zones"]>> = [];
@@ -198,11 +207,11 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
 
       const mockup = item.mockupUrl ? await persistMockup(item.mockupUrl, product.id) : null;
 
-      // REGLA: precio > 0 y precio >= fabricación. Un precio inválido se
-      // RECHAZA (no se corrige en silencio). Si no se envió precio, se usa el
-      // sugerido, que ya cumple la regla. La base de datos repite la validación.
-      const priceCents =
-        typeof item.priceCents === "number" ? Math.round(item.priceCents) : variant.priceCents;
+      // REGLA: la vendedora NO teclea precios. El precio sale del costo real de
+      // la variante más el porcentaje único de su tienda. Como `variant` es la
+      // más barata, éste es el precio "desde" que verá la clienta en la vitrina;
+      // cada talla y color se cobra después según su propio costo.
+      const priceCents = storePriceCents(variant.productionCents, markupPct);
       const check = validatePrice(priceCents, variant.productionCents);
       if (!check.ok) {
         throw new Error(
@@ -223,7 +232,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         // Costos del proveedor: sólo los escribe el servidor (trigger cost_guard).
         production_cost_cents: variant.productionCents,
         shipping_cost_cents: variant.shippingCents,
-        base_cost_cents: variant.productionCents + variant.shippingCents,
+        base_cost_cents: baseCostCents(variant.productionCents),
         costs_need_resync: false,
         image_url: mockup || previewVariant.image || product.image,
         mockup_url: mockup,

@@ -72,6 +72,36 @@ export function suggestedPriceCents(costUsd: number, _shippingUsd = 0): number {
   return Math.max(baseCents, Math.round(rounded * 100));
 }
 
+/**
+ * Precio sugerido a partir del costo REAL de fabricación en centavos MXN.
+ * Misma regla que suggestedPriceCents, pero sin pasar por dólares: sirve para
+ * calcular el precio de cada variante ya guardada en la tienda.
+ */
+export function suggestedPriceFromProductionCents(productionCents: number): number {
+  const baseCents = baseCostCents(productionCents);
+  const baseMxn = baseCents / 100;
+  const mxn = baseMxn * markupFor(baseMxn);
+  // Redondeo comercial a decenas terminadas en 9 (p. ej. 349, 599).
+  const rounded = Math.max(0, Math.round(mxn / 10) * 10 - 1);
+  return Math.max(baseCents, Math.round(rounded * 100));
+}
+
+/**
+ * Precio final al público de UNA variante.
+ *
+ * La vendedora nunca teclea un número: define UN solo porcentaje para toda su
+ * tienda y ese porcentaje se suma al precio SUGERIDO, no al costo base. Así el
+ * precio de cada talla y cada color sale solo de su costo real de fábrica, y la
+ * garantía del 40 % de Dªtªblɛ queda intacta en todas.
+ *
+ * Ejemplo: costo real $100 → costo base $140 → sugerido $210 → con 10 % → $231.
+ */
+export function storePriceCents(productionCents: number, markupPct: number | null | undefined): number {
+  const sugerido = suggestedPriceFromProductionCents(productionCents);
+  const extra = Math.max(0, Number(markupPct ?? 0));
+  return Math.max(baseCostCents(productionCents), Math.round(sugerido * (1 + extra / 100)));
+}
+
 export type PriceBreakdown = {
   /** Costo real de fabricación en USD. */
   costUsd: number;
