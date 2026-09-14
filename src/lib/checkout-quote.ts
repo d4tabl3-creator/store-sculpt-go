@@ -68,9 +68,13 @@ export function quoteCart(
   products: CostedProduct[],
   items: CartLine[],
   storeId: string,
+  variants: CostedVariant[] = [],
+  markupPct = 0,
 ): { error: string } | {
   lines: Array<{
     productId: string;
+    variantId: string | null;
+    sourceVariantId: string | null;
     name: string;
     qty: number;
     price_cents: number;
@@ -84,6 +88,8 @@ export function quoteCart(
   const byId = new Map(products.map((p) => [p.id, p]));
   const lines: Array<{
     productId: string;
+    variantId: string | null;
+    sourceVariantId: string | null;
     name: string;
     qty: number;
     price_cents: number;
@@ -96,22 +102,42 @@ export function quoteCart(
     const p = byId.get(it.productId);
     if (!p || p.store_id !== storeId) return { error: "Producto no válido en esta tienda" };
     if (p.stock < it.qty) return { error: `Sin stock suficiente de ${p.name}` };
+
+    // La talla y el color elegidos mandan sobre el producto: su costo real es
+    // distinto (una 3XL cuesta más que una S) y de ahí sale el precio.
+    const v = it.variantId ? variants.find((x) => x.id === it.variantId && x.product_id === p.id) ?? null : null;
+    if (it.variantId && !v) return { error: "La opción elegida ya no está disponible." };
+    if (v && !v.in_stock) return { error: `"${p.name}" no está disponible en esa opción.` };
+
+    const efectivo: CostedProduct = v
+      ? {
+          ...p,
+          price_cents: storePriceCents(v.production_cost_cents, markupPct),
+          production_cost_cents: v.production_cost_cents,
+          shipping_cost_cents: v.shipping_cost_cents > 0 ? v.shipping_cost_cents : p.shipping_cost_cents,
+        }
+      : p;
+
     // Filtro único de operación. Ver motivoNoVendible.
-    const motivo = motivoNoVendible(p);
+    const motivo = motivoNoVendible(efectivo);
     if (motivo) {
-      console.warn(`producto no vendible (${p.id}): ${motivo}`);
+      console.warn(`producto no vendible (${p.id}${v ? `/${v.id}` : ""}): ${motivo}`);
       return { error: `El producto "${p.name}" no está en existencia.` };
     }
+
+    const etiqueta = v ? [v.size, v.color].filter(Boolean).join(" · ") : "";
     lines.push({
       productId: p.id,
-      name: p.name,
+      variantId: v?.id ?? null,
+      sourceVariantId: v?.source_variant_id ?? null,
+      name: etiqueta ? `${p.name} — ${etiqueta}` : p.name,
       qty: it.qty,
-      price_cents: p.price_cents,
-      production_cost_cents: p.production_cost_cents,
-      shipping_cost_cents: p.shipping_cost_cents,
+      price_cents: efectivo.price_cents,
+      production_cost_cents: efectivo.production_cost_cents,
+      shipping_cost_cents: efectivo.shipping_cost_cents,
     });
-    subtotalCents += p.price_cents * it.qty;
-    shippingCents += p.shipping_cost_cents * it.qty;
+    subtotalCents += efectivo.price_cents * it.qty;
+    shippingCents += efectivo.shipping_cost_cents * it.qty;
   }
   return { lines, subtotalCents, shippingCents, totalCents: subtotalCents + shippingCents };
 }
