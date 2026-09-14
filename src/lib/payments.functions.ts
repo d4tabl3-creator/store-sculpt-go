@@ -137,6 +137,7 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
       for (const it of data.items) {
         if (!/^[0-9a-fA-F-]{36}$/.test(it.productId)) throw new Error("Producto inválido");
         if (!(it.qty > 0 && it.qty <= 100)) throw new Error("Cantidad inválida");
+        if (it.variantId && !/^[0-9a-fA-F-]{36}$/.test(it.variantId)) throw new Error("Opción inválida");
       }
       if (!data.customer?.name?.trim()) throw new Error("Nombre requerido");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.customer?.email || "")) throw new Error("Email inválido");
