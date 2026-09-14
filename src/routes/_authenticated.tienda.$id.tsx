@@ -550,6 +550,23 @@ function StoreManage() {
                   <Label>{t("Descripción o eslogan", "Description or tagline")}</Label>
                   <Textarea rows={3} value={store.niche} onChange={(e) => setStore({ ...store, niche: e.target.value })} />
                 </div>
+                <div className="rounded-xl border border-border bg-muted/40 p-4">
+                  <Label>{t("Tu ganancia adicional (%)", "Your extra margin (%)")}</Label>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t(
+                      "Cada producto ya trae un precio sugerido calculado sobre su costo: los artículos baratos llevan más porcentaje y los caros menos. Si quieres ganar más, pon aquí un porcentaje y se aplicará parejo a TODOS los productos de tu tienda, en todas sus tallas y colores. Déjalo en 0 para vender al precio sugerido.",
+                      "Every product already has a suggested price based on its cost: cheaper items carry a higher percentage and expensive ones less. If you want to earn more, set a percentage here and it will apply evenly to ALL products in your store, across every size and color. Leave it at 0 to sell at the suggested price.",
+                    )}
+                  </p>
+                  <Input
+                    className="mt-2 w-32"
+                    type="number"
+                    min={0}
+                    max={1000}
+                    value={store.markup_pct ?? 0}
+                    onChange={(e) => setStore({ ...store, markup_pct: Number(e.target.value) })}
+                  />
+                </div>
                 <div>
                   <Label>{t("Logo", "Logo")}</Label>
                   <div className="mt-2 flex items-center gap-4">
