@@ -514,7 +514,7 @@ export function CustomizeStep({
 
           {colors.length > 0 && (
             <div>
-              <Label>{t("Color", "Color")}</Label>
+              <Label>{t("Color para diseñar", "Color to design on")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {colors.map(([c, v]) => (
                   <button
