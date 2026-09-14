@@ -314,7 +314,89 @@ function Storefront() {
           )}
         </SheetContent>
       </Sheet>
-      <StoreTemplate store={store} products={products} onAdd={add} cartButton={cartButton} />
+      <StoreTemplate store={store} products={products} onAdd={abrirDetalle} cartButton={cartButton} />
+      {detalle && (
+        <Sheet open onOpenChange={(o) => !o && setDetalle(null)}>
+          <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto">
+            <SheetHeader><SheetTitle>{detalle.name}</SheetTitle></SheetHeader>
+            {(() => {
+              const vs = variantesDe(detalle.id);
+              const colores = [...new Map(vs.filter((v) => v.color).map((v) => [v.color as string, v])).values()];
+              const tallas = [...new Map(vs.filter((v) => v.size).map((v) => [v.size as string, v])).values()];
+              const elegirColor = (color: string) =>
+                setElegida(
+                  vs.find((v) => v.color === color && (!elegida?.size || v.size === elegida.size)) ??
+                    vs.find((v) => v.color === color) ??
+                    null,
+                );
+              const elegirTalla = (size: string) =>
+                setElegida(
+                  vs.find((v) => v.size === size && (!elegida?.color || v.color === elegida.color)) ??
+                    vs.find((v) => v.size === size) ??
+                    null,
+                );
+              const listo = vs.length === 0 || !!elegida;
+              const foto = elegida?.image_url || detalle.image_url;
+              return (
+                <div className="mt-4 space-y-4 pb-6">
+                  {foto && <img src={foto} alt={detalle.name} className="w-full rounded-xl object-cover" />}
+                  <div>
+                    <div className="text-2xl font-bold">
+                      {!elegida && vs.length > 1 ? t("desde ", "from ") : ""}
+                      ${(precioDe(detalle, elegida) / 100).toFixed(2)} MXN
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t("Envío se calcula al pagar.", "Shipping is calculated at checkout.")}</p>
+                  </div>
+                  {detalle.description && <p className="text-sm text-muted-foreground">{detalle.description}</p>}
+                  {colores.length > 0 && (
+                    <div>
+                      <Label>{t("Color", "Color")}{elegida?.color ? `: ${elegida.color}` : ""}</Label>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {colores.map((v) => (
+                          <button
+                            key={v.color}
+                            title={v.color || ""}
+                            onClick={() => elegirColor(v.color as string)}
+                            className={`size-9 rounded-full border-2 ${elegida?.color === v.color ? "border-foreground ring-2 ring-foreground/30" : "border-border"}`}
+                            style={{ background: v.color_code || "#ccc" }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {tallas.length > 0 && (
+                    <div>
+                      <Label>{t("Talla", "Size")}{elegida?.size ? `: ${elegida.size}` : ""}</Label>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {tallas.map((v) => (
+                          <button
+                            key={v.size}
+                            disabled={!v.in_stock}
+                            onClick={() => elegirTalla(v.size as string)}
+                            className={`rounded-lg border-2 px-3 py-1 text-sm font-bold disabled:opacity-40 ${elegida?.size === v.size ? "border-foreground bg-muted" : "border-border"}`}
+                          >
+                            {v.size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <Button
+                    className="w-full"
+                    disabled={!listo}
+                    onClick={() => {
+                      add(detalle, elegida);
+                      setDetalle(null);
+                    }}
+                  >
+                    {listo ? t("Agregar al carrito", "Add to cart") : t("Elige talla y color", "Choose size and color")}
+                  </Button>
+                </div>
+              );
+            })()}
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
