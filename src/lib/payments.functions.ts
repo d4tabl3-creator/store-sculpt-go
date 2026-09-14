@@ -19,6 +19,7 @@ export const quoteStoreCart = createServerFn({ method: "POST" })
     for (const it of data.items) {
       if (!/^[0-9a-fA-F-]{36}$/.test(it.productId)) throw new Error("Producto inválido");
       if (!(it.qty > 0 && it.qty <= 100)) throw new Error("Cantidad inválida");
+      if (it.variantId && !/^[0-9a-fA-F-]{36}$/.test(it.variantId)) throw new Error("Opción inválida");
     }
     return data;
   })
@@ -28,7 +29,28 @@ export const quoteStoreCart = createServerFn({ method: "POST" })
       .from("store_products")
       .select("id, name, price_cents, stock, store_id, production_cost_cents, shipping_cost_cents, source_provider")
       .in("id", data.items.map((i) => i.productId));
-    const q = quoteCart((products || []) as CostedProduct[], data.items, data.storeId);
+    // Tallas y colores elegidos: el precio sale del costo real de CADA uno,
+    // leído aquí en el servidor. El navegador nunca decide cuánto se cobra.
+    const idsVariante = data.items.map((i) => i.variantId).filter(Boolean) as string[];
+    const { data: variantes } = idsVariante.length
+      ? await supabaseAdmin
+          .from("store_product_variants")
+          .select("id, product_id, source_variant_id, size, color, production_cost_cents, shipping_cost_cents, in_stock")
+          .in("id", idsVariante)
+      : { data: [] };
+    const { data: tiendaPct } = await supabaseAdmin
+      .from("stores")
+      .select("markup_pct")
+      .eq("id", data.storeId)
+      .maybeSingle();
+    const pct = Number((tiendaPct as { markup_pct: number | null } | null)?.markup_pct ?? 0);
+    const q = quoteCart(
+      (products || []) as CostedProduct[],
+      data.items,
+      data.storeId,
+      (variantes || []) as CostedVariant[],
+      pct,
+    );
     if ("error" in q) return q;
     return { subtotalCents: q.subtotalCents, shippingCents: q.shippingCents, totalCents: q.totalCents };
   });
