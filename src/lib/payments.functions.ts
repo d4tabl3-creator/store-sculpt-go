@@ -163,7 +163,21 @@ export const startStoreCheckout = createServerFn({ method: "POST" })
         .from("store_products")
         .select("id, name, price_cents, stock, store_id, production_cost_cents, shipping_cost_cents, source_provider")
         .in("id", ids);
-      const quote = quoteCart((products || []) as CostedProduct[], data.items, store.id as string);
+      // Tallas y colores elegidos: el costo real y el precio salen de ellos.
+      const idsVariante = data.items.map((i) => i.variantId).filter(Boolean) as string[];
+      const { data: variantes } = idsVariante.length
+        ? await supabaseAdmin
+            .from("store_product_variants")
+            .select("id, product_id, source_variant_id, size, color, production_cost_cents, shipping_cost_cents, in_stock")
+            .in("id", idsVariante)
+        : { data: [] };
+      const quote = quoteCart(
+        (products || []) as CostedProduct[],
+        data.items,
+        store.id as string,
+        (variantes || []) as CostedVariant[],
+        Number((store as { markup_pct: number | null }).markup_pct ?? 0),
+      );
       if ("error" in quote) return quote;
       const orderItems = quote.lines;
       const subtotal = quote.subtotalCents;
