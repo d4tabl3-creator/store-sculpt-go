@@ -397,6 +397,14 @@ export function CustomizeStep({
                         step={0.05}
                         onValueChange={([v]) => update({ tileScale: v, mockups: [], mockupUrl: null })}
                       />
+                      {tile < 0.1 && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {t(
+                            "Con repeticiones tan pequeñas, al imprimir se dibujarán un poco más grandes de lo que ves aquí.",
+                            "With such small repeats, printing will draw them slightly larger than you see here.",
+                          )}
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div>
