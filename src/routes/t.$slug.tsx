@@ -26,6 +26,8 @@ type Store = {
   primary_color: string;
   template: string;
   markup_pct: number | null;
+  logo_url: string | null;
+  external_links: Record<string, string> | null;
 };
 type Variant = {
   id: string;
@@ -48,11 +50,32 @@ type Product = {
   shipping_cost_cents: number;
 };
 
+/** Canales que se muestran al público, en este orden. */
+const REDES: Array<{ key: string; label: string }> = [
+  { key: "website", label: "Sitio web" },
+  { key: "instagram", label: "Instagram" },
+  { key: "facebook", label: "Facebook" },
+  { key: "tiktok", label: "TikTok" },
+  { key: "amazon", label: "Amazon" },
+  { key: "mercadolibre", label: "Mercado Libre" },
+];
+
+/**
+ * Sólo se publican enlaces http(s). Un enlace capturado a mano podría traer
+ * otro esquema y convertirse en un agujero de seguridad en la tienda.
+ */
+function enlacesPublicables(links: Record<string, string> | null): Array<{ key: string; label: string; url: string }> {
+  if (!links) return [];
+  return REDES.map((r) => ({ ...r, url: (links[r.key] || "").trim() })).filter((r) =>
+    /^https?:\/\//i.test(r.url),
+  );
+}
+
 export const Route = createFileRoute("/t/$slug")({
   loader: async ({ params }) => {
     const { data: store } = await supabase
       .from("stores")
-      .select("id, slug, name, niche, primary_color, template, markup_pct")
+      .select("id, slug, name, niche, primary_color, template, markup_pct, logo_url, external_links")
       .eq("slug", params.slug)
       .eq("status", "published")
       .maybeSingle();
@@ -315,6 +338,42 @@ function Storefront() {
         </SheetContent>
       </Sheet>
       <StoreTemplate store={store} products={products} onAdd={abrirDetalle} cartButton={cartButton} />
+      {(() => {
+        const redes = enlacesPublicables(store.external_links);
+        if (!store.logo_url && !redes.length) return null;
+        return (
+          <footer className="border-t border-border bg-background px-6 py-10 text-center">
+            {store.logo_url && (
+              <img
+                src={store.logo_url}
+                alt={store.name}
+                className="mx-auto size-20 rounded-2xl border border-border object-cover"
+              />
+            )}
+            {redes.length > 0 && (
+              <>
+                <p className="mt-6 text-sm font-medium text-muted-foreground">
+                  {t("También nos encuentras en", "Find us also on")}
+                </p>
+                <div className="mt-3 flex flex-wrap justify-center gap-3">
+                  {redes.map((r) => (
+                    <a
+                      key={r.key}
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="rounded-full border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted"
+                    >
+                      {r.label}
+                    </a>
+                  ))}
+                </div>
+              </>
+            )}
+            <p className="mt-6 text-xs text-muted-foreground">{store.name}</p>
+          </footer>
+        );
+      })()}
       {detalle && (
         <Sheet open onOpenChange={(o) => !o && setDetalle(null)}>
           <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto">
