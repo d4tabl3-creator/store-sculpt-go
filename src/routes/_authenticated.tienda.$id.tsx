@@ -426,19 +426,17 @@ function StoreManage() {
                       <Label className="text-xs">{t("Nombre", "Name")}</Label>
                       <Input value={p.name} onChange={(e) => setProducts(products.map((x) => (x.id === p.id ? { ...x, name: e.target.value } : x)))} />
                     </div>
-                    <div className="w-36">
-                      <Label className="text-xs">{t("Tu precio de venta ($)", "Your selling price ($)")}</Label>
-                      <Input
-                        type="number"
-                        min={Math.ceil(min / 100)}
-                        value={p.price_cents / 100}
-                        onChange={(e) =>
-                          setProducts(products.map((x) => (x.id === p.id ? { ...x, price_cents: Math.round(Number(e.target.value) * 100) } : x)))
-                        }
-                      />
-                      <p className={`mt-1 text-[11px] ${belowCost ? "text-destructive" : "text-muted-foreground"}`}>
+                    <div className="w-44">
+                      <Label className="text-xs">{t("Precio de venta", "Selling price")}</Label>
+                      <p className={`mt-1 font-bold ${belowCost ? "text-destructive" : ""}`}>
+                        {t(`desde ${money(p.price_cents)} MXN`, `from ${money(p.price_cents)} MXN`)}
+                      </p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
                         {min > 0
-                          ? t(`Costo mínimo: ${money(min)} MXN`, `Minimum cost: ${money(min)} MXN`)
+                          ? t(
+                              `Sugerido ${money(suggestedPriceFromProductionCents(p.production_cost_cents))} + tu ${store.markup_pct ?? 0}%`,
+                              `Suggested ${money(suggestedPriceFromProductionCents(p.production_cost_cents))} + your ${store.markup_pct ?? 0}%`,
+                            )
                           : t("Costo no disponible", "Cost unavailable")}
                       </p>
                     </div>
