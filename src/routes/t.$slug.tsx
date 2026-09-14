@@ -125,7 +125,12 @@ export const Route = createFileRoute("/t/$slug")({
   notFoundComponent: () => <StoreNotFound />,
 });
 
-type CartItem = { product: Product; qty: number };
+type CartItem = { product: Product; variant: Variant | null; qty: number };
+
+/** Identifica una línea del carrito: el mismo producto en dos tallas son dos líneas. */
+function lineaId(c: { product: Product; variant: Variant | null }): string {
+  return `${c.product.id}|${c.variant?.id ?? ""}`;
+}
 
 function StoreNotFound() {
   const t = useT();
@@ -142,11 +147,19 @@ function StoreNotFound() {
 
 function Storefront() {
   const t = useT();
-  const { store, products } = Route.useLoaderData();
+  const { store, products, variants } = Route.useLoaderData();
   const storageKey = `datable-cart-${store.slug}`;
   const [cart, setCart] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
+  const [detalle, setDetalle] = useState<Product | null>(null);
+  const [elegida, setElegida] = useState<Variant | null>(null);
+
+  /** Tallas y colores de un producto. */
+  const variantesDe = (pid: string) => variants.filter((v) => v.product_id === pid);
+  /** Precio real de una variante: su costo de fábrica más el porcentaje de la tienda. */
+  const precioDe = (p: Product, v: Variant | null) =>
+    v && v.production_cost_cents > 0 ? storePriceCents(v.production_cost_cents, store.markup_pct) : p.price_cents;
 
   // El carrito se conserva en el navegador de la clienta: si cierra el
   // carrito, va y vuelve dentro de la tienda, o recarga la página, sus
@@ -161,7 +174,8 @@ function Storefront() {
             .filter((c) => products.some((p) => p.id === c.product.id))
             .map((c) => {
               const current = products.find((p) => p.id === c.product.id)!;
-              return { ...c, product: current };
+              const v = c.variant ? variants.find((x) => x.id === c.variant!.id) ?? null : null;
+              return { ...c, product: current, variant: v };
             });
           if (valid.length > 0) setCart(valid);
         }
