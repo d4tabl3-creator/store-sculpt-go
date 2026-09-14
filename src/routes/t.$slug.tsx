@@ -435,7 +435,7 @@ function CheckoutForm({
     let alive = true;
     setQuote(null);
     setQuoteError(null);
-    quoteStoreCart({ data: { storeId: store.id, items: cart.map((c) => ({ productId: c.product.id, qty: c.qty })) } })
+    quoteStoreCart({ data: { storeId: store.id, items: cart.map((c) => ({ productId: c.product.id, qty: c.qty, variantId: c.variant?.id ?? null })) } })
       .then((res) => {
         if (!alive) return;
         if ("error" in res) setQuoteError(mensajeUsuario(res.error));
