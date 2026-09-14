@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyPlan } from "@/lib/plans.functions";
 import { syncProduct, getCommerceHealth, getProductSyncIssues } from "@/lib/commerce.functions";
-import { baseCostCents } from "@/lib/pricing";
+import { baseCostCents, storePriceCents, suggestedPriceFromProductionCents } from "@/lib/pricing";
 import { commissionLabelFor } from "@/lib/plans";
 import type { PlanId } from "@/lib/plans";
 import { useT } from "@/lib/i18n";
@@ -64,6 +64,7 @@ type Store = {
   status: string;
   logo_url: string | null;
   external_links: ExternalLinks | null;
+  markup_pct: number | null;
 };
 type Product = {
   id: string;
