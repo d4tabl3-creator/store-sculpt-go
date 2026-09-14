@@ -369,6 +369,12 @@ export const printifyProvider: CommerceProvider = {
         placeholders.push({ position, images: [{ id: imageId, x: 0.5, y: 0.5, scale: 0.9, angle: 0 }] });
       }
 
+      // TODAS las tallas y colores publicados se registran en fabricación. Si
+      // sólo se registrara uno, un pedido de otra talla no podría producirse.
+      const todasLasVariantes = product.variantIds?.length
+        ? [...new Set(product.variantIds)]
+        : [variantId];
+
       const created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
         method: "POST",
         body: {

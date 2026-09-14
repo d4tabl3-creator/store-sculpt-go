@@ -84,6 +84,27 @@ export const createProductMockup = createServerFn({ method: "POST" })
   });
 
 /**
+ * Limpia la descripción que manda el proveedor: quita viñetas técnicas, los
+ * avisos legales de fábrica y los cortes a media palabra. Si la vendedora
+ * escribió la suya, se usa la de ella y esto ni se ejecuta.
+ */
+function limpiarDescripcion(texto: string | null | undefined): string {
+  if (!texto) return "";
+  let s = String(texto)
+    .replace(/\s*\.:\s*/g, " · ")
+    .replace(/\s*Disclaimer\s*:.*$/is, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  // Un texto cortado a media palabra se recorta hasta la última frase completa.
+  if (s.length > 320) {
+    const corte = s.slice(0, 320);
+    const punto = corte.lastIndexOf(". ");
+    s = (punto > 120 ? corte.slice(0, punto + 1) : corte.replace(/\s+\S*$/, "")).trim();
+  }
+  return s.replace(/\s*[·,-]\s*$/, "").trim();
+}
+
+/**
  * Inserta productos elegidos del catálogo en la tienda del comerciante.
  * El precio se calcula en el servidor a partir del costo real del proveedor.
  */
