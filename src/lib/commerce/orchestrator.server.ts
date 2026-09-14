@@ -674,7 +674,11 @@ export async function pushOrderToProvider(orderId: string) {
       name: i.name,
       qty: i.qty,
       priceCents: i.price_cents,
-      externalVariantId: i.productId ? variantByProduct.get(i.productId) ?? null : null,
+      // La talla y el color que la clienta eligió, guardados en el pedido. Un
+      // pedido viejo que no los traiga cae al vínculo del producto.
+      externalVariantId:
+        ((i as { sourceVariantId?: string | null }).sourceVariantId ?? null) ||
+        (i.productId ? variantByProduct.get(i.productId) ?? null : null),
       design: i.productId ? designByProduct.get(i.productId) ?? null : null,
     })),
   };
