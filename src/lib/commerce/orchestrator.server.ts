@@ -315,7 +315,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
       placement: z.placement as string,
       url: z.design_url as string | null,
       fitMode: ((z.fit_mode as string) ?? "fit") as DesignZoneRef["fitMode"],
-      scale: Number(z.scale ?? 0.8),
+      scale: Number(z.scale ?? 0.9),
       tileScale: Number(z.tile_scale ?? 0.25),
       offsetX: Number(z.offset_x ?? 0.5),
       offsetY: Number(z.offset_y ?? 0.5),

@@ -224,13 +224,27 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     const { data: inserted, error } = await supabaseAdmin
       .from("store_products")
       .insert(rows as never)
-      .select("id");
+      .select("id, source_product_id, source_variant_id");
     if (error) throw new Error(error.message);
 
     // Ajuste fino del diseño por zona: se guarda aparte para que cada producto
     // conserve frente, espalda y mangas con su propia colocación.
     const zoneRows: Array<Record<string, unknown>> = [];
-    (inserted ?? []).forEach((row, idx) => {
+    // Emparejamiento por clave real (producto + variante de origen), no por
+    // posición: el orden de retorno del INSERT no está garantizado.
+    const insertedById = new Map<string, string>();
+    for (const r of (inserted ?? []) as Array<{
+      id: string;
+      source_product_id: string | null;
+      source_variant_id: string | null;
+    }>) {
+      insertedById.set(`${r.source_product_id ?? ""}|${r.source_variant_id ?? ""}`, r.id);
+    }
+    rows.forEach((srcRow, idx) => {
+      const key = `${(srcRow.source_product_id as string) ?? ""}|${(srcRow.source_variant_id as string) ?? ""}`;
+      const rowId = insertedById.get(key);
+      if (!rowId) return;
+      const row = { id: rowId };
       for (const z of zonesPerRow[idx] ?? []) {
         if (!z.placement) continue;
         zoneRows.push({
@@ -241,7 +255,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
           design_url: z.designUrl ?? null,
           design_preview_url: z.designPreviewUrl ?? null,
           fit_mode: z.fitMode ?? "fit",
-          scale: z.scale ?? 0.8,
+          scale: z.scale ?? 0.9,
           tile_scale: z.tileScale ?? 0.25,
           offset_x: z.offsetX ?? 0.5,
           offset_y: z.offsetY ?? 0.5,
@@ -251,12 +265,16 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         });
       }
     });
+    let zonesError: string | null = null;
     if (zoneRows.length) {
       const { error: zErr } = await supabaseAdmin
         .from("product_print_zones")
         .upsert(zoneRows as never, { onConflict: "product_id,placement" });
-      if (zErr) console.error("guardar zonas de impresión:", zErr.message);
+      if (zErr) {
+        console.error("guardar zonas de impresión:", zErr.message);
+        zonesError = zErr.message;
+      }
     }
 
-    return { inserted: rows.length };
+    return { inserted: rows.length, zonesError };
   });

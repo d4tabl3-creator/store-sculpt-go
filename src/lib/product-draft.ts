@@ -192,7 +192,7 @@ export function draftZones(d: ProductDraft): ZonePayload[] {
       designUrl: z.designUrl,
       designPreviewUrl: z.designPreview,
       fitMode: z.fitMode ?? "fit",
-      scale: z.scale ?? 0.8,
+      scale: z.scale ?? 0.9,
       tileScale: z.tileScale ?? 0.25,
       offsetX: z.offsetX ?? 0.5,
       offsetY: z.offsetY ?? 0.5,
