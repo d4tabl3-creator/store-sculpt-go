@@ -36,7 +36,8 @@ export function placementLabel(id: string, fallback: string, t: T): string {
 
 /** Nunca se muestra el nombre real de la planta de producción. */
 export function productionOptionLabel(index: number, t: T): string {
-  return t(`Opción de producción ${index + 1}`, `Production option ${index + 1}`);
+  const letra = String.fromCharCode(65 + (index % 26));
+  return t(`Taller ${letra}`, `Workshop ${letra}`);
 }
 
 const CATEGORIES: Record<string, string> = {

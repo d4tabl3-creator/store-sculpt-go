@@ -34,7 +34,7 @@ export type DraftVariant = {
   inStock: boolean;
 };
 
-export type DraftProvider = { id: number; name: string; location: string | null };
+export type DraftProvider = { id: number; name: string; location: string | null; hasShipping?: boolean };
 
 export type DraftPlacement = {
   id: string;

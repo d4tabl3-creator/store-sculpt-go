@@ -507,21 +507,37 @@ export function CustomizeStep({
             <div>
               <Label>{t("Opciones de producción", "Production options")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
-                {draft.providers.map((pv, i) => (
-                  <button
-                    key={pv.id}
-                    onClick={() => chooseProvider(pv.id)}
-                    className={`rounded-lg border-2 px-3 py-1 text-left text-xs font-bold ${
-                      draft.printProviderId === pv.id ? "border-primary bg-primary-soft" : "border-border bg-card"
-                    }`}
-                  >
-                    {productionOptionLabel(i, t)}
-                    {pv.location ? <span className="block font-normal text-muted-foreground">{pv.location}</span> : null}
-                  </button>
-                ))}
+                {draft.providers.map((pv, i) => {
+                  const sinEnvio = pv.hasShipping === false;
+                  return (
+                    <button
+                      key={pv.id}
+                      onClick={() => chooseProvider(pv.id)}
+                      disabled={sinEnvio}
+                      className={`rounded-lg border-2 px-3 py-1 text-left text-xs font-bold ${
+                        sinEnvio
+                          ? "cursor-not-allowed border-destructive/40 bg-card opacity-60"
+                          : draft.printProviderId === pv.id
+                            ? "border-primary bg-primary-soft"
+                            : "border-border bg-card"
+                      }`}
+                    >
+                      {productionOptionLabel(i, t)}
+                      {pv.location ? <span className="block font-normal text-muted-foreground">{pv.location}</span> : null}
+                      {sinEnvio ? (
+                        <span className="block font-normal text-destructive">
+                          {t("Sin envío a México", "No shipping to Mexico")}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("Cada opción tiene sus propios costos, tallas y colores.", "Each option has its own costs, sizes and colors.")}
+                {t(
+                  "Cada taller tiene sus propios costos, tallas y colores. Los marcados en rojo no envían a México y no se pueden usar.",
+                  "Each workshop has its own costs, sizes and colors. The ones marked in red don't ship to Mexico and can't be used.",
+                )}
               </p>
             </div>
           )}
