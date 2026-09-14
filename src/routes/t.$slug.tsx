@@ -52,7 +52,7 @@ export const Route = createFileRoute("/t/$slug")({
   loader: async ({ params }) => {
     const { data: store } = await supabase
       .from("stores")
-      .select("id, slug, name, niche, primary_color, template")
+      .select("id, slug, name, niche, primary_color, template, markup_pct")
       .eq("slug", params.slug)
       .eq("status", "published")
       .maybeSingle();
@@ -62,7 +62,17 @@ export const Route = createFileRoute("/t/$slug")({
       .select("id, name, description, price_cents, image_url, stock, shipping_cost_cents")
       .eq("store_id", store.id)
       .order("sort_order");
-    return { store: store as Store, products: (products as Product[]) || [] };
+    // Tallas y colores de cada producto: la clienta elige el suyo al comprar.
+    const { data: variants } = await supabase
+      .from("store_product_variants")
+      .select("id, product_id, source_variant_id, size, color, color_code, image_url, production_cost_cents, in_stock")
+      .eq("store_id", store.id)
+      .order("sort_order");
+    return {
+      store: store as Store,
+      products: (products as Product[]) || [],
+      variants: (variants as Variant[]) || [],
+    };
   },
   head: ({ params, loaderData }) => {
     const url = publicUrlFor(`/t/${params.slug}`);
