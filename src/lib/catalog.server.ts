@@ -384,6 +384,17 @@ export async function generateMockups(input: {
   fitMode?: "fit" | "fill" | "tile";
   tileScale?: number;
   printProviderId?: number;
+  /** Todas las zonas con diseño. Si viene, sustituye a los campos sueltos. */
+  zones?: Array<{
+    placement: string;
+    imageUrl: string;
+    scale?: number;
+    offsetX?: number;
+    offsetY?: number;
+    angle?: number;
+    fitMode?: "fit" | "fill" | "tile";
+    tileScale?: number;
+  }>;
 }): Promise<MockupResult[]> {
   const printProviderId =
     input.printProviderId && input.printProviderId > 0
@@ -391,48 +402,78 @@ export async function generateMockups(input: {
       : await resolvePrintProviderId(input.productId);
   const shopId = await printifyShopId();
   const placements = await getPlacements(input.productId, input.variantIds[0], printProviderId);
-  const area = placements.find((p) => p.id === input.placement) ?? placements[0];
-  if (!area) throw new Error("Este producto no admite diseño personalizado.");
-
-  const upload = await uploadImageByUrl(input.imageUrl, `datable-${Date.now()}.png`);
-
-  // La escala es libre: puede pasar de 1 para desbordar la zona a propósito.
-  const scale = Math.min(Math.max(input.scale ?? 0.8, 0.05), 3);
-  // offsetX/offsetY son el CENTRO del diseño dentro del área imprimible.
-  const x = Math.min(Math.max(input.offsetX ?? 0.5, 0.05), 0.95);
-  const y = Math.min(Math.max(input.offsetY ?? 0.5, 0.05), 0.95);
-  const angle = Math.round(input.angle ?? 0);
   const variantIds = input.variantIds.slice(0, 10);
 
-  /**
-   * Colocación enviada a fabricación. En "Repetir patrón" el mosaico se arma
-   * con copias de la misma imagen en cuadrícula, porque la producción no
-   * admite un modo de repetición propio.
-   */
-  const tile = Math.min(Math.max(input.tileScale ?? 0.25, 0.05), 1);
-  let imagenes: Array<{ id: string; x: number; y: number; scale: number; angle: number }> = [
-    { id: upload.id, x, y, scale, angle },
-  ];
-  if (input.fitMode === "tile") {
-    const cols = Math.min(Math.ceil(1 / tile), 10);
-    const ratio = area.areaWidth > 0 && area.areaHeight > 0 ? area.areaHeight / area.areaWidth : 1;
-    const rows = Math.min(Math.max(Math.ceil(ratio / tile), 1), 10);
-    const grid: typeof imagenes = [];
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        grid.push({
-          id: upload.id,
-          x: Math.min(0.99, Math.max(0.01, (c + 0.5) / cols)),
-          y: Math.min(0.99, Math.max(0.01, (r + 0.5) / rows)),
-          scale: tile,
-          angle,
-        });
-        if (grid.length >= 60) break;
+  // Todas las zonas con diseño entran en la MISMA maqueta: si la vendedora
+  // puso algo en el frente y en la espalda, la vista previa muestra las dos.
+  const zonasEntrada = input.zones?.length
+    ? input.zones
+    : [
+        {
+          placement: input.placement,
+          imageUrl: input.imageUrl,
+          scale: input.scale,
+          offsetX: input.offsetX,
+          offsetY: input.offsetY,
+          angle: input.angle,
+          fitMode: input.fitMode,
+          tileScale: input.tileScale,
+        },
+      ];
+
+  const placeholders: Array<{
+    position: string;
+    images: Array<{ id: string; x: number; y: number; scale: number; angle: number }>;
+  }> = [];
+  const areaIds: string[] = [];
+
+  for (const z of zonasEntrada) {
+    if (!z.imageUrl || !/^https:\/\//.test(z.imageUrl)) continue;
+    const area = placements.find((p) => p.id === z.placement) ?? placements[0];
+    if (!area) continue;
+
+    const upload = await uploadImageByUrl(z.imageUrl, `datable-${Date.now()}-${area.id}.png`);
+
+    // La escala es libre: puede pasar de 1 para desbordar la zona a propósito.
+    const scale = Math.min(Math.max(z.scale ?? 0.9, 0.05), 3);
+    // offsetX/offsetY son el CENTRO del diseño dentro del área imprimible.
+    const x = Math.min(Math.max(z.offsetX ?? 0.5, 0.05), 0.95);
+    const y = Math.min(Math.max(z.offsetY ?? 0.5, 0.05), 0.95);
+    const angle = Math.round(z.angle ?? 0);
+
+    /**
+     * Colocación enviada a fabricación. En "Repetir patrón" el mosaico se arma
+     * con copias de la misma imagen en cuadrícula, porque la producción no
+     * admite un modo de repetición propio.
+     */
+    const tile = Math.min(Math.max(z.tileScale ?? 0.25, 0.05), 1);
+    let imagenes: Array<{ id: string; x: number; y: number; scale: number; angle: number }> = [
+      { id: upload.id, x, y, scale, angle },
+    ];
+    if (z.fitMode === "tile") {
+      const cols = Math.min(Math.ceil(1 / tile), 10);
+      const ratio = area.areaWidth > 0 && area.areaHeight > 0 ? area.areaHeight / area.areaWidth : 1;
+      const rows = Math.min(Math.max(Math.ceil(ratio / tile), 1), 10);
+      const grid: typeof imagenes = [];
+      for (let r = 0; r < rows && grid.length < 60; r++) {
+        for (let c = 0; c < cols && grid.length < 60; c++) {
+          grid.push({
+            id: upload.id,
+            x: Math.min(0.99, Math.max(0.01, (c + 0.5) / cols)),
+            y: Math.min(0.99, Math.max(0.01, (r + 0.5) / rows)),
+            scale: tile,
+            angle,
+          });
+        }
       }
-      if (grid.length >= 60) break;
+      if (grid.length) imagenes = grid;
     }
-    if (grid.length) imagenes = grid;
+
+    placeholders.push({ position: area.id, images: imagenes });
+    areaIds.push(area.id);
   }
+
+  if (!placeholders.length) throw new Error("Este producto no admite diseño personalizado.");
 
   const created = await printify<PrintifyProduct>(`/v1/shops/${shopId}/products.json`, {
     method: "POST",
@@ -442,12 +483,7 @@ export async function generateMockups(input: {
       blueprint_id: input.productId,
       print_provider_id: printProviderId,
       variants: variantIds.map((id) => ({ id, price: 10000, is_enabled: true })),
-      print_areas: [
-        {
-          variant_ids: variantIds,
-          placeholders: [{ position: area.id, images: imagenes }],
-        },
-      ],
+      print_areas: [{ variant_ids: variantIds, placeholders }],
     },
   });
 
@@ -455,14 +491,14 @@ export async function generateMockups(input: {
   // después (nunca se publica y no genera costo).
   void cleanupDraftMockups(shopId);
 
-  const images = (created.images || []).filter((img) => !area.id || img.position === area.id);
+  const images = (created.images || []).filter((img) => areaIds.includes(img.position));
   const source = images.length ? images : created.images || [];
   const seen = new Set<string>();
   const out: MockupResult[] = [];
   for (const img of source) {
     if (seen.has(img.src)) continue;
     seen.add(img.src);
-    out.push({ placement: img.position || area.id, variantIds: img.variant_ids || variantIds, url: img.src });
+    out.push({ placement: img.position || areaIds[0], variantIds: img.variant_ids || variantIds, url: img.src });
     if (out.length >= 8) break;
   }
   if (!out.length) throw new Error("No se pudo generar la maqueta. Inténtalo otra vez.");

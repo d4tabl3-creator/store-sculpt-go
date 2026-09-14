@@ -5,7 +5,7 @@ import { mensajeUsuario } from "@/lib/user-message";
 import { Button } from "@/components/ui/button";
 import { createProductMockup } from "@/lib/catalog.functions";
 import { useT } from "@/lib/i18n";
-import { currentVariant, type ProductDraft } from "@/lib/product-draft";
+import { currentVariant, draftZones, type ProductDraft } from "@/lib/product-draft";
 
 /** Paso 3: maquetas del producto terminado. */
 export function MockupsStep({
@@ -22,21 +22,29 @@ export function MockupsStep({
   const variantImages = [...new Set(draft.variants.filter((v) => (draft.color ? v.color === draft.color : true)).map((v) => v.image).filter(Boolean))].slice(0, 6);
 
   async function render() {
-    if (!draft.designUrl || !current) return;
+    const zonas = draftZones(draft).filter((z) => z.designUrl);
+    if (!zonas.length || !current) return;
     setRendering(true);
     try {
       const res = (await createProductMockup({
         data: {
           productId: draft.productId,
-          variantIds: draft.selectedVariantIds.length ? draft.selectedVariantIds.slice(0, 5) : [current.id],
-          placement: draft.placement,
-          imageUrl: draft.designUrl,
-          scale: draft.scale,
-          offsetX: draft.offsetX,
-          offsetY: draft.offsetY,
-          angle: draft.rotation,
-          fitMode: draft.fitMode,
-          tileScale: draft.tileScale,
+          // Sólo el color sobre el que está diseñando: la maqueta debe salir
+          // en la prenda que la vendedora está viendo.
+          variantIds: [current.id],
+          placement: draft.placement || zonas[0].placement,
+          imageUrl: draft.designUrl || zonas[0].designUrl || "",
+          // Todas las zonas con diseño: frente, espalda, mangas, cuello.
+          zones: zonas.map((z) => ({
+            placement: z.placement,
+            imageUrl: z.designUrl || "",
+            scale: z.scale,
+            offsetX: z.offsetX,
+            offsetY: z.offsetY,
+            angle: z.rotation,
+            fitMode: z.fitMode,
+            tileScale: z.tileScale,
+          })),
           printProviderId: draft.printProviderId ?? undefined,
         },
       })) as Array<{ placement: string; url: string }>;
