@@ -170,21 +170,21 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
     let i = count ?? 0;
     for (const item of data.items) {
       const { product, variants, printProviderId } = await getCatalogVariants(item.productId, item.printProviderId);
-      // Todas las variantes elegidas por la vendedora (talla + color).
-      const chosenIds = item.variantIds?.length
-        ? item.variantIds
-        : item.variantId != null
-          ? [item.variantId]
-          : [];
-      const chosenVariants = chosenIds.length ? variants.filter((v) => chosenIds.includes(v.id)) : [];
+      // TODAS las variantes se publican: la vendedora ya no las elige, sólo
+      // diseña. La clienta final escoge talla y color al comprar. Se descartan
+      // las que no traen un costo de fábrica confiable.
+      const sellableVariants = variants.filter((v) => v.productionCents > 0);
       // La variante principal es la MÁS BARATA: define el precio "desde" que
       // verá la clienta en la vitrina y la fila madre del producto.
       const variant =
-        [...chosenVariants].sort((a, b) => a.productionCents - b.productionCents)[0] ||
+        [...sellableVariants].sort((a, b) => a.productionCents - b.productionCents)[0] ||
         variants.find((v) => v.inStock) ||
         variants[0];
       if (!variant) continue;
-      const variantsForRow = chosenVariants.length ? chosenVariants : [variant];
+      const variantsForRow = sellableVariants.length ? sellableVariants : [variant];
+      // La foto del producto usa el color sobre el que la vendedora diseñó,
+      // no el de la variante más barata.
+      const previewVariant = variants.find((v) => v.id === item.variantId) ?? variant;
 
       const mockup = item.mockupUrl ? await persistMockup(item.mockupUrl, product.id) : null;
 
@@ -215,7 +215,7 @@ export const addCatalogProducts = createServerFn({ method: "POST" })
         shipping_cost_cents: variant.shippingCents,
         base_cost_cents: variant.productionCents + variant.shippingCents,
         costs_need_resync: false,
-        image_url: mockup || variant.image || product.image,
+        image_url: mockup || previewVariant.image || product.image,
         mockup_url: mockup,
         design_url: item.designUrl ?? null,
         placement: item.placement ?? null,
