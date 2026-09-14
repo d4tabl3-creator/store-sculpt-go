@@ -165,7 +165,15 @@ function StoreProductsPage() {
           zones,
         };
       });
-      await addCatalogProducts({ data: { storeId, items } });
+      const res = await addCatalogProducts({ data: { storeId, items } });
+      if (res?.zonesError) {
+        toast.error(
+          t(
+            "El producto se agregó, pero no se pudo guardar la colocación del diseño. Ábrelo y vuelve a guardarlo antes de venderlo.",
+            "The product was added, but the design placement could not be saved. Open it and save it again before selling.",
+          ),
+        );
+      }
       await reloadProducts();
       setDraft(null);
       setStage("catalog");
