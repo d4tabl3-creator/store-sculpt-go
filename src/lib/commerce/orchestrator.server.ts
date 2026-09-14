@@ -365,6 +365,7 @@ export async function syncProductToProvider(binding: ProviderBinding, productId:
     sourceProductId: (row.source_product_id as string | null) ?? null,
     sourceVariantId: (row.source_variant_id as string | null) ?? null,
     design,
+    designs: designs.length ? designs : null,
   };
 
   try {
