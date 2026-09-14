@@ -12,6 +12,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type {
   CommerceProvider,
+  DesignZoneRef,
   ProviderBinding,
   ProviderId,
   ProviderOrder,
